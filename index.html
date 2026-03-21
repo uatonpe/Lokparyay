@@ -1,601 +1,694 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>लोकपर्याय पतसंस्था - स्टाफ डेटा एंट्री</title>
-    <!-- तुमचा लोगो URL येथे टाका -->
-    <link rel="icon" href="https://raw.githubusercontent.com/tumcha_github_username/lokparyay-patpedhi-dashboard/main/logo.png" type="image/png">
-    
-    <style>
-        :root {
-            --primary-color: #0056b3;
-            --secondary-color: #ff9800;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --border-radius: 12px;
-            --input-border: #ced4da;
-            --success: #28a745;
-            --danger: #dc3545;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>लोकपर्याय पतसंस्था - कर्मचारी डेटा एन्ट्री</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="https://via.placeholder.com/16x16?text=LPS"> <!-- Replace with your actual favicon -->
 
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+  <style>
+    /* -------------------------------------------------------------------------- */
+    /* START of CSS (staff-entry-style.css content) */
+    /* -------------------------------------------------------------------------- */
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
+    /* General Styling */
+    body {
+        font-family: 'Poppins', Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f2f5;
+        color: #333;
+        line-height: 1.6;
+    }
 
-        .header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+    .container {
+        max-width: 850px; /* Slightly wider for better desktop layout */
+        margin: 25px auto;
+        background-color: #fff;
+        padding: 35px 40px;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-top: 5px solid #0056b3;
+    }
 
-        .header h1 {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 600;
-        }
+    h1 {
+        text-align: center;
+        color: #0056b3;
+        margin-bottom: 10px;
+        font-size: 2.2em;
+        font-weight: 700;
+    }
 
+    .description {
+        text-align: center;
+        color: #666;
+        font-size: 1.1em;
+        margin-bottom: 30px;
+    }
+
+    .logo {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+    .logo img {
+        max-width: 180px;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Form Sections */
+    .form-section {
+        background-color: #f8f9fa;
+        border: 1px solid #e0e6ed;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .section-title {
+        color: #0056b3;
+        font-size: 1.6em;
+        margin-top: 0;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e0e6ed;
+        text-align: center;
+    }
+
+    .section-description {
+        text-align: center;
+        color: #777;
+        margin-bottom: 25px;
+        font-style: italic;
+        font-size: 0.95em;
+    }
+
+    h3 {
+        color: #007bff;
+        font-size: 1.3em;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+    .form-group.main-date {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .form-group.main-date input {
+        max-width: 250px;
+        display: inline-block;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #555;
+        font-size: 0.95em;
+    }
+
+    input[type="date"],
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+        width: calc(100% - 24px); /* Account for padding and border */
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        background-color: #fefefe;
+    }
+
+    input[type="date"]:focus,
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+
+    /* Dynamic Row Styling */
+    .collection-row, .ledger-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 40px; /* Adjust grid columns as needed */
+        gap: 15px;
+        align-items: end;
+        margin-bottom: 15px;
+        padding: 15px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        background-color: #ffffff;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+    }
+
+    .collection-row > div, .ledger-row > div {
+        margin-bottom: 0; /* Override form-group margin for internal divs */
+    }
+
+    .collection-row label, .ledger-row label {
+        font-size: 0.85em;
+        margin-bottom: 5px;
+        white-space: nowrap; /* Prevent label wrapping */
+    }
+
+    .collection-row input, .collection-row select,
+    .ledger-row input, .ledger-row select {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .remove-row-btn {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 10px;
+        cursor: pointer;
+        font-size: 1.2em;
+        line-height: 1;
+        transition: background-color 0.3s ease;
+        height: 40px; /* Align with input fields */
+        width: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 25px; /* Adjust for label height in adjacent fields */
+    }
+
+    .remove-row-btn:hover {
+        background-color: #c82333;
+    }
+
+    .add-row-btn {
+        background-color: #17a2b8;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1em;
+        margin-top: 15px;
+        width: auto;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        transition: background-color 0.3s ease;
+    }
+    .add-row-btn:hover {
+        background-color: #138496;
+    }
+
+    /* Submit Button */
+    .submit-btn {
+        background-color: #007bff;
+        color: white;
+        padding: 15px 25px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1.1em;
+        font-weight: 600;
+        width: 100%;
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        margin-top: 30px;
+    }
+    .submit-btn:hover {
+        background-color: #0069d9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .submit-btn:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+    .submit-btn:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+
+    /* Message Area */
+    .message {
+        margin-top: 25px;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: bold;
+        display: none;
+        font-size: 1.05em;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .message.info { background-color: #cfe2ff; color: #052c65; border: 1px solid #b6d4fe; }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
         .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 0 15px;
-            padding-bottom: 100px; /* For fixed bottom button */
+            margin: 15px;
+            padding: 25px;
         }
-
-        .card {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            border: 1px solid rgba(0,0,0,0.05);
+        h1 {
+            font-size: 1.8em;
         }
-
-        .card-header {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .form-group {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-
-        input[type="date"],
-        input[type="time"],
-        input[type="number"],
-        input[type="text"],
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--input-border);
-            border-radius: 8px;
-            font-size: 16px; /* Prevents iOS zoom */
-            transition: border-color 0.2s;
-            background-color: #fafafa;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            background-color: #fff;
-            box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.1);
-        }
-
-        /* Hide number arrows */
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type="number"] {
-            -moz-appearance: textfield;
-        }
-
         .section-title {
-            font-size: 14px;
-            color: var(--secondary-color);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 15px 0 10px 0;
-            font-weight: bold;
+            font-size: 1.4em;
         }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+        .collection-row, .ledger-row {
+            grid-template-columns: 1fr; /* Stack columns on small screens */
             gap: 10px;
         }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        /* Bottom Sticky Button */
-        .submit-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: white;
-            padding: 15px 20px;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
-            z-index: 100;
-            display: flex;
-            justify-content: center;
-        }
-
-        .btn-submit {
-            background-color: var(--success);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-size: 18px;
-            font-weight: bold;
-            width: 100%;
-            max-width: 400px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
-            transition: transform 0.1s, background-color 0.2s;
-        }
-
-        .btn-submit:active {
-            transform: scale(0.98);
-        }
-        .btn-submit:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        /* Collapsible Add Agent Section */
-        details {
-            background: #fff;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--input-border);
-            margin-bottom: 20px;
-        }
-        summary {
-            padding: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            color: var(--primary-color);
-            outline: none;
-        }
-        .details-content {
-            padding: 15px;
-            border-top: 1px solid var(--input-border);
-        }
-
-        .btn-secondary {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 16px;
+        .remove-row-btn {
             width: 100%;
             margin-top: 10px;
-            cursor: pointer;
         }
+        .collection-row label, .ledger-row label {
+             white-space: normal; /* Allow labels to wrap on small screens */
+        }
+    }
 
-        /* Toast Notification */
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 16px;
-            position: fixed;
-            z-index: 1000;
-            left: 50%;
-            bottom: 80px; /* Above bottom bar */
-            transform: translateX(-50%);
-            font-size: 16px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        #toast.show {
-            visibility: visible;
-            animation: fadein 0.5s, fadeout 0.5s 4.5s;
-        }
-        #toast.success { background-color: var(--success); }
-        #toast.error { background-color: var(--danger); }
-
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 80px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 80px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-
-        /* Loader */
-        .loader {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        /* Mobile Adjustments */
-        @media (max-width: 600px) {
-            .grid-3 { grid-template-columns: 1fr 1fr; } /* Stack new accounts input below on very small screens */
-            .grid-3 > div:nth-child(3) { grid-column: span 2; }
-        }
-    </style>
+    /* -------------------------------------------------------------------------- */
+    /* END of CSS */
+    /* -------------------------------------------------------------------------- */
+  </style>
 </head>
 <body>
-
-    <div class="header">
-        <h1>लोकपर्याय पतसंस्था - एंट्री</h1>
+  <div class="container">
+    <div class="logo">
+      <img src="https://via.placeholder.com/180x60?text=पतसंस्था+लोगो" alt="लोकपर्याय पतसंस्था लोगो"> <!-- Replace with your actual logo URL -->
     </div>
+    <h1>लोकपर्याय पतसंस्था - कर्मचारी डेटा एन्ट्री</h1>
+    <p class="description">आजची सर्व प्रकारची आर्थिक माहिती येथे भरा.</p>
 
-    <div class="container">
-        
-        <!-- Date and Time Card -->
-        <div class="card">
-            <div class="card-header">आजची तारीख व वेळ</div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>दिनांक</label>
-                    <input type="date" id="entryDate" required>
-                </div>
-                <div class="form-group">
-                    <label>वेळ</label>
-                    <input type="time" id="entryTime" required>
-                </div>
-            </div>
+    <form id="dataEntryForm">
+      <div class="form-group main-date">
+        <label for="date">आजची दिनांक:</label>
+        <input type="date" id="date" name="date" required>
+      </div>
+
+      <!-- Collection Section -->
+      <div class="form-section">
+        <h2 class="section-title">आजचे कलेक्शन (पिग्मी, आरडी, एफडी)</h2>
+        <p class="section-description">प्रत्येक एजंट आणि कलेक्शन प्रकारानुसार एंट्री जोडा.</p>
+        <div id="collectionEntries">
+          <!-- Collection entry rows will be added here by JavaScript -->
+        </div>
+        <button type="button" class="add-row-btn" onclick="addCollectionEntry()">+ आणखी कलेक्शन एंट्री जोडा</button>
+      </div>
+
+      <!-- Other Transactions Section -->
+      <div class="form-section">
+        <h2 class="section-title">इतर आर्थिक व्यवहार</h2>
+        <p class="section-description">बँक बॅलन्स, सिस्टम बॅलन्स आणि इतर जमा/खर्च येथे नोंदवा.</p>
+
+        <div class="form-group">
+          <label for="bankBalance">आजची बँकेतील शिल्लक (₹):</label>
+          <input type="number" id="bankBalance" name="bankBalance" step="0.01" min="0" placeholder="उदा. 150000.00">
         </div>
 
-        <div id="loadingText" class="loader">सिस्टीम लोड होत आहे, कृपया थांबा...</div>
-
-        <!-- Dynamic Agent Sections will be injected here -->
-        <div id="agentsContainer"></div>
-
-        <!-- Bank Balance Card -->
-        <div class="card">
-            <div class="card-header">बँक बॅलन्स अपडेट (केपीआय)</div>
-            <div class="grid-2">
-                <div class="form-group">
-                    <label>सिस्टिम बॅलन्स (₹)</label>
-                    <input type="number" id="systemBalance" inputmode="numeric" value="0">
-                </div>
-                <div class="form-group">
-                    <label>प्रत्यक्ष बँक बॅलन्स (₹)</label>
-                    <input type="number" id="bankBalance" inputmode="numeric" value="0">
-                </div>
-            </div>
-            <div class="form-row" style="margin-top:10px;">
-                <div class="form-group">
-                    <label>जुळणी स्थिती</label>
-                    <select id="matchStatus">
-                        <option value="जुळले आहे">✅ जुळले आहे</option>
-                        <option value="जुळले नाही">❌ जुळले नाही</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>शेरा</label>
-                    <input type="text" id="remarks" placeholder="उदा. कॅश जमा केली">
-                </div>
-            </div>
+        <div class="form-group">
+          <label for="systemBalance">आजची सिस्टमची शिल्लक (₹):</label>
+          <input type="number" id="systemBalance" name="systemBalance" step="0.01" min="0" placeholder="उदा. 150000.00">
         </div>
 
-        <!-- Add New Agent (Collapsible) -->
-        <details>
-            <summary>➕ नवीन एजंट जोडायचा आहे का?</summary>
-            <div class="details-content">
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label>एजंटचे नाव</label>
-                    <input type="text" id="newAgentName">
-                </div>
-                <div class="grid-2">
-                    <div class="form-group">
-                        <label>एजंट कोड</label>
-                        <input type="text" id="newAgentCode">
-                    </div>
-                    <div class="form-group">
-                        <label>मोबाईल नंबर</label>
-                        <input type="number" id="newContactNumber" inputmode="numeric">
-                    </div>
-                </div>
-                <button type="button" class="btn-secondary" onclick="addNewAgent()">एजंट सेव्ह करा</button>
-            </div>
-        </details>
+        <h3>इतर जमा/खर्च (सिस्टम खात्यात)</h3>
+        <div id="ledgerEntries">
+          <!-- Ledger entry rows will be added here by JavaScript -->
+        </div>
+        <button type="button" class="add-row-btn" onclick="addLedgerEntry()">+ आणखी जमा/खर्च एंट्री जोडा</button>
+      </div>
 
-    </div>
+      <button type="submit" class="submit-btn">सर्व माहिती जमा करा</button>
+    </form>
 
-    <!-- Sticky Bottom Submit Button -->
-    <div class="submit-container">
-        <button type="button" class="btn-submit" id="mainSubmitBtn" onclick="submitAllData()">सर्वांचा डेटा सेव्ह करा</button>
-    </div>
+    <div id="message" class="message"></div>
 
-    <!-- Toast Message -->
-    <div id="toast"></div>
+  </div>
 
-    <script>
-        // तुमची युनिफाईड API URL
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzEtU_Ye8G-Ojdto2NjYTMu7vI4Da-iXuuIvTU4pzY8-5vol9WWqGAzVMSaIinHCFY/exec'; 
+  <script>
+    /* -------------------------------------------------------------------------- */
+    /* START of JavaScript (staff-entry-script.js content) */
+    /* -------------------------------------------------------------------------- */
 
-        let globalAgentsList = [];
+    // Replace with your deployed Google Apps Script Web App URL
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPWggFzjKWUTkbzARN4W7b50mrDFMAoqZ4j0eJM7tNvHcouM_YZuEPol8AV_BiXzc/exec';
 
-        // Toast Notification Function
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById("toast");
-            toast.textContent = message;
-            toast.className = "show " + type;
-            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 5000);
+    let agentsList = []; // To store agents fetched from Google Sheet
+    let collectionEntryCount = 0;
+    let ledgerEntryCount = 0;
+    let todayFormattedDate = '';
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const dateInput = document.getElementById('date');
+      const today = new Date();
+      const dd = String(today.getDate()).padStart(2, '0');
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const yyyy = today.getFullYear();
+      todayFormattedDate = yyyy + '-' + mm + '-' + dd;
+      dateInput.value = todayFormattedDate;
+
+      loadAgents(); // Load agents for dropdowns
+      addCollectionEntry(); // Add first collection entry row
+      addLedgerEntry();     // Add first ledger entry row
+
+      document.getElementById('dataEntryForm').addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission
+        submitAllData();
+      });
+    });
+
+    /**
+     * Loads active agents from Google Sheet into the dropdowns.
+     */
+    async function loadAgents() {
+      try {
+        const response = await fetch(`${SCRIPT_URL}?sheet=०२-एजंट मास्तर`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
+        const data = await response.json();
+        // Filter agents that are 'TRUE' for 'सक्रिय' (active) status
+        agentsList = data.filter(agent => agent['सक्रिय'] === true || agent['सक्रिय'].toString().toUpperCase() === 'TRUE');
+        updateAgentDropdowns();
+      } catch (error) {
+        console.error('एजंट लोड करताना त्रुटी आली:', error);
+        showMessage('एजंटची यादी लोड करताना त्रुटी आली. कृपया रीलोड करा.', 'error');
+      }
+    }
 
-        // Initialize Page
-        window.onload = async function() {
-            // Set current date and time
-            const now = new Date();
-            document.getElementById('entryDate').value = now.toISOString().split('T')[0];
-            document.getElementById('entryTime').value = now.toTimeString().slice(0, 5);
-
-            document.getElementById('loadingText').style.display = 'block';
-            await loadAgents();
-            document.getElementById('loadingText').style.display = 'none';
-        };
-
-        // Fetch agents via GET and build UI
-        async function loadAgents() {
-            try {
-                const response = await fetch(`${API_URL}?sheet=agents`);
-                const data = await response.json();
-                
-                if (data && !data.error) {
-                    globalAgentsList = data;
-                    buildAgentCards();
-                } else {
-                    showToast('एजंट लिस्ट मिळाली नाही.', 'error');
-                }
-            } catch (error) {
-                showToast('नेटवर्क एरर. एजंट लोड झाले नाहीत.', 'error');
-                console.error(error);
-            }
-        }
-
-        // Build HTML cards for each agent automatically
-        function buildAgentCards() {
-            const container = document.getElementById('agentsContainer');
-            container.innerHTML = ''; // Clear existing
-
-            globalAgentsList.forEach((agent, index) => {
-                const safeName = agent.एजंटचे_नाव; // Keep original name for value
-                const idPrefix = `agent_${index}`; // Unique ID for inputs
-
-                const cardHTML = `
-                <div class="card" id="card_${idPrefix}" data-agent-name="${safeName}">
-                    <div class="card-header">👤 ${safeName}</div>
-                    
-                    <div class="section-title">पिग्मी</div>
-                    <div class="grid-2">
-                        <div class="form-group">
-                            <label>खाती</label>
-                            <input type="number" id="pigmyCount_${idPrefix}" inputmode="numeric" value="0" onclick="this.select()">
-                        </div>
-                        <div class="form-group">
-                            <label>रक्कम (₹)</label>
-                            <input type="number" id="pigmyAmt_${idPrefix}" inputmode="numeric" value="0" onclick="this.select()">
-                        </div>
-                    </div>
-
-                    <div class="section-title">आरडी (RD)</div>
-                    <div class="grid-3">
-                        <div class="form-group">
-                            <label>खाती</label>
-                            <input type="number" id="rdCount_${idPrefix}" inputmode="numeric" value="0" onclick="this.select()">
-                        </div>
-                        <div class="form-group">
-                            <label>रक्कम (₹)</label>
-                            <input type="number" id="rdAmt_${idPrefix}" inputmode="numeric" value="0" onclick="this.select()">
-                        </div>
-                        <div class="form-group">
-                            <label>नवीन खाती</label>
-                            <input type="number" id="rdNew_${idPrefix}" inputmode="numeric" value="0" onclick="this.select()">
-                        </div>
-                    </div>
-
-                    <div class="section-title">एफडी (FD)</div>
-                    <div class="grid-3">
-                        <div class="form-group">
-                            <label>खाती</label>
-                            <input type="number" id="fdCount_${idPrefix}" inputmode="numeric" value="0" onclick="this.select()">
-                        </div>
-                        <div class="form-group">
-                            <label>रक्कम (₹)</label>
-                            <input type="number" id="fdAmt_${idPrefix}" inputmode="numeric" value="0" onclick="this.select()">
-                        </div>
-                        <div class="form-group">
-                            <label>नवीन खाती</label>
-                            <input type="number" id="fdNew_${idPrefix}" inputmode="numeric" value="0" onclick="this.select()">
-                        </div>
-                    </div>
-                </div>
-                `;
-                container.insertAdjacentHTML('beforeend', cardHTML);
+    /**
+     * Updates all agent dropdowns on the page with the loaded agentsList.
+     * This function is called when agents are loaded and when a new collection row is added.
+     */
+    function updateAgentDropdowns() {
+        document.querySelectorAll('.agent-select').forEach(selectElement => {
+            const selectedValue = selectElement.value; // Preserve selected value if any
+            selectElement.innerHTML = '<option value="">एजंट निवडा...</option>';
+            agentsList.forEach(agent => {
+                const option = document.createElement('option');
+                option.value = agent['एजंटचे नाव']; // Use agent name for display and value
+                option.textContent = agent['एजंटचे नाव'];
+                selectElement.appendChild(option);
             });
+            if (selectedValue) {
+                selectElement.value = selectedValue; // Restore selected value
+            }
+        });
+    }
+
+    /**
+     * Adds a new row for collection entry (Pigmy, RD, FD).
+     * This function is called from the HTML button.
+     */
+    function addCollectionEntry() {
+      collectionEntryCount++;
+      const container = document.getElementById('collectionEntries');
+      const newRow = document.createElement('div');
+      newRow.className = 'collection-row';
+      newRow.setAttribute('data-id', collectionEntryCount); // For identification
+      newRow.innerHTML = `
+        <div>
+          <label for="colType-${collectionEntryCount}">कलेक्शनचा प्रकार:</label>
+          <select id="colType-${collectionEntryCount}" class="collection-type" name="collectionType">
+            <option value="">निवडा...</option>
+            <option value="Pigmy">पिग्मी</option>
+            <option value="RD">आरडी</option>
+            <option value="FD">एफडी</option>
+          </select>
+        </div>
+        <div>
+          <label for="colAgent-${collectionEntryCount}">एजंटचे नाव:</label>
+          <select id="colAgent-${collectionEntryCount}" class="agent-select" name="collectionAgent">
+            <option value="">एजंट निवडा...</option>
+            <!-- Agents loaded here by updateAgentDropdowns() -->
+          </select>
+        </div>
+        <div>
+          <label for="colAccNo-${collectionEntryCount}">खाते क्रमांक:</label>
+          <input type="text" id="colAccNo-${collectionEntryCount}" name="collectionAccountNo" placeholder="खाते क्रमांक टाका">
+        </div>
+        <div>
+          <label for="colAmount-${collectionEntryCount}">रक्कम (₹):</label>
+          <input type="number" id="colAmount-${collectionEntryCount}" name="collectionAmount" step="0.01" min="0" value="">
+        </div>
+        <button type="button" class="remove-row-btn" onclick="removeEntryRow(this, 'collection-row')">X</button>
+      `;
+      container.appendChild(newRow);
+      updateAgentDropdowns(); // Update the newly added agent dropdown with current agentsList
+    }
+
+    /**
+     * Adds a new row for ledger entry (other credit/debit).
+     * This function is called from the HTML button.
+     */
+    function addLedgerEntry() {
+      ledgerEntryCount++;
+      const container = document.getElementById('ledgerEntries');
+      const newRow = document.createElement('div');
+      newRow.className = 'ledger-row';
+      newRow.setAttribute('data-id', ledgerEntryCount); // For identification
+      newRow.innerHTML = `
+        <div>
+          <label for="ledgerType-${ledgerEntryCount}">व्यवहार प्रकार:</label>
+          <input type="text" id="ledgerType-${ledgerEntryCount}" name="ledgerTxnType" placeholder="उदा. खर्च, इतर जमा">
+        </div>
+        <div>
+          <label for="ledgerRef-${ledgerEntryCount}">संदर्भ:</label>
+          <input type="text" id="ledgerRef-${ledgerEntryCount}" name="ledgerReference" placeholder="तपशील किंवा खाते क्रमांक">
+        </div>
+        <div>
+          <label for="ledgerCredit-${ledgerEntryCount}">जमा (₹):</label>
+          <input type="number" id="ledgerCredit-${ledgerEntryCount}" name="ledgerCredit" step="0.01" min="0" value="0">
+        </div>
+        <div>
+          <label for="ledgerDebit-${ledgerEntryCount}">खर्च (₹):</label>
+          <input type="number" id="ledgerDebit-${ledgerEntryCount}" name="ledgerDebit" step="0.01" min="0" value="0">
+        </div>
+        <button type="button" class="remove-row-btn" onclick="removeEntryRow(this, 'ledger-row')">X</button>
+      `;
+      container.appendChild(newRow);
+    }
+
+    /**
+     * Removes an entry row from the form.
+     * Ensures at least one row remains if it's the only one of its type, otherwise clears its fields.
+     * @param {HTMLElement} button - The clicked 'X' button.
+     * @param {string} rowClass - The CSS class of the row to remove ('collection-row' or 'ledger-row').
+     */
+    function removeEntryRow(button, rowClass) {
+      const row = button.closest(`.${rowClass}`);
+      const container = row.parentNode;
+      if (container.children.length > 1) { // Only remove if there's more than one row
+        container.removeChild(row);
+      } else {
+        // If it's the last row, clear its fields instead of removing it entirely.
+        // This prevents the section from becoming empty.
+        alert('या प्रकारची किमान एक एंट्री असणे आवश्यक आहे. तुम्ही एंट्रीचे तपशील साफ करू शकता.');
+        row.querySelectorAll('input, select').forEach(input => {
+          if (input.type === 'number') input.value = '0'; // Reset numbers to 0
+          else if (input.tagName === 'SELECT') input.value = ''; // Reset dropdowns
+          else input.value = ''; // Clear text inputs
+        });
+      }
+    }
+
+    /**
+     * Submits all collected data from the form to the Google Apps Script backend.
+     * This is the main submission logic triggered by the 'Submit All' button.
+     */
+    async function submitAllData() {
+      const submitButton = document.querySelector('.submit-btn');
+      submitButton.disabled = true; // Disable button to prevent multiple submissions
+      submitButton.textContent = 'माहिती जमा करत आहे... कृपया प्रतीक्षा करा...';
+      showMessage('माहिती जमा करत आहे... कृपया ही विंडो बंद करू नका.', 'info');
+
+      const commonDate = document.getElementById('date').value;
+      let allRequests = [];
+
+      // --- 1. Collection Entries ---
+      document.querySelectorAll('.collection-row').forEach(row => {
+        const type = row.querySelector('.collection-type').value.trim();
+        const agentName = row.querySelector('.agent-select').value.trim();
+        const accountNo = row.querySelector('input[name="collectionAccountNo"]').value.trim();
+        const amount = row.querySelector('input[name="collectionAmount"]').value.trim();
+
+        // Only add request if all required fields for a collection are filled and amount is positive
+        if (type && agentName && accountNo && amount && parseFloat(amount) > 0) {
+          allRequests.push(sendDataToAppsScript({
+            sheetName: 'आजचे कलेक्शन',
+            date: commonDate,
+            transactionType: type,
+            agentName: agentName,
+            accountNo: accountNo,
+            amount: amount
+          }));
+        } else if (type || agentName || accountNo || (amount && parseFloat(amount) > 0)) {
+            // If some fields are filled but not all for a collection, log a warning
+            console.warn('अपूर्ण कलेक्शन एंट्री वगळली:', { type, agentName, accountNo, amount });
+        }
+      });
+
+      // --- 2. Bank Balance ---
+      const bankBalance = document.getElementById('bankBalance').value.trim();
+      if (bankBalance && parseFloat(bankBalance) >= 0) {
+        allRequests.push(sendDataToAppsScript({
+          sheetName: 'बँक बॅलन्स',
+          date: commonDate,
+          bankBalance: bankBalance
+        }));
+      }
+
+      // --- 3. System Balance ---
+      const systemBalance = document.getElementById('systemBalance').value.trim();
+      if (systemBalance && parseFloat(systemBalance) >= 0) {
+        allRequests.push(sendDataToAppsScript({
+          sheetName: 'सिस्टम बॅलन्स',
+          date: commonDate,
+          systemBalance: systemBalance
+        }));
+      }
+
+      // --- 4. Ledger Entries ---
+      document.querySelectorAll('.ledger-row').forEach(row => {
+        const txnType = row.querySelector('input[name="ledgerTxnType"]').value.trim();
+        const reference = row.querySelector('input[name="ledgerReference"]').value.trim();
+        const credit = row.querySelector('input[name="ledgerCredit"]').value.trim();
+        const debit = row.querySelector('input[name="ledgerDebit"]').value.trim();
+
+        // Only add request if transaction type is filled and either credit or debit is positive
+        if (txnType && (parseFloat(credit) > 0 || parseFloat(debit) > 0)) {
+          allRequests.push(sendDataToAppsScript({
+            sheetName: 'सिस्टम जमा-खर्च',
+            date: commonDate,
+            ledgerTxnType: txnType,
+            reference: reference,
+            credit: credit,
+            debit: debit,
+            remark: '' // Current form design doesn't have a specific remark field for each ledger row
+          }));
+        } else if (txnType || reference || (credit && parseFloat(credit) > 0) || (debit && parseFloat(debit) > 0)) {
+            // If some fields are filled but not all for a ledger entry, log a warning
+            console.warn('अपूर्ण जमा/खर्च एंट्री वगळली:', { txnType, reference, credit, debit });
+        }
+      });
+
+      if (allRequests.length === 0) {
+        showMessage('कोणतीही माहिती भरली नाही. कृपया किमान एक एंट्री भरा.', 'error');
+        submitButton.disabled = false;
+        submitButton.textContent = 'सर्व माहिती जमा करा';
+        return;
+      }
+
+      try {
+        const responses = await Promise.all(allRequests); // Send all requests concurrently
+        let successCount = 0;
+        let errorMessages = [];
+
+        responses.forEach(res => {
+          if (res.status && res.status.includes('यशस्वी')) {
+            successCount++;
+          } else {
+            errorMessages.push(res.status || 'अज्ञात त्रुटी');
+          }
+        });
+
+        if (successCount === allRequests.length) {
+          showMessage(`सर्व ${successCount} एंट्रीज यशस्वीरित्या जमा केल्या.`, 'success');
+          resetForm(); // Reset form on complete success
+        } else {
+          // Some succeeded, some failed
+          showMessage(`${successCount} एंट्रीज यशस्वी झाल्या, परंतु ${errorMessages.length} एंट्रीजमध्ये त्रुटी आली: ${errorMessages.join('; ')}`, 'error');
         }
 
-        // Helper to send POST data
-        async function sendPostData(payload) {
-            const formData = new URLSearchParams(payload);
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-                return await response.json();
-            } catch (e) {
-                return { success: false, message: 'Network Error' };
-            }
-        }
+      } catch (error) {
+        console.error('माहिती जमा करताना गंभीर त्रुटी:', error);
+        showMessage('माहिती जमा करताना गंभीर त्रुटी आली. नेटवर्क तपासा किंवा प्रशासकाशी संपर्क साधा.', 'error');
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'सर्व माहिती जमा करा';
+      }
+    }
 
-        // Main function to submit everything
-        async function submitAllData() {
-            const btn = document.getElementById('mainSubmitBtn');
-            const entryDate = document.getElementById('entryDate').value;
-            const entryTime = document.getElementById('entryTime').value;
+    /**
+     * Sends a single data payload (for one sheet update) to the Google Apps Script doPost function.
+     * @param {Object} data - The data payload to send.
+     * @returns {Promise<Object>} The JSON response from the Apps Script.
+     */
+    async function sendDataToAppsScript(data) {
+      const formData = new FormData();
+      for (const key in data) {
+        formData.append(key, data[key]);
+      }
 
-            if(!entryDate || !entryTime) {
-                showToast("तारीख आणि वेळ भरणे आवश्यक आहे.", "error");
-                return;
-            }
+      // Using fetch with method: 'POST' and body: FormData automatically sets
+      // 'Content-Type' to 'multipart/form-data', which Apps Script handles well.
+      // Apps Script also handles CORS headers for JSON responses, so no explicit
+      // 'mode', 'headers' or 'credentials' are needed on the client-side for basic usage.
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: formData,
+      });
+      return response.json(); // Parse the JSON response
+    }
 
-            btn.disabled = true;
-            btn.textContent = "सेव्ह होत आहे... कृपया थांबा";
-            
-            let hasErrors = false;
-            let dataSubmitted = false;
+    /**
+     * Resets the entire form to its initial state after successful submission.
+     */
+    function resetForm() {
+      document.getElementById('dataEntryForm').reset();
+      document.getElementById('date').value = todayFormattedDate;
 
-            // 1. Submit Bank Balance if greater than 0
-            const sysBal = parseFloat(document.getElementById('systemBalance').value) || 0;
-            const bnkBal = parseFloat(document.getElementById('bankBalance').value) || 0;
-            
-            if (sysBal > 0 || bnkBal > 0) {
-                const bankPayload = {
-                    formType: 'bank_balance',
-                    systemBalance: sysBal,
-                    bankBalance: bnkBal,
-                    matchStatus: document.getElementById('matchStatus').value,
-                    remarks: document.getElementById('remarks').value
-                };
-                const res = await sendPostData(bankPayload);
-                if(!res.success) hasErrors = true;
-                else dataSubmitted = true;
-            }
+      // Clear all dynamic collection entry rows and add one default
+      document.getElementById('collectionEntries').innerHTML = '';
+      collectionEntryCount = 0; // Reset counter
+      addCollectionEntry();
 
-            // 2. Loop through all Agent Cards and submit data if > 0
-            for (let i = 0; i < globalAgentsList.length; i++) {
-                const agentName = globalAgentsList[i].एजंटचे_नाव;
-                const prefix = `agent_${i}`;
+      // Clear all dynamic ledger entry rows and add one default
+      document.getElementById('ledgerEntries').innerHTML = '';
+      ledgerEntryCount = 0; // Reset counter
+      addLedgerEntry();
 
-                // Fetch values
-                const pCount = parseInt(document.getElementById(`pigmyCount_${prefix}`).value) || 0;
-                const pAmt = parseFloat(document.getElementById(`pigmyAmt_${prefix}`).value) || 0;
-                
-                const rCount = parseInt(document.getElementById(`rdCount_${prefix}`).value) || 0;
-                const rAmt = parseFloat(document.getElementById(`rdAmt_${prefix}`).value) || 0;
-                const rNew = parseInt(document.getElementById(`rdNew_${prefix}`).value) || 0;
+      // Reset static balance fields to empty
+      document.getElementById('bankBalance').value = '';
+      document.getElementById('systemBalance').value = '';
+    }
 
-                const fCount = parseInt(document.getElementById(`fdCount_${prefix}`).value) || 0;
-                const fAmt = parseFloat(document.getElementById(`fdAmt_${prefix}`).value) || 0;
-                const fNew = parseInt(document.getElementById(`fdNew_${prefix}`).value) || 0;
+    /**
+     * Displays a temporary message to the user in a styled div.
+     * @param {string} msg - The message text to display.
+     * @param {'success'|'error'|'info'} type - The type of message for styling.
+     */
+    function showMessage(msg, type) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.textContent = msg;
+      messageDiv.className = 'message ' + type; // Set class for styling
+      messageDiv.style.display = 'block'; // Show the message
 
-                // Send Pigmy
-                if (pCount > 0 || pAmt > 0) {
-                    const res = await sendPostData({ formType: 'pigmy', agentName: agentName, accountCount: pCount, totalAmount: pAmt });
-                    if(!res.success) hasErrors = true;
-                    else dataSubmitted = true;
-                }
-                
-                // Send RD
-                if (rCount > 0 || rAmt > 0 || rNew > 0) {
-                    const res = await sendPostData({ formType: 'rd', agentName: agentName, accountCount: rCount, totalAmount: rAmt, newAccountsToday: rNew });
-                    if(!res.success) hasErrors = true;
-                    else dataSubmitted = true;
-                }
+      // Determine duration based on message type/length
+      const duration = (type === 'info' || msg.length > 100) ? 10000 : 7000; // 10s for info/long, 7s for others
+      setTimeout(() => {
+        messageDiv.style.display = 'none'; // Hide message after duration
+      }, duration);
+    }
 
-                // Send FD
-                if (fCount > 0 || fAmt > 0 || fNew > 0) {
-                    const res = await sendPostData({ formType: 'fd', agentName: agentName, accountCount: fCount, totalAmount: fAmt, newAccountsToday: fNew });
-                    if(!res.success) hasErrors = true;
-                    else dataSubmitted = true;
-                }
-            }
-
-            // Restore Button
-            btn.disabled = false;
-            btn.textContent = "सर्वांचा डेटा सेव्ह करा";
-
-            if (hasErrors) {
-                showToast("काही डेटा सेव्ह करताना एरर आली. कनेक्शन तपासा.", "error");
-            } else if (!dataSubmitted) {
-                showToast("सेव्ह करण्यासाठी कोणताही नवीन डेटा भरलेला नाही.", "error");
-            } else {
-                showToast("✅ सर्व डेटा यशस्वीरित्या सेव्ह झाला!", "success");
-                resetAllInputs();
-            }
-        }
-
-        function resetAllInputs() {
-            const inputs = document.querySelectorAll('input[type="number"]');
-            inputs.forEach(input => input.value = 0);
-            document.getElementById('remarks').value = '';
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top after success
-        }
-
-        // Add New Agent functionality
-        async function addNewAgent() {
-            const name = document.getElementById('newAgentName').value;
-            const code = document.getElementById('newAgentCode').value;
-            const contact = document.getElementById('newContactNumber').value;
-
-            if(!name || !code) {
-                showToast("एजंटचे नाव आणि कोड आवश्यक आहे.", "error");
-                return;
-            }
-
-            showToast("एजंट जोडत आहे...", "success");
-            const res = await sendPostData({
-                formType: 'agent_add',
-                agentName: name,
-                agentCode: code,
-                contactNumber: contact
-            });
-
-            if(res.success) {
-                showToast("नवीन एजंट जोडला गेला!", "success");
-                document.getElementById('newAgentName').value = '';
-                document.getElementById('newAgentCode').value = '';
-                document.getElementById('newContactNumber').value = '';
-                
-                // Reload agent list to show new agent card
-                document.getElementById('loadingText').style.display = 'block';
-                await loadAgents();
-                document.getElementById('loadingText').style.display = 'none';
-            } else {
-                showToast("एरर: एजंट जोडता आला नाही.", "error");
-            }
-        }
-    </script>
+    /* -------------------------------------------------------------------------- */
+    /* END of JavaScript */
+    /* -------------------------------------------------------------------------- */
+  </script>
 </body>
 </html>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>लोकपर्याय पतसंस्था - सहजडॅश (अध्यक्ष डॅशबोर्ड)</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="https://via.placeholder.com/16x16?text=LPS"> <!-- Replace with your actual favicon -->
+    <link rel="icon" href="https://via.placeholder.com/16x16?text=LPS"> <!-- तुमच्या संस्थेचा Favicon येथे बदला -->
 
     <style>
         /* -------------------------------------------------------------------------- */
@@ -549,7 +549,7 @@
         <header class="dashboard-header">
             <div class="header-content">
                 <div class="logo">
-                    <img src="https://via.placeholder.com/60x60?text=Logo" alt="लोकपर्याय पतसंस्था लोगो"> <!-- Replace with your actual logo URL (e.g., 'your_logo.png') -->
+                    <img src="https://via.placeholder.com/60x60?text=Logo" alt="लोकपर्याय पतसंस्था लोगो"> <!-- तुमच्या संस्थेचा लोगो URL येथे बदला (उदा. 'your_logo.png') -->
                     <div class="institution-details">
                         <h1>लोकपर्याय जिल्हा सहकारी पतसंस्था मर्यादीत</h1>
                         <p>हासेगाव, हाराशिय</p>
@@ -682,7 +682,7 @@
         // **महत्वाचे:** हे व्हॅल्यूज तुमच्या दिलेल्या URL/IDs सह थेट कोडमध्ये समाविष्ट केले आहेत.
         // जर ते बदलले, तर तुम्हाला ते येथे थेट अपडेट करावे लागतील.
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzexC0TkMbvoa39tWYCVzC7kmHTEF1vwYpCwYclejPOVAep1_FG0l-tp-NKb2vNRJg/exec'; // तुमचा Apps Script वेब ॲप URL
-        const GOOGLE_SHEET_ID = '1P2g0-4mxUqEQUxdkGqFL_WhHH_MoQw9WpGQ_6QYo-cs'; // तुमच्या Google Sheet चा मुख्य ID (Publish to web केलेला)
+        const GOOGLE_SHEET_ID = '1P2g0-4mxUqEQUxdkGqFL_WhHH_MoQw9WpGQ_6QYo-cs'; // तुमच्या Google Sheet चा मुख्य ID
 
         document.addEventListener('DOMContentLoaded', () => {
             // हेडरमध्ये वर्तमान तारीख आणि वेळ सेट करा
@@ -691,7 +691,7 @@
 
             const dashboardDateInput = document.getElementById('dashboardDate');
             const today = new Date();
-            const formattedToday = today.toISOString().split('T')[0];
+            const formattedToday = today.toISOString().split('T')[0]; // YYYY-MM-DD
             dashboardDateInput.value = formattedToday;
 
             fetchDashboardData(formattedToday); // सुरुवातीला आजच्या दिवसाचा डेटा लोड करा
@@ -717,10 +717,10 @@
                 }
             });
 
-            // एजंट मास्तर शीटची लिंक अपडेट करा - आता प्रदान केलेला ID थेट वापरला जात आहे
-            // Publish to web केलेल्या Google Sheet चा ID वापरून 'एजंट मास्तर' शीटची लिंक तयार करा.
+            // एजंट मास्तर शीटची लिंक अपडेट करा
             // ही लिंक थेट edit मोडमध्ये उघडेल जेणेकरून एजंट माहिती अपडेट करता येईल.
-            document.getElementById('agentMasterSheetLink').href = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/edit#gid=1061487835`; // <--- GID बदलले आहे!
+            // GID (Grid ID) '०२-ऐजेंट मास्टर' या तुमच्या शीटचा आहे असे गृहीत धरले आहे.
+            document.getElementById('agentMasterSheetLink').href = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/edit#gid=1061487835`;
         });
 
         function updateCurrentDateTime() {
@@ -737,32 +737,32 @@
             loadingSpinner.style.display = 'flex'; // लोडिंग स्पिनर दाखवा
 
             try {
-                // Apps Script API मधून डेटा मिळवा (जे आता CSV URLs मधून वाचेल)
+                // Apps Script API मधून कच्चा डेटा मिळवा
                 const collections = await fetchDataFromSheet('०१-आजचे कलेक्शन', date);
                 const bankBalances = await fetchDataFromSheet('०३-बँक व सिस्टम बॅलन्स', date);
                 const systemLedger = await fetchDataFromSheet('०४-सिस्टम जमा-खर्च', date);
-
+                
+                // डेटा मिळाल्यावर KPIs आणि एजंट-वाईज कलेक्शन अपडेट करा
                 updateKPIs(collections, bankBalances, systemLedger, date);
                 updateAgentWiseCollection(collections, date);
 
             } catch (error) {
                 console.error('डॅशबोर्ड डेटा लोड करताना त्रुटी आली:', error);
-                alert('डॅशबोर्ड डेटा लोड करताना गंभीर त्रुटी आली. कृपया नंतर प्रयत्न करा किंवा Google Apps Script च्या "Executions" लॉगमध्ये अधिक तपशील तपासा.');
+                alert('डॅशबोर्ड डेटा लोड करताना गंभीर त्रुटी आली. कृपया नंतर प्रयत्न करा किंवा Google Apps Script च्या "Executions" लॉगमध्ये अधिक तपशील तपासा. त्रुटी: ' + error.message);
             } finally {
                 loadingSpinner.style.display = 'none'; // लोडिंग स्पिनर लपवा
             }
         }
 
         async function fetchDataFromSheet(sheetName, date) {
-            // Apps Script वेब ॲप URL वापरून डेटा रिक्वेस्ट करा (हे Apps Script आता CSV मधून वाचेल)
-            const url = `${SCRIPT_URL}?sheet=${sheetName}&date=${date}`;
+            // Apps Script वेब ॲप URL वापरून डेटा रिक्वेस्ट करा (हे Apps Script आता कच्चा डेटा देईल)
+            const url = `${SCRIPT_URL}?sheet=${sheetName}&date=${date}`; // तारीख Apps Script ला फिल्टरिंगसाठी पाठवली जाते
             const response = await fetch(url);
             if (!response.ok) {
-                // Apps Script कडून मिळालेला प्रतिसाद पाहण्यासाठी 'response.text()' वापरा
                 const errorText = await response.text();
                 throw new Error(`HTTP error! status: ${response.status} for sheet: ${sheetName}. Details: ${errorText}`);
             }
-            return response.json();
+            return response.json(); // Apps Script कडून JSON डेटा परत मिळवा
         }
 
         function updateKPIs(collections, bankBalances, systemLedger, selectedDate) {
@@ -791,6 +791,7 @@
             let currentBankBalance = 0;
             let currentSystemBalance = 0;
 
+            // '०३-बँक व सिस्टम बॅलन्स' मधून सर्वात नवीन बॅलन्स एंट्री शोधा
             const relevantBankBalanceEntry = bankBalances
                 .filter(item => item['दिनांक'] && new Date(item['दिनांक']).toISOString().split('T')[0] <= selectedDate)
                 .sort((a, b) => new Date(b['दिनांक']) - new Date(a['दिनांक']))[0];
@@ -800,17 +801,20 @@
                 currentSystemBalance = parseFloat(relevantBankBalanceEntry['सिस्टमची शिल्लक']) || 0;
             }
             
+            // '०४-सिस्टम जमा-खर्च' मधून सर्वात नवीन 'सद्यस्थितीतील शिल्लक' शोधा
             if (systemLedger.length > 0) {
                 let lastLedgerEntry = systemLedger
                     .filter(item => item['दिनांक'] && new Date(item['दिनांक']).toISOString().split('T')[0] <= selectedDate)
                     .sort((a, b) => new Date(b['दिनांक']) - new Date(a['दिनांक']))[0];
 
-                if (lastLedgerEntry) {
+                if (lastLedgerEntry && lastLedgerEntry['सद्यस्थितीतील शिल्लक'] !== undefined) {
                     currentSystemBalance = parseFloat(lastLedgerEntry['सद्यस्थितीतील शिल्लक']) || 0;
                 } else {
-                    currentSystemBalance = 0;
+                    // जर systemLedger मध्ये डेटा नसेल किंवा शिल्लक सापडली नाही, तर default 0
+                    currentSystemBalance = 0; 
                 }
             }
+
 
             document.getElementById('systemBalance').textContent = currentSystemBalance.toFixed(2);
             document.getElementById('bankBalance').textContent = currentBankBalance.toFixed(2);
@@ -818,8 +822,8 @@
             const matchStatusIcon = document.getElementById('matchStatusIcon');
             const matchStatusText = document.getElementById('matchStatusText');
 
-            if (currentBankBalance > 0 || currentSystemBalance > 0) {
-                if (Math.abs(currentBankBalance - currentSystemBalance) < 0.01) {
+            if (currentBankBalance > 0 || currentSystemBalance > 0) { // जर दोन्हीपैकी एकात तरी बॅलन्स असेल
+                if (Math.abs(currentBankBalance - currentSystemBalance) < 0.01) { // फ्लोटिंग पॉइंट तुलना
                     matchStatusIcon.textContent = '✅';
                     matchStatusIcon.className = 'match-icon matched';
                     matchStatusText.textContent = 'जुळले आहे';
@@ -828,7 +832,7 @@
                     matchStatusIcon.className = 'match-icon unmatched';
                     matchStatusText.textContent = 'जुळले नाही';
                 }
-            } else {
+            } else { // जर दोन्ही बॅलन्स 0 असतील किंवा डेटा नसेल
                 matchStatusIcon.textContent = '❓';
                 matchStatusIcon.className = 'match-icon unknown';
                 matchStatusText.textContent = 'माहिती अपूर्ण';
@@ -852,6 +856,7 @@
                     if (!agentData[agentName]) {
                         agentData[agentName] = { Pigmy: 0, RD: 0, FD: 0, Total: 0 };
                     }
+                    // एजंटच्या नावाखाली योग्य कलेक्शन प्रकारात रक्कम जोडा
                     if (agentData[agentName][transactionType] !== undefined) {
                         agentData[agentName][transactionType] += amount;
                     }
@@ -883,18 +888,18 @@
 
             try {
                 const selectedDate = document.getElementById('dashboardDate').value;
-                const collections = await fetchDataFromSheet('०१-आजचे कलेक्शन', selectedDate);
+                const collections = await fetchDataFromSheet('०१-आजचे कलेक्शन', selectedDate); // कलेक्शन डेटा मिळवा
 
                 tableBody.innerHTML = '';
 
                 let filteredCollections = [];
                 if (type === 'All Collection') {
                     filteredCollections = collections.filter(item =>
-                        new Date(item['दिनांक']).toISOString().split('T')[0] === selectedDate
+                        item['दिनांक'] && new Date(item['दिनांक']).toISOString().split('T')[0] === selectedDate
                     );
                 } else {
                     filteredCollections = collections.filter(item =>
-                        new Date(item['दिनांक']).toISOString().split('T')[0] === selectedDate &&
+                        item['दिनांक'] && new Date(item['दिनांक']).toISOString().split('T')[0] === selectedDate &&
                         item['व्यवहाराचा प्रकार'] === type
                     );
                 }

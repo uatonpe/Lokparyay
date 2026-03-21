@@ -1,4 +1,7 @@
 
+--- START OF FILE Paste March 21, 2026 - 9:38PM ---
+
+
 <!DOCTYPE html>
 <html lang="mr">
 <head>
@@ -10,119 +13,239 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
-    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    .card { background:#fff; border-radius:18px; box-shadow:0 8px 24px rgba(15,23,42,.06); }
-    .input, .select { width:100%; border:1px solid #cbd5e1; border-radius:12px; padding:.75rem .9rem; background:#fff; }
-    .input:focus, .select:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.12); }
-    .btn { border-radius:12px; padding:.8rem 1rem; font-weight:700; transition:.2s; }
+    /* Base styles - more spacious and modern */
+    body { 
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      color: #1f2937; /* slate-900 equivalent */
+      background-color: #f8fafc; /* slate-50 */
+    }
+    .card { 
+      background:#fff; 
+      border-radius:1rem; /* more rounded */
+      box-shadow:0 10px 30px rgba(15,23,42,.08); /* slightly stronger shadow */
+      padding:1.5rem; /* more space inside cards */
+      border: 1px solid #e2e8f0; /* subtle border */
+    }
+    .input, .select { 
+      width:100%; 
+      border:1px solid #cbd5e1; 
+      border-radius:0.75rem; /* slightly more rounded */
+      padding:.85rem 1rem; /* more padding */
+      background:#fff; 
+      font-size: 0.95rem; /* slightly larger font */
+      transition: all 0.2s ease-in-out;
+    }
+    .input:focus, .select:focus { 
+      outline:none; 
+      border-color:#2563eb; 
+      box-shadow:0 0 0 4px rgba(37,99,235,.15); /* stronger focus ring */
+    }
+    .btn { 
+      border-radius:0.75rem; 
+      padding:.9rem 1.2rem; /* more padding */
+      font-weight:700; 
+      transition:.2s; 
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+      line-height: 1;
+    }
     .btn-primary { background:#2563eb; color:#fff; }
-    .btn-primary:hover { background:#1d4ed8; }
+    .btn-primary:hover { background:#1d4ed8; transform: translateY(-1px); }
     .btn-green { background:#16a34a; color:#fff; }
-    .btn-green:hover { background:#15803d; }
+    .btn-green:hover { background:#15803d; transform: translateY(-1px); }
     .btn-slate { background:#e2e8f0; color:#0f172a; }
-    .btn-slate:hover { background:#cbd5e1; }
-    .kpi { border-radius:18px; padding:1rem; color:#fff; }
-    .kpi h3 { font-size:.95rem; opacity:.9; }
-    .kpi .val { font-size:1.75rem; font-weight:800; margin-top:.25rem; }
+    .btn-slate:hover { background:#cbd5e1; transform: translateY(-1px); }
+    .btn-red { background:#dc2626; color:#fff; }
+    .btn-red:hover { background:#b91c1c; transform: translateY(-1px); }
+
+    .kpi { 
+      border-radius:1.25rem; /* more rounded */
+      padding:1.25rem; /* more space inside kpi */
+      color:#fff; 
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 120px; /* consistent height */
+      position: relative;
+    }
+    .kpi h3 { font-size:.9rem; opacity:.9; margin-bottom: 0.5rem; }
+    .kpi .val { font-size:1.9rem; font-weight:800; margin-top:.25rem; line-height: 1.1; }
+    .kpi .kpi-detail-btn {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border-radius: 0.5rem;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: background 0.2s;
+      margin-top: 0.75rem;
+      align-self: flex-start;
+    }
+    .kpi .kpi-detail-btn:hover { background: rgba(255,255,255,0.35); }
+
     .hidden-section { display:none; }
-    .loader { display:none; position:fixed; inset:0; background:rgba(255,255,255,.8); z-index:9999; align-items:center; justify-content:center; flex-direction:column; gap:10px; backdrop-filter:blur(3px); }
-    .spin { width:46px; height:46px; border-radius:50%; border:4px solid #dbeafe; border-top-color:#2563eb; animation:spin 1s linear infinite; }
+    .loader { display:none; position:fixed; inset:0; background:rgba(255,255,255,.85); z-index:9999; align-items:center; justify-content:center; flex-direction:column; gap:12px; backdrop-filter:blur(5px); }
+    .spin { width:52px; height:52px; border-radius:50%; border:5px solid #dbeafe; border-top-color:#2563eb; animation:spin 1s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
-    .pill { padding:.2rem .6rem; border-radius:999px; font-size:.85rem; font-weight:700; }
+    .pill { padding:.3rem .75rem; border-radius:999px; font-size:.875rem; font-weight:700; display: inline-flex; align-items: center; }
     .pill-green { background:#dcfce7; color:#166534; }
     .pill-red { background:#fee2e2; color:#991b1b; }
-    .table-wrap { overflow:auto; }
-    canvas { max-height:320px; }
+    .pill-orange { background: #fff7ed; color: #b45309; }
+
+    .table-wrap { overflow-x:auto; } /* Ensure horizontal scroll for tables on small screens */
+    .table-wrap table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .table-wrap th, .table-wrap td { padding: 0.9rem 1.2rem; } /* More padding for table cells */
+    .table-wrap thead { background-color: #f1f5f9; /* slate-100 */ color: #334155; /* slate-700 */ }
+    .table-wrap th { text-align: left; font-weight: 600; }
+    .table-wrap tbody tr:nth-child(even) { background-color: #f8fafc; /* slate-50 */ }
+    .table-wrap tbody tr:hover { background-color: #f0f4f8; /* slightly darker on hover */ }
+    .table-wrap tbody tr:last-child td:first-child { border-bottom-left-radius: 1rem; }
+    .table-wrap tbody tr:last-child td:last-child { border-bottom-right-radius: 1rem; }
+    
+    canvas { max-height:380px; width: 100% !important; } /* Taller charts */
+
+    /* SweetAlert2 custom styles */
+    .swal2-popup {
+      border-radius: 1rem !important;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.15) !important;
+    }
+    .swal2-title { font-size: 1.75rem !important; margin-bottom: 0.75rem !important; color: #1f2937 !important; }
+    .swal2-html-container { font-size: 1rem !important; color: #4b5563 !important; }
+    .swal2-confirm { background-color: #2563eb !important; border-radius: 0.75rem !important; padding: 0.8rem 1.5rem !important; font-size: 1rem !important; }
+    .swal2-cancel { border-radius: 0.75rem !important; padding: 0.8rem 1.5rem !important; font-size: 1rem !important; }
+    
+    /* Specific styles for collection/expense rows */
+    .collection-row, .expense-row {
+      background-color: #f8fafc; /* slate-50 */
+      border: 1px solid #e2e8f0; /* slate-200 */
+      border-radius: 0.75rem;
+      padding: 1rem;
+    }
+
+    /* Header adjustments for a more premium feel */
+    header {
+        background: linear-gradient(135deg, #1f2937, #0f172a); /* Darker, gradient header */
+        color: #e2e8f0;
+        padding: 1rem 0;
+    }
+    header .text-2xl { font-weight: 900; color: #e0f2fe; } /* Brighter title */
+    header .text-sm { color: #94a3b8; } /* Lighter subtitle */
+
+    /* Main content padding */
+    main { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800">
+<body class="text-slate-800">
   <div id="loader" class="loader flex">
     <div class="spin"></div>
-    <div class="font-bold text-slate-700">डेटा लोड होत आहे...</div>
+    <div class="font-bold text-lg text-slate-700 mt-4">डेटा लोड होत आहे... कृपया प्रतीक्षा करा.</div>
   </div>
 
-  <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-lg">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <i class="fa-solid fa-building-columns text-2xl text-blue-400"></i>
+  <header class="sticky top-0 z-40 shadow-lg">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <i class="fa-solid fa-building-columns text-3xl text-blue-300"></i>
         <div>
           <div class="text-2xl font-extrabold">पतसंस्था स्मार्ट डॅशबोर्ड</div>
           <div class="text-sm text-slate-300">दैनिक जमा, खर्च, बँक बॅलेन्स व रिपोर्ट</div>
         </div>
       </div>
       <div class="hidden md:flex gap-3">
-        <button class="btn btn-slate" onclick="showSection('dashboardSection')">डॅशबोर्ड</button>
-        <button class="btn btn-green" onclick="showSection('entrySection')">नवीन जमा नोंद</button>
+        <button class="btn btn-slate" onclick="showSection('dashboardSection')"><i class="fa-solid fa-chart-line"></i>डॅशबोर्ड</button>
+        <button class="btn btn-green" onclick="showSection('entrySection')"><i class="fa-solid fa-plus-circle"></i>नवीन जमा नोंद</button>
+      </div>
+      <div class="md:hidden">
+        <button class="btn btn-slate text-xl p-3" onclick="toggleMobileNav()"><i class="fa-solid fa-bars"></i></button>
       </div>
     </div>
+    <nav id="mobileNav" class="md:hidden bg-slate-800 py-2 hidden">
+      <ul class="flex flex-col gap-2 px-6 pb-2">
+        <li><button class="btn btn-slate w-full" onclick="showSection('dashboardSection'); toggleMobileNav();"><i class="fa-solid fa-chart-line"></i>डॅशबोर्ड</button></li>
+        <li><button class="btn btn-green w-full" onclick="showSection('entrySection'); toggleMobileNav();"><i class="fa-solid fa-plus-circle"></i>नवीन जमा नोंद</button></li>
+      </ul>
+    </nav>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
-    <section id="dashboardSection" class="space-y-6">
-      <div class="card p-5">
-        <div class="flex flex-col lg:flex-row gap-4 lg:items-end lg:justify-between">
+  <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+    <section id="dashboardSection" class="space-y-8">
+      <div class="card">
+        <div class="flex flex-col lg:flex-row gap-5 lg:items-end lg:justify-between">
           <div>
-            <h2 class="text-2xl font-extrabold">डॅशबोर्ड</h2>
-            <p class="text-slate-500">दिनांकानुसार जमा, खर्च, बँक मॅचिंग व तपशील</p>
+            <h2 class="text-3xl font-extrabold text-slate-800">डॅशबोर्ड</h2>
+            <p class="text-slate-600 mt-1">दिनांकानुसार जमा, खर्च, बँक मॅचिंग व तपशील</p>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 w-full lg:w-auto">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full lg:w-auto">
             <div>
-              <label class="text-sm font-semibold">दिनांक</label>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">आजचा दिनांक</label>
               <input id="dashboardDate" type="date" class="input" />
             </div>
             <div>
-              <label class="text-sm font-semibold">पासून</label>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">पासून</label>
               <input id="fromDate" type="date" class="input" />
             </div>
             <div>
-              <label class="text-sm font-semibold">पर्यंत</label>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">पर्यंत</label>
               <input id="toDate" type="date" class="input" />
             </div>
-            <div class="flex gap-2">
-              <button class="btn btn-primary w-full" onclick="loadDashboard()"><i class="fa-solid fa-rotate mr-2"></i>रिफ्रेश</button>
-              <button class="btn btn-slate w-full" onclick="loadReports()"><i class="fa-solid fa-filter mr-2"></i>रिपोर्ट</button>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <button class="btn btn-primary w-full mt-auto" onclick="loadDashboard()"><i class="fa-solid fa-rotate"></i>रिफ्रेश</button>
+              <button class="btn btn-slate w-full mt-auto" onclick="loadReports()"><i class="fa-solid fa-filter"></i>रिपोर्ट</button>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div class="kpi" style="background:linear-gradient(135deg,#16a34a,#22c55e)"><h3>आजची पिग्मी जमा</h3><div id="kpiPigmy" class="val">₹0</div></div>
-        <div class="kpi" style="background:linear-gradient(135deg,#0891b2,#06b6d4)"><h3>आजची आरडी जमा</h3><div id="kpiRd" class="val">₹0</div></div>
-        <div class="kpi" style="background:linear-gradient(135deg,#2563eb,#3b82f6)"><h3>आजची एफडी जमा</h3><div id="kpiFd" class="val">₹0</div></div>
-        <div class="kpi" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)"><h3>आजचे एकूण जमा</h3><div id="kpiTotalCollection" class="val">₹0</div></div>
-        <div class="kpi" style="background:linear-gradient(135deg,#dc2626,#ef4444)"><h3>आजचा खर्च</h3><div id="kpiExpense" class="val">₹0</div></div>
-        <div class="kpi" style="background:linear-gradient(135deg,#0f172a,#334155)"><h3>सिस्टम बँक बॅलेन्स</h3><div id="kpiSystem" class="val">₹0</div></div>
-        <div class="kpi" style="background:linear-gradient(135deg,#1d4ed8,#60a5fa)"><h3>Actual बँक बॅलेन्स</h3><div id="kpiActual" class="val">₹0</div></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div class="kpi" style="background:linear-gradient(135deg,#10b981,#34d399)"><h3>आजची पिग्मी जमा</h3><div id="kpiPigmy" class="val">₹0</div><button class="kpi-detail-btn" onclick="showKpiDetails('PIGMY')"><i class="fa-solid fa-info-circle mr-1"></i>तपशील पहा</button></div>
+        <div class="kpi" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)"><h3>आजची आरडी जमा</h3><div id="kpiRd" class="val">₹0</div><button class="kpi-detail-btn" onclick="showKpiDetails('RD')"><i class="fa-solid fa-info-circle mr-1"></i>तपशील पहा</button></div>
+        <div class="kpi" style="background:linear-gradient(135deg,#6366f1,#818cf8)"><h3>आजची एफडी जमा</h3><div id="kpiFd" class="val">₹0</div><button class="kpi-detail-btn" onclick="showKpiDetails('FD')"><i class="fa-solid fa-info-circle mr-1"></i>तपशील पहा</button></div>
+        <div class="kpi" style="background:linear-gradient(135deg,#a855f7,#c084fc)"><h3>आजचे एकूण जमा</h3><div id="kpiTotalCollection" class="val">₹0</div><button class="kpi-detail-btn" onclick="showKpiDetails('TOTAL_COLLECTION')"><i class="fa-solid fa-info-circle mr-1"></i>तपशील पहा</button></div>
+        <div class="kpi" style="background:linear-gradient(135deg,#ef4444,#f87171)"><h3>आजचा खर्च</h3><div id="kpiExpense" class="val">₹0</div><button class="kpi-detail-btn" onclick="showKpiDetails('EXPENSE')"><i class="fa-solid fa-info-circle mr-1"></i>तपशील पहा</button></div>
+        <div class="kpi" style="background:linear-gradient(135deg,#475569,#64748b)"><h3>सिस्टम बँक बॅलेन्स</h3><div id="kpiSystem" class="val">₹0</div></div>
+        <div class="kpi" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6)"><h3>Actual बँक बॅलेन्स</h3><div id="kpiActual" class="val">₹0</div></div>
         <div class="kpi" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)"><h3>मॅच स्टेटस</h3><div id="kpiMatch" class="val">N/A</div></div>
       </div>
 
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div class="card p-5">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-xl font-extrabold">Product-wise Chart</h3>
-            <div class="text-sm text-slate-500">Pigmy / RD / FD</div>
+        <div class="card">
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="text-xl font-extrabold text-slate-800">Product-wise जमा</h3>
+            <div class="text-sm text-slate-600">पिग्मी / आरडी / एफडी</div>
           </div>
           <canvas id="productChart"></canvas>
         </div>
-        <div class="card p-5">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-xl font-extrabold">Agent-wise Performance</h3>
-            <div class="text-sm text-slate-500">Agent total amount</div>
+        <div class="card">
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="text-xl font-extrabold text-slate-800">Agent-wise कामगिरी</h3>
+            <div class="text-sm text-slate-600">एजंटनुसार एकूण रक्कम</div>
           </div>
           <canvas id="agentChart"></canvas>
         </div>
       </div>
 
-      <div class="card p-5 space-y-4">
-        <div class="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+      <div class="card">
+        <div class="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between mb-5">
           <div>
-            <h3 class="text-xl font-extrabold">आजचे कलेक्शन तपशील</h3>
-            <p class="text-slate-500 text-sm">एजंट किंवा खाते क्र. शोधा</p>
+            <h3 class="text-xl font-extrabold text-slate-800">एकूण जमा रकमेचा दैनिक ट्रेंड</h3>
+            <p class="text-slate-600 text-sm">निवडलेल्या तारखांनुसार एकूण जमा रकमेचा ट्रेंड</p>
           </div>
-          <input id="searchBox" type="text" class="input lg:w-80" placeholder="एजंट किंवा खाते क्र. शोधा..." oninput="renderCollectionTable()" />
+          <canvas id="dailyTrendChart"></canvas>
         </div>
-        <div class="table-wrap border rounded-2xl">
+      </div>
+
+      <div class="card">
+        <div class="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between mb-5">
+          <div>
+            <h3 class="text-xl font-extrabold text-slate-800">आजचे कलेक्शन तपशील</h3>
+            <p class="text-slate-600 text-sm">एजंट किंवा खाते क्र. नुसार फिल्टर करा</p>
+          </div>
+          <input id="searchBox" type="text" class="input lg:w-96" placeholder="एजंट किंवा खाते क्र. शोधा..." oninput="renderCollectionTable()" />
+        </div>
+        <div class="table-wrap rounded-xl overflow-hidden border border-slate-200">
           <table class="min-w-full text-sm bg-white">
             <thead class="bg-slate-100 text-slate-700">
               <tr>
@@ -139,9 +262,9 @@
       </div>
 
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div class="card p-5">
-          <h3 class="text-xl font-extrabold mb-4">Agent-wise Summary</h3>
-          <div class="table-wrap border rounded-2xl">
+        <div class="card">
+          <h3 class="text-xl font-extrabold text-slate-800 mb-5">Agent-wise सारांश</h3>
+          <div class="table-wrap rounded-xl overflow-hidden border border-slate-200">
             <table class="min-w-full text-sm bg-white">
               <thead class="bg-slate-100">
                 <tr>
@@ -157,21 +280,21 @@
             </table>
           </div>
         </div>
-        <div class="card p-5">
-          <h3 class="text-xl font-extrabold mb-4">Daily Summary</h3>
-          <div id="summaryBox" class="grid grid-cols-2 gap-3 text-sm"></div>
+        <div class="card">
+          <h3 class="text-xl font-extrabold text-slate-800 mb-5">दैनंदिन सारांश</h3>
+          <div id="summaryBox" class="grid grid-cols-2 gap-4 text-sm"></div>
         </div>
       </div>
 
-      <div class="card p-5 space-y-4">
-        <div class="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+      <div class="card">
+        <div class="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between mb-5">
           <div>
-            <h3 class="text-xl font-extrabold">दिनांक पासून पर्यंत रिपोर्ट</h3>
-            <p class="text-slate-500 text-sm">विविध product-wise आणि search report</p>
+            <h3 class="text-xl font-extrabold text-slate-800">दिनांक पासून पर्यंत रिपोर्ट</h3>
+            <p class="text-slate-600 text-sm">विविध product-wise आणि search report</p>
           </div>
-          <input id="reportSearch" type="text" class="input lg:w-80" placeholder="एजंट / प्रकार / खाते क्रमांक" />
+          <input id="reportSearch" type="text" class="input lg:w-96" placeholder="एजंट / प्रकार / खाते क्रमांक" />
         </div>
-        <div class="table-wrap border rounded-2xl">
+        <div class="table-wrap rounded-xl overflow-hidden border border-slate-200">
           <table class="min-w-full text-sm bg-white">
             <thead class="bg-slate-100">
               <tr>
@@ -187,118 +310,137 @@
           </table>
         </div>
       </div>
+
+      <div class="card">
+        <h3 class="text-xl font-extrabold text-slate-800 mb-5">खर्चाचा प्रकारानुसार विश्लेषण</h3>
+        <p class="text-slate-600 text-sm mb-4">आजच्या तारखेतील खर्चाच्या प्रकारानुसार वर्गीकरण</p>
+        <div class="flex justify-center">
+            <canvas id="expenseChart" class="max-w-md"></canvas>
+        </div>
+      </div>
+
     </section>
 
-    <section id="entrySection" class="hidden-section space-y-6">
-      <div class="card p-6">
+    <section id="entrySection" class="hidden-section space-y-8">
+      <div class="card">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
           <div>
-            <h2 class="text-2xl font-extrabold">नवीन जमा नोंद</h2>
-            <p class="text-slate-500">आजचे आलेले Pigmy / RD / FD, खर्च आणि बँक बॅलेन्स नोंदवा</p>
+            <h2 class="text-3xl font-extrabold text-slate-800">नवीन जमा नोंद</h2>
+            <p class="text-slate-600 mt-1">आजचे आलेले Pigmy / RD / FD, खर्च आणि बँक बॅलेन्स नोंदवा</p>
           </div>
-          <button class="btn btn-slate" onclick="resetEntryForm()"><i class="fa-solid fa-eraser mr-2"></i>रीसेट</button>
+          <button class="btn btn-slate" onclick="resetEntryForm()"><i class="fa-solid fa-eraser"></i>रीसेट करा</button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
           <div>
-            <label class="text-sm font-semibold">आजचा दिनांक</label>
+            <label class="text-sm font-semibold text-slate-700 mb-1 block">आजचा दिनांक</label>
             <input id="entryDate" type="date" class="input" onchange="onEntryDateChange()" />
           </div>
           <div>
-            <label class="text-sm font-semibold">Opening बँक बॅलेन्स</label>
+            <label class="text-sm font-semibold text-slate-700 mb-1 block">Opening बँक बॅलेन्स</label>
             <input id="openingBalance" type="number" class="input" placeholder="0" oninput="recalculateEntry()" />
           </div>
           <div>
-            <label class="text-sm font-semibold">सिस्टीम नुसार बँक बॅलेन्स</label>
-            <input id="systemBalance" type="number" class="input bg-slate-100" readonly />
+            <label class="text-sm font-semibold text-slate-700 mb-1 block">सिस्टीम नुसार बँक बॅलेन्स</label>
+            <input id="systemBalance" type="number" class="input bg-slate-100 cursor-not-allowed" readonly />
           </div>
         </div>
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div class="card p-4 border border-green-200">
-            <div class="flex items-center justify-between mb-3">
+          <div class="card p-5 border border-green-300">
+            <div class="flex items-center justify-between mb-4">
               <h3 class="text-lg font-extrabold text-green-700">आजचे आलेले पिग्मी नोंद</h3>
               <button class="btn btn-green !py-2 !px-3" onclick="addCollectionRow('PIGMY')"><i class="fa-solid fa-plus"></i></button>
             </div>
-            <div id="pigmyRows" class="space-y-3"></div>
+            <div id="pigmyRows" class="space-y-4"></div>
           </div>
-          <div class="card p-4 border border-cyan-200">
-            <div class="flex items-center justify-between mb-3">
+          <div class="card p-5 border border-cyan-300">
+            <div class="flex items-center justify-between mb-4">
               <h3 class="text-lg font-extrabold text-cyan-700">आजचे आलेले आर डी नोंद</h3>
               <button class="btn btn-primary !py-2 !px-3" onclick="addCollectionRow('RD')"><i class="fa-solid fa-plus"></i></button>
             </div>
-            <div id="rdRows" class="space-y-3"></div>
+            <div id="rdRows" class="space-y-4"></div>
           </div>
-          <div class="card p-4 border border-blue-200">
-            <div class="flex items-center justify-between mb-3">
+          <div class="card p-5 border border-blue-300">
+            <div class="flex items-center justify-between mb-4">
               <h3 class="text-lg font-extrabold text-blue-700">आजचे आलेले एफ डी नोंद</h3>
               <button class="btn btn-primary !py-2 !px-3" onclick="addCollectionRow('FD')"><i class="fa-solid fa-plus"></i></button>
             </div>
-            <div id="fdRows" class="space-y-3"></div>
+            <div id="fdRows" class="space-y-4"></div>
           </div>
         </div>
 
-        <div class="card p-4 border border-red-200 mt-6">
-          <div class="flex items-center justify-between mb-3">
+        <div class="card p-5 border border-red-300 mt-6">
+          <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-extrabold text-red-700">आजचे इतर झालेले खर्च तपशील</h3>
-            <button class="btn" style="background:#ef4444;color:#fff" onclick="addExpenseRow()"><i class="fa-solid fa-plus"></i></button>
+            <button class="btn btn-red !py-2 !px-3" onclick="addExpenseRow()"><i class="fa-solid fa-plus"></i></button>
           </div>
-          <div id="expenseRows" class="space-y-3"></div>
+          <div id="expenseRows" class="space-y-4"></div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-5 mt-6">
           <div>
-            <label class="text-sm font-semibold">आजचे एकूण जमा</label>
-            <input id="totalCollection" type="number" class="input bg-slate-100" readonly />
+            <label class="text-sm font-semibold text-slate-700 mb-1 block">आजचे एकूण जमा</label>
+            <input id="totalCollection" type="number" class="input bg-slate-100 cursor-not-allowed" readonly />
           </div>
           <div>
-            <label class="text-sm font-semibold">आजचा एकूण खर्च</label>
-            <input id="totalExpense" type="number" class="input bg-slate-100" readonly />
+            <label class="text-sm font-semibold text-slate-700 mb-1 block">आजचा एकूण खर्च</label>
+            <input id="totalExpense" type="number" class="input bg-slate-100 cursor-not-allowed" readonly />
           </div>
           <div>
-            <label class="text-sm font-semibold">सिस्टीम फरक</label>
-            <input id="balanceDifference" type="number" class="input bg-slate-100" readonly />
+            <label class="text-sm font-semibold text-slate-700 mb-1 block">सिस्टीम फरक</label>
+            <input id="balanceDifference" type="number" class="input bg-slate-100 cursor-not-allowed" readonly />
           </div>
           <div>
-            <label class="text-sm font-semibold">आजचा एकुण बॅंक बॅंलेन्स</label>
+            <label class="text-sm font-semibold text-slate-700 mb-1 block">आजचा एकुण बॅंक बॅंलेन्स</label>
             <input id="actualBankBalance" type="number" class="input" placeholder="Actual bank balance" oninput="recalculateEntry()" />
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-4">
           <div>
-            <label class="text-sm font-semibold">मॅच स्टेटस</label>
-            <div id="entryMatchStatus" class="input bg-slate-100 flex items-center">N/A</div>
+            <label class="text-sm font-semibold text-slate-700 mb-1 block">मॅच स्टेटस</label>
+            <div id="entryMatchStatus" class="input bg-slate-100 flex items-center justify-center cursor-not-allowed">N/A</div>
           </div>
           <div>
-            <label class="text-sm font-semibold">मॅच नसेल तर फरक का कारण नोंदवा</label>
-            <input id="mismatchReason" type="text" class="input" placeholder="फरक असल्यास कारण" />
+            <label class="text-sm font-semibold text-slate-700 mb-1 block">मॅच नसेल तर फरक का कारण नोंदवा</label>
+            <input id="mismatchReason" type="text" class="input" placeholder="फरक असल्यास कारण (उदा. चेक क्लिअर झाला नाही)" />
           </div>
         </div>
 
-        <div class="mt-6 flex flex-col md:flex-row gap-3">
-          <button class="btn btn-green flex-1" onclick="submitDailyEntry()"><i class="fa-solid fa-floppy-disk mr-2"></i>सेव्ह करा</button>
-          <button class="btn btn-slate flex-1" onclick="showSection('dashboardSection'); loadDashboard();"><i class="fa-solid fa-arrow-left mr-2"></i>डॅशबोर्डला जा</button>
+        <div class="mt-8 flex flex-col md:flex-row gap-4">
+          <button class="btn btn-green flex-1" onclick="submitDailyEntry()"><i class="fa-solid fa-floppy-disk"></i>डेटा सेव्ह करा</button>
+          <button class="btn btn-slate flex-1" onclick="showSection('dashboardSection'); loadDashboard();"><i class="fa-solid fa-arrow-left"></i>डॅशबोर्डवर परत जा</button>
         </div>
       </div>
     </section>
   </main>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbzVUEN3WqOevswOOD5Ag7M59rB1VcYX9_NGqGtUq8vFiuFdfXG0tRc-Rfz0C8Tbq8E/exec';
+// --- Configuration Constants ---
+const API_URL = 'https://script.google.com/macros/s/AKfycbzVUEN3WqOevswOOD5Ag7M59rB1VcYX9_NGqGtUq8vFiuFdfXG0tRc-Rfz0C8Tbq8E/exec'; // ** Update this URL to your Google Apps Script URL **
+const MATCH_THRESHOLD = 0.01; // Allow for minor floating point inaccuracies
+
+// --- Global Application State ---
 let appState = {
   settings: { agentNames: [], collectionTypes: [] },
   dashboardData: null,
   reportData: null,
-  charts: { product: null, agent: null }
+  charts: { product: null, agent: null, dailyTrend: null, expense: null }
 };
 
+// --- Utility Functions ---
 function qs(id){ return document.getElementById(id); }
 function showLoader(){ qs('loader').style.display='flex'; }
 function hideLoader(){ qs('loader').style.display='none'; }
 function showSection(id){
+  // Hide mobile nav if open
+  qs('mobileNav').classList.add('hidden');
   ['dashboardSection','entrySection'].forEach(sec=>qs(sec).classList.add('hidden-section'));
   qs(id).classList.remove('hidden-section');
+}
+function toggleMobileNav(){
+  qs('mobileNav').classList.toggle('hidden');
 }
 function todayStr(){
   const d = new Date();
@@ -313,41 +455,73 @@ function escapeHtml(str){
   return String(str||'').replace(/[&<>'"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
 }
 function safeFetch(url, options){
+  // Add a timestamp to prevent caching issues, especially with Google Apps Script
   return fetch(url + (url.includes('?') ? '&' : '?') + '_ts=' + Date.now(), options);
 }
 
+// Debounce function for input events (e.g., search box)
+function debounce(func, delay) {
+  let timeout;
+  return function(...args) {
+    const context = this;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(context, args), delay);
+  };
+}
+
+// --- Initial Setup ---
 async function init(){
-  qs('dashboardDate').value = todayStr();
-  qs('fromDate').value = todayStr().slice(0,8) + '01';
-  qs('toDate').value = todayStr();
-  qs('entryDate').value = todayStr();
+  const today = todayStr();
+  qs('dashboardDate').value = today;
+  qs('fromDate').value = today.slice(0,8) + '01'; // Default to start of current month
+  qs('toDate').value = today;
+  qs('entryDate').value = today;
+
+  // Add initial collection/expense rows
   addCollectionRow('PIGMY');
   addCollectionRow('RD');
   addCollectionRow('FD');
   addExpenseRow();
+
+  // Load initial data for dashboard and entry section
   await loadDashboard();
-  await onEntryDateChange();
+  await onEntryDateChange(); // Load opening balance for today
 }
 
+// --- API Interaction ---
 async function getJson(url){
   const res = await safeFetch(url);
+  if (!res.ok) {
+    throw new Error(`HTTP error! Status: ${res.status}`);
+  }
   const text = await res.text();
-  try { return JSON.parse(text); } catch(e) { throw new Error('Invalid JSON response: ' + text.slice(0,200)); }
+  try { return JSON.parse(text); } catch(e) { throw new Error('Invalid JSON response: ' + text.slice(0,500)); }
 }
 
+// --- Dashboard Functions ---
 async function loadDashboard(){
   showLoader();
   try {
-    const data = await getJson(`${API_URL}?action=dashboard`);
-    if(data.status === 'error') throw new Error(data.message || 'Dashboard error');
+    // Fetch all dashboard data in one go for efficiency
+    const fromDate = qs('fromDate').value;
+    const toDate = qs('toDate').value;
+    const dashboardDate = qs('dashboardDate').value; // For today's summary
+
+    const data = await getJson(`${API_URL}?action=dashboard&dashboardDate=${encodeURIComponent(dashboardDate)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`);
+    
+    if(data.status === 'error') throw new Error(data.message || 'डॅशबोर्ड डेटा लोड करताना त्रुटी.');
+    
     appState.dashboardData = data;
     appState.settings = data.settings || {agentNames:[], collectionTypes:[]};
+    
     renderDashboard(data);
     populateAgentDropdowns();
-    await loadReports();
+    renderDailyTrendChart(); // Render daily trend based on the fetched report data
+    renderExpenseChart(); // Render expense chart
+    // No need to call loadReports here if dashboard data already includes report data
   } catch(err) {
-    console.error(err);
-    Swal.fire('त्रुटी', err.message, 'error');
+    console.error("Dashboard Load Error:", err);
+    Swal.fire('त्रुटी', `डॅशबोर्ड लोड करताना समस्या आली: ${err.message}`, 'error');
   } finally {
     hideLoader();
   }
@@ -362,7 +536,17 @@ function renderDashboard(data){
   qs('kpiExpense').textContent = money(s.totalExpense || 0);
   qs('kpiSystem').textContent = money(s.systemBalance || 0);
   qs('kpiActual').textContent = money(s.actualBankBalance || 0);
-  qs('kpiMatch').textContent = s.matchStatus || 'N/A';
+
+  const matchStatus = s.matchStatus;
+  let matchPill = '';
+  if (matchStatus === 'MATCH') {
+    matchPill = `<span class="pill pill-green"><i class="fa-solid fa-check-circle mr-1"></i>MATCH</span>`;
+  } else if (matchStatus === 'MISMATCH') {
+    matchPill = `<span class="pill pill-red"><i class="fa-solid fa-times-circle mr-1"></i>MISMATCH</span>`;
+  } else {
+    matchPill = `<span class="pill pill-orange"><i class="fa-solid fa-question-circle mr-1"></i>N/A</span>`;
+  }
+  qs('kpiMatch').innerHTML = matchPill;
 
   const summaryPairs = [
     ['दिनांक', s.date || data.today || '-'],
@@ -384,39 +568,43 @@ function renderDashboard(data){
 
   renderCollectionTable();
   renderAgentSummary();
-  renderCharts();
+  renderProductAndAgentCharts();
 }
 
 function renderCollectionTable(){
-  const rows = (appState.dashboardData?.collectionDetails || []).filter(row => {
+  const todayDate = qs('dashboardDate').value;
+  const allCollections = appState.dashboardData?.collectionDetails || [];
+  const todayCollections = allCollections.filter(c => c.date === todayDate);
+
+  const rows = todayCollections.filter(row => {
     const q = qs('searchBox').value.trim().toLowerCase();
     if(!q) return true;
-    return String(row.agent||'').toLowerCase().includes(q) || String(row.accountNo||'').toLowerCase().includes(q);
+    return String(row.agent||'').toLowerCase().includes(q) || String(row.accountNo||'').toLowerCase().includes(q) || String(row.type||'').toLowerCase().includes(q);
   });
   qs('collectionTableBody').innerHTML = rows.length ? rows.map(r => `
-    <tr class="border-t">
+    <tr class="border-t border-slate-100">
       <td class="p-3">${escapeHtml(r.date)}</td>
-      <td class="p-3">${escapeHtml(r.type)}</td>
+      <td class="p-3"><span class="pill ${r.type === 'PIGMY' ? 'pill-green' : r.type === 'RD' ? 'pill-orange' : 'pill-primary'}">${escapeHtml(r.type)}</span></td>
       <td class="p-3">${escapeHtml(r.agent)}</td>
       <td class="p-3">${escapeHtml(r.accountCount)}</td>
       <td class="p-3 text-right font-bold">${money(r.amount)}</td>
-    </tr>`).join('') : `<tr><td colspan="5" class="p-4 text-center text-slate-500">डेटा उपलब्ध नाही</td></tr>`;
+    </tr>`).join('') : `<tr><td colspan="5" class="p-4 text-center text-slate-500">आजसाठी कोणताही कलेक्शन डेटा उपलब्ध नाही.</td></tr>`;
 }
 
 function renderAgentSummary(){
   const rows = appState.dashboardData?.agentWise || [];
   qs('agentSummaryBody').innerHTML = rows.length ? rows.map(r => `
-    <tr class="border-t">
+    <tr class="border-t border-slate-100">
       <td class="p-3 font-semibold">${escapeHtml(r.agent)}</td>
       <td class="p-3 text-right">${r.totalCount || 0}</td>
       <td class="p-3 text-right font-bold">${money(r.totalAmount)}</td>
       <td class="p-3 text-right">${money(r.PIGMY)}</td>
       <td class="p-3 text-right">${money(r.RD)}</td>
       <td class="p-3 text-right">${money(r.FD)}</td>
-    </tr>`).join('') : `<tr><td colspan="6" class="p-4 text-center text-slate-500">डेटा उपलब्ध नाही</td></tr>`;
+    </tr>`).join('') : `<tr><td colspan="6" class="p-4 text-center text-slate-500">एजंट सारांश डेटा उपलब्ध नाही.</td></tr>`;
 }
 
-function renderCharts(){
+function renderProductAndAgentCharts(){
   const prod = appState.dashboardData?.productWise || [];
   const agent = appState.dashboardData?.agentWise || [];
 
@@ -425,17 +613,266 @@ function renderCharts(){
 
   appState.charts.product = new Chart(qs('productChart').getContext('2d'), {
     type:'bar',
-    data:{ labels: prod.map(x=>x.type), datasets:[{ label:'Amount', data: prod.map(x=>Number(x.amount||0)) }] },
-    options:{ responsive:true, maintainAspectRatio:false }
+    data:{ 
+      labels: prod.map(x=>x.type), 
+      datasets:[{ 
+        label:'रक्कम', 
+        data: prod.map(x=>Number(x.amount||0)),
+        backgroundColor: ['#10b981', '#0ea5e9', '#6366f1'], // Custom colors
+        borderRadius: 6
+      }] 
+    },
+    options:{ 
+      responsive:true, 
+      maintainAspectRatio:false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(context) { return money(context.raw); } } }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: function(value) { return money(value); } } }
+      }
+    }
   });
 
   appState.charts.agent = new Chart(qs('agentChart').getContext('2d'), {
     type:'bar',
-    data:{ labels: agent.map(x=>x.agent), datasets:[{ label:'Amount', data: agent.map(x=>Number(x.totalAmount||0)) }] },
-    options:{ responsive:true, maintainAspectRatio:false }
+    data:{ 
+      labels: agent.map(x=>x.agent), 
+      datasets:[{ 
+        label:'रक्कम', 
+        data: agent.map(x=>Number(x.totalAmount||0)),
+        backgroundColor: '#a855f7',
+        borderRadius: 6
+      }] 
+    },
+    options:{ 
+      responsive:true, 
+      maintainAspectRatio:false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(context) { return money(context.raw); } } }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: function(value) { return money(value); } } }
+      }
+    }
   });
 }
 
+function renderDailyTrendChart(){
+    if (appState.charts.dailyTrend) appState.charts.dailyTrend.destroy();
+
+    const dailyCollections = appState.dashboardData?.dailyCollectionTrend || [];
+    const labels = dailyCollections.map(d => d.date);
+    const data = dailyCollections.map(d => Number(d.totalCollection || 0));
+
+    appState.charts.dailyTrend = new Chart(qs('dailyTrendChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'एकूण जमा रक्कम',
+                data: data,
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37,99,235,0.1)',
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: '#2563eb',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#2563eb',
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': ' + money(context.raw); } } }
+            },
+            scales: {
+                x: {
+                    grid: { display: false }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { callback: function(value) { return money(value); } },
+                    grid: { borderDash: [5, 5] }
+                }
+            }
+        }
+    });
+}
+
+function renderExpenseChart(){
+    if (appState.charts.expense) appState.charts.expense.destroy();
+
+    const todayDate = qs('dashboardDate').value;
+    const allExpenses = appState.dashboardData?.expenseDetails || [];
+    const todayExpenses = allExpenses.filter(e => e.date === todayDate);
+
+    // Aggregate expenses by type
+    const expenseMap = new Map();
+    todayExpenses.forEach(exp => {
+        const type = exp.type || 'इतर खर्च';
+        expenseMap.set(type, (expenseMap.get(type) || 0) + Number(exp.amount || 0));
+    });
+
+    const labels = Array.from(expenseMap.keys());
+    const data = Array.from(expenseMap.values());
+
+    if (labels.length === 0) {
+        qs('expenseChart').style.display = 'none';
+        // Can add a message if no expenses
+        return;
+    } else {
+        qs('expenseChart').style.display = 'block';
+    }
+
+    const colors = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6', '#a3a3a3'];
+
+    appState.charts.expense = new Chart(qs('expenseChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'खर्चाची रक्कम',
+                data: data,
+                backgroundColor: colors.slice(0, labels.length),
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        font: { size: 12 },
+                        boxWidth: 20,
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) label += ': ';
+                            if (context.raw !== null) label += money(context.raw);
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+
+async function showKpiDetails(kpiType){
+  const todayDate = qs('dashboardDate').value;
+  let filteredDetails = [];
+  let title = '';
+
+  if (kpiType === 'EXPENSE') {
+    title = 'आजचे खर्च तपशील';
+    filteredDetails = (appState.dashboardData?.expenseDetails || []).filter(e => e.date === todayDate);
+    if (filteredDetails.length === 0) {
+      Swal.fire('माहिती', 'आज कोणताही खर्च नोंदवला नाही.', 'info');
+      return;
+    }
+    const tableContent = `
+      <div class="table-wrap rounded-xl overflow-hidden border border-slate-200 mt-4">
+        <table class="min-w-full text-sm bg-white">
+          <thead class="bg-slate-100 text-slate-700">
+            <tr>
+              <th class="p-3 text-left">प्रकार</th>
+              <th class="p-3 text-right">रक्कम (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredDetails.map(d => `
+              <tr class="border-t border-slate-100">
+                <td class="p-3">${escapeHtml(d.type || 'इतर')}</td>
+                <td class="p-3 text-right font-bold">${money(d.amount)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+    Swal.fire({
+      title: title,
+      html: tableContent,
+      width: 600,
+      showCloseButton: true,
+      showConfirmButton: false,
+      customClass: {
+        container: 'swal-wide'
+      }
+    });
+    return;
+  }
+
+  // For collections
+  let allCollections = appState.dashboardData?.collectionDetails || [];
+  let todayCollections = allCollections.filter(c => c.date === todayDate);
+
+  if (kpiType === 'TOTAL_COLLECTION') {
+    title = 'आजचे एकूण जमा तपशील';
+    filteredDetails = todayCollections;
+  } else {
+    title = `आजची ${kpiType} जमा तपशील`;
+    filteredDetails = todayCollections.filter(d => d.type === kpiType);
+  }
+
+  if (filteredDetails.length === 0) {
+    Swal.fire('माहिती', `आज ${kpiType} साठी कोणताही डेटा उपलब्ध नाही.`, 'info');
+    return;
+  }
+
+  const tableContent = `
+    <div class="table-wrap rounded-xl overflow-hidden border border-slate-200 mt-4">
+      <table class="min-w-full text-sm bg-white">
+        <thead class="bg-slate-100 text-slate-700">
+          <tr>
+            <th class="p-3 text-left">प्रकार</th>
+            <th class="p-3 text-left">एजंट</th>
+            <th class="p-3 text-left">खाते संख्या</th>
+            <th class="p-3 text-right">रक्कम (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filteredDetails.map(d => `
+            <tr class="border-t border-slate-100">
+              <td class="p-3">${escapeHtml(d.type)}</td>
+              <td class="p-3">${escapeHtml(d.agent)}</td>
+              <td class="p-3">${escapeHtml(d.accountCount)}</td>
+              <td class="p-3 text-right font-bold">${money(d.amount)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  Swal.fire({
+    title: title,
+    html: tableContent,
+    width: 700,
+    showCloseButton: true,
+    showConfirmButton: false,
+    customClass: {
+      container: 'swal-wide'
+    }
+  });
+}
+
+// --- Report Functions ---
 async function loadReports(){
   showLoader();
   try {
@@ -443,12 +880,13 @@ async function loadReports(){
     const toDate = qs('toDate').value;
     const search = encodeURIComponent(qs('reportSearch').value || '');
     const data = await getJson(`${API_URL}?action=report&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}&search=${search}`);
-    if(data.status === 'error') throw new Error(data.message || 'Report error');
+    if(data.status === 'error') throw new Error(data.message || 'रिपोर्ट डेटा लोड करताना त्रुटी.');
     appState.reportData = data;
     renderReports();
+    renderDailyTrendChart(); // Update daily trend chart when report dates change
   } catch(err) {
-    console.error(err);
-    Swal.fire('त्रुटी', err.message, 'error');
+    console.error("Report Load Error:", err);
+    Swal.fire('त्रुटी', `रिपोर्ट लोड करताना समस्या आली: ${err.message}`, 'error');
   } finally {
     hideLoader();
   }
@@ -457,16 +895,18 @@ async function loadReports(){
 function renderReports(){
   const rows = appState.reportData?.collections || [];
   qs('reportTableBody').innerHTML = rows.length ? rows.map(r => `
-    <tr class="border-t">
+    <tr class="border-t border-slate-100">
       <td class="p-3">${escapeHtml(r[0])}</td>
-      <td class="p-3">${escapeHtml(r[1])}</td>
+      <td class="p-3"><span class="pill ${r[1] === 'PIGMY' ? 'pill-green' : r[1] === 'RD' ? 'pill-orange' : 'pill-primary'}">${escapeHtml(r[1])}</span></td>
       <td class="p-3">${escapeHtml(r[2])}</td>
       <td class="p-3">${escapeHtml(r[3] || '')}</td>
       <td class="p-3 text-right font-bold">${money(r[5])}</td>
       <td class="p-3 text-right">${escapeHtml(r[6] || 0)}</td>
-    </tr>`).join('') : `<tr><td colspan="6" class="p-4 text-center text-slate-500">रिपोर्ट डेटा उपलब्ध नाही</td></tr>`;
+    </tr>`).join('') : `<tr><td colspan="6" class="p-4 text-center text-slate-500">रिपोर्ट डेटा उपलब्ध नाही.</td></tr>`;
 }
 
+
+// --- Entry Section Functions ---
 function populateAgentDropdowns(){
   document.querySelectorAll('.agent-select').forEach(sel => {
     const current = sel.value;
@@ -477,21 +917,21 @@ function populateAgentDropdowns(){
 
 function collectionRowTemplate(type){
   return `
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-end border rounded-xl p-3 bg-slate-50 collection-row" data-type="${type}">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end collection-row" data-type="${type}">
       <div class="md:col-span-5">
-        <label class="text-xs font-semibold">एजेंटचे नांव</label>
-        <select class="select agent-select"><option value="">एजंट निवडा</option></select>
+        <label class="text-xs font-semibold text-slate-600 mb-1 block">एजेंटचे नांव</label>
+        <select class="select agent-select" required><option value="">एजंट निवडा</option></select>
       </div>
       <div class="md:col-span-3">
-        <label class="text-xs font-semibold">एकुण आलेले खाते</label>
+        <label class="text-xs font-semibold text-slate-600 mb-1 block">एकुण आलेले खाते</label>
         <input type="number" class="input account-count" min="0" value="0" oninput="recalculateEntry()" />
       </div>
       <div class="md:col-span-3">
-        <label class="text-xs font-semibold">रक्कम</label>
-        <input type="number" class="input amount" min="0" value="0" oninput="recalculateEntry()" />
+        <label class="text-xs font-semibold text-slate-600 mb-1 block">रक्कम</label>
+        <input type="number" class="input amount" min="0" value="0" oninput="recalculateEntry()" required />
       </div>
       <div class="md:col-span-1">
-        <button type="button" class="btn btn-slate w-full" onclick="this.closest('.collection-row').remove();recalculateEntry();"><i class="fa-solid fa-trash"></i></button>
+        <button type="button" class="btn btn-slate w-full !p-3" onclick="this.closest('.collection-row').remove();recalculateEntry();" title="ही ओळ काढून टाका"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>`;
 }
@@ -504,33 +944,37 @@ function addCollectionRow(type){
 
 function addExpenseRow(){
   qs('expenseRows').insertAdjacentHTML('beforeend', `
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-end border rounded-xl p-3 bg-slate-50 expense-row">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end expense-row">
       <div class="md:col-span-5">
-        <label class="text-xs font-semibold">खर्चाचा प्रकार</label>
-        <input type="text" class="input expense-type" placeholder="उदा. Stationery" />
+        <label class="text-xs font-semibold text-slate-600 mb-1 block">खर्चाचा प्रकार</label>
+        <input type="text" class="input expense-type" placeholder="उदा. Stationery, पगार" />
       </div>
       <div class="md:col-span-5">
-        <label class="text-xs font-semibold">रक्कम</label>
-        <input type="number" class="input expense-amount" min="0" value="0" oninput="recalculateEntry()" />
+        <label class="text-xs font-semibold text-slate-600 mb-1 block">रक्कम</label>
+        <input type="number" class="input expense-amount" min="0" value="0" oninput="recalculateEntry()" required />
       </div>
       <div class="md:col-span-2">
-        <button type="button" class="btn btn-slate w-full" onclick="this.closest('.expense-row').remove();recalculateEntry();"><i class="fa-solid fa-trash"></i></button>
+        <button type="button" class="btn btn-slate w-full !p-3" onclick="this.closest('.expense-row').remove();recalculateEntry();" title="ही ओळ काढून टाका"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>`);
 }
 
 async function onEntryDateChange(){
   const date = qs('entryDate').value;
-  if(!date) return;
+  if(!date) {
+    qs('openingBalance').value = 0;
+    recalculateEntry();
+    return;
+  }
   showLoader();
   try {
     const data = await getJson(`${API_URL}?action=openingBalance&date=${encodeURIComponent(date)}`);
-    if(data.status === 'error') throw new Error(data.message || 'Opening balance error');
+    if(data.status === 'error') throw new Error(data.message || 'Opening balance डेटा लोड करताना त्रुटी.');
     qs('openingBalance').value = Number(data.openingBalance || 0);
     recalculateEntry();
   } catch(err) {
-    console.error(err);
-    Swal.fire('त्रुटी', err.message, 'error');
+    console.error("Opening Balance Load Error:", err);
+    Swal.fire('त्रुटी', `Opening Balance लोड करताना समस्या आली: ${err.message}`, 'error');
   } finally {
     hideLoader();
   }
@@ -551,15 +995,15 @@ function recalculateEntry(){
 
   const system = opening + totalCollection - totalExpense;
   const diff = actual - system;
-  const matched = Math.abs(diff) < 0.01;
+  const matched = Math.abs(diff) < MATCH_THRESHOLD;
 
   qs('totalCollection').value = totalCollection;
   qs('totalExpense').value = totalExpense;
   qs('systemBalance').value = system;
-  qs('balanceDifference').value = diff;
+  qs('balanceDifference').value = diff.toFixed(2); // Display difference with 2 decimal places
   qs('entryMatchStatus').innerHTML = matched
-    ? '<span class="pill pill-green">MATCH</span>'
-    : '<span class="pill pill-red">MISMATCH</span>';
+    ? '<span class="pill pill-green"><i class="fa-solid fa-check-circle mr-1"></i>MATCH</span>'
+    : '<span class="pill pill-red"><i class="fa-solid fa-times-circle mr-1"></i>MISMATCH</span>';
 }
 
 function collectCollections(type){
@@ -569,20 +1013,22 @@ function collectCollections(type){
     agent: row.querySelector('.agent-select').value,
     amount: Number(row.querySelector('.amount').value || 0),
     accountCount: Number(row.querySelector('.account-count').value || 0)
-  })).filter(r => r.agent || r.amount > 0 || r.accountCount > 0);
+  })).filter(r => r.agent && (r.amount > 0 || r.accountCount > 0)); // Filter out empty rows
 }
 
 function collectExpenses(){
   return [...qs('expenseRows').querySelectorAll('.expense-row')].map(row => ({
     type: row.querySelector('.expense-type').value,
     amount: Number(row.querySelector('.expense-amount').value || 0),
-    note: ''
-  })).filter(r => r.type || r.amount > 0);
+    note: '' // Currently not used, but good to keep structure
+  })).filter(r => r.type && r.amount > 0); // Filter out empty rows
 }
 
 async function submitDailyEntry(){
   const date = qs('entryDate').value;
-  if(!date) return Swal.fire('सूचना','दिनांक आवश्यक आहे','warning');
+  if(!date) {
+    return Swal.fire('सूचना','दिनांक आवश्यक आहे. कृपया योग्य दिनांक निवडा.','warning');
+  }
 
   const collections = [
     ...collectCollections('PIGMY'),
@@ -590,15 +1036,37 @@ async function submitDailyEntry(){
     ...collectCollections('FD')
   ];
   const expenses = collectExpenses();
-  const actualBalance = Number(qs('actualBankBalance').value || 0);
+  const openingBalance = Number(qs('openingBalance').value || 0);
+  const actualBankBalance = Number(qs('actualBankBalance').value || 0);
   const difference = Number(qs('balanceDifference').value || 0);
   const mismatchReason = qs('mismatchReason').value.trim();
 
-  if(collections.length === 0 && expenses.length === 0 && actualBalance === 0){
-    return Swal.fire('सूचना','किमान काही डेटा भरा','warning');
+  // Basic validation
+  if(collections.length === 0 && expenses.length === 0 && actualBankBalance === 0 && openingBalance === 0){
+    return Swal.fire('सूचना','किमान एक जमा, खर्च किंवा ओपनिंग बॅलन्सची नोंद करणे आवश्यक आहे.','warning');
   }
-  if(Math.abs(difference) >= 0.01 && !mismatchReason){
-    return Swal.fire('सूचना','फरक असल्यास कारण नोंदवा','warning');
+  if(Math.abs(difference) >= MATCH_THRESHOLD && !mismatchReason){
+    return Swal.fire('सूचना','बँक बॅलन्समध्ये फरक (Mismatch) असल्यास, कृपया त्याचे कारण नोंदवा.','warning');
+  }
+  
+  // Validate if agent is selected for collection rows that have amount/account count
+  for (const coll of collections) {
+      if (!coll.agent) {
+          return Swal.fire('सूचना', `जमा प्रकार ${coll.type} मध्ये एजंटचे नाव निवडणे आवश्यक आहे.`, 'warning');
+      }
+      if (coll.amount <= 0 && coll.accountCount <=0) {
+           return Swal.fire('सूचना', `जमा प्रकार ${coll.type} आणि एजंट ${coll.agent} साठी रक्कम किंवा खाती संख्या 0 पेक्षा जास्त असावी.`, 'warning');
+      }
+  }
+
+  // Validate if expense type is provided for expense rows that have amount
+  for (const exp of expenses) {
+      if (!exp.type) {
+          return Swal.fire('सूचना', `खर्च प्रकारात खर्चाचे नाव नमूद करणे आवश्यक आहे.`, 'warning');
+      }
+      if (exp.amount <= 0) {
+          return Swal.fire('सूचना', `खर्च प्रकार ${exp.type} साठी रक्कम 0 पेक्षा जास्त असावी.`, 'warning');
+      }
   }
 
   const payload = {
@@ -607,8 +1075,8 @@ async function submitDailyEntry(){
     collections,
     expenses,
     bank: {
-      openingBalance: Number(qs('openingBalance').value || 0),
-      actualBankBalance: actualBalance,
+      openingBalance: openingBalance,
+      actualBankBalance: actualBankBalance,
       mismatchReason
     }
   };
@@ -617,21 +1085,24 @@ async function submitDailyEntry(){
   try {
     const res = await safeFetch(API_URL, {
       method: 'POST',
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
     const text = await res.text();
     let data;
-    try { data = JSON.parse(text); } catch(e) { throw new Error('Invalid save response: ' + text.slice(0,200)); }
-    if(data.status !== 'success') throw new Error(data.message || 'Save failed');
+    try { data = JSON.parse(text); } catch(e) { throw new Error('अयोग्य प्रतिसाद: ' + text.slice(0,500)); }
+    if(data.status !== 'success') throw new Error(data.message || 'डेटा सेव्ह करताना त्रुटी.');
 
-    await Swal.fire('यशस्वी', 'डेटा Google Sheet मध्ये सेव्ह झाला.', 'success');
-    resetEntryForm(false);
-    await onEntryDateChange();
-    await loadDashboard();
-    showSection('dashboardSection');
+    await Swal.fire('यशस्वी', 'तुमचा दैनंदिन डेटा Google Sheet मध्ये यशस्वीरित्या सेव्ह झाला आहे.', 'success');
+    resetEntryForm(false); // Reset form, keep current date
+    await onEntryDateChange(); // Reload opening balance
+    await loadDashboard(); // Refresh dashboard with new data
+    showSection('dashboardSection'); // Go back to dashboard
   } catch(err) {
-    console.error(err);
-    Swal.fire('त्रुटी', err.message, 'error');
+    console.error("Submission Error:", err);
+    Swal.fire('त्रुटी', `डेटा सेव्ह करताना समस्या आली: ${err.message}`, 'error');
   } finally {
     hideLoader();
   }
@@ -649,16 +1120,23 @@ function resetEntryForm(resetDate=true){
   if(resetDate) qs('entryDate').value = todayStr();
   qs('actualBankBalance').value='';
   qs('mismatchReason').value='';
+  // Reset opening balance to 0 and recalculate
+  qs('openingBalance').value = 0;
   recalculateEntry();
 }
 
-qs('reportSearch').addEventListener('input', loadReports);
+// --- Event Listeners ---
+qs('reportSearch').addEventListener('input', debounce(loadReports, 500)); // Debounce search input
 qs('dashboardDate').addEventListener('change', ()=>{
   const d = qs('dashboardDate').value;
   qs('fromDate').value = d;
   qs('toDate').value = d;
-  loadReports();
+  loadDashboard(); // Refresh dashboard and reports for the new single day
 });
+
+// Load dashboard and reports when fromDate or toDate changes
+qs('fromDate').addEventListener('change', loadDashboard);
+qs('toDate').addEventListener('change', loadDashboard);
 
 window.addEventListener('load', init);
 </script>

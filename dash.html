@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>लोकपर्याय पतसंस्था - सहजडॅश (अध्यक्ष डॅशबोर्ड)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://via.placeholder.com/16x16?text=LPS"> <!-- Replace with your actual favicon -->
+
+    <style>
+        /* -------------------------------------------------------------------------- */
+        /* START of CSS (dashboard-style.css content) */
+        /* -------------------------------------------------------------------------- */
+        /* General Styling */
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eef1f6;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: #0056b3;
+        }
+
+        .dashboard-container {
+            max-width: 1400px; /* Slightly wider for better layout */
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .dashboard-header {
+            background: linear-gradient(135deg, #0056b3, #007bff);
+            color: white;
+            padding: 25px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border-bottom: 5px solid #004085;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 20px;
+        }
+
+        .dashboard-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .dashboard-header .logo img {
+            height: 60px; /* Adjust as needed */
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 5px;
+        }
+
+        .institution-details h1 {
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: white; /* Changed to white for visibility */
+        }
+
+        .institution-details p {
+            margin: 0;
+            font-size: 1em;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .header-info {
+            font-size: 0.95em;
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .help-icon {
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 0.8em;
+            cursor: pointer;
+            color: white;
+            text-decoration: none;
+        }
+        .help-icon:hover {
+            background-color: rgba(255,255,255,0.5);
+        }
+
+
+        .date-selector {
+            align-self: flex-end; /* Align to the right */
+        }
+        .date-selector label {
+            font-size: 1em;
+            margin-right: 10px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .date-selector input[type="date"] {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #333;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .date-selector input[type="date"]:hover {
+            background-color: rgba(255, 255, 255, 1);
+            box-shadow: inset 0 1px 5px rgba(0,0,0,0.3);
+        }
+
+        /* Main Content */
+        .dashboard-main {
+            padding: 30px 40px;
+        }
+
+        .kpi-section-wrapper h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            color: #343a40;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            color: white;
+        }
+
+        .kpi-card.red { background: linear-gradient(45deg, #dc3545, #c82333); }
+        .kpi-card.blue { background: linear-gradient(45deg, #007bff, #0056b3); }
+        .kpi-card.purple { background: linear-gradient(45deg, #6f42c1, #563d7c); }
+        .kpi-card.green { background: linear-gradient(45deg, #28a745, #218838); }
+
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .kpi-card h3 {
+            margin-top: 0;
+            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .kpi-value {
+            font-size: 2.2em;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .kpi-detail-btn {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .kpi-detail-btn:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Bottom Section Grid */
+        .bottom-section-grid {
+            display: grid;
+            grid-template-columns: 2fr 3fr 1.5fr; /* Adjust column sizes as needed */
+            gap: 30px;
+        }
+
+        .card {
+            background-color: #f7f9fc;
+            border: 1px solid #e0e6ed;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            height: fit-content; /* Adjust height dynamically */
+        }
+
+        .card h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #0056b3;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Bank Balance Section */
+        .bank-balance-section .balance-details {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .bank-balance-section .balance-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .bank-balance-section .balance-item:last-child {
+            border-bottom: none;
+        }
+        .bank-balance-section .balance-item p {
+            margin: 0;
+            font-size: 1em;
+            color: #555;
+        }
+        .bank-balance-section .balance-value {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: #343a40;
+        }
+        .bank-balance-section .system-balance { color: #007bff; }
+        .bank-balance-section .bank-balance { color: #28a745; }
+
+        .match-status-item .balance-value {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .match-icon {
+            font-size: 1.5em;
+            line-height: 1;
+        }
+        .match-icon.matched { color: #28a745; }
+        .match-icon.unmatched { color: #dc3545; }
+        .match-icon.unknown { color: #ffc107; }
+
+        /* Agent Collection Table */
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table thead {
+            background-color: #007bff;
+            color: white;
+        }
+
+        table th, table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e6ed;
+            font-size: 0.95em;
+        }
+
+        table th {
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        table tbody tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Utility Sidebar */
+        .utility-sidebar .sidebar-text {
+            margin-bottom: 15px;
+            color: #666;
+            font-size: 0.95em;
+        }
+        .utility-sidebar .action-button {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .utility-sidebar .primary-button {
+            background-color: #007bff;
+            color: white;
+        }
+        .utility-sidebar .primary-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        .utility-sidebar .secondary-button {
+            background-color: #6c757d;
+            color: white;
+        }
+        .utility-sidebar .secondary-button:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+        .mt-30 {
+            margin-top: 30px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 32px;
+            font-weight: bold;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #modalTitle {
+            color: #0056b3;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.6em;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: absolute; /* Changed from fixed to absolute */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 999;
+            border-radius: 12px; /* Inherit from container */
+        }
+
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #007bff;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-spinner p {
+            font-size: 1.1em;
+            color: #555;
+            font-weight: 500;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1100px) {
+            .bottom-section-grid {
+                grid-template-columns: 1fr 1fr; /* 2 columns on medium screens */
+            }
+            .utility-sidebar {
+                grid-column: span 2; /* Sidebar takes full width */
+            }
+        }
+        @media (max-width: 768px) {
+            .dashboard-container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+
+            .dashboard-header {
+                padding: 20px;
+            }
+            .header-content {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .dashboard-header .logo {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .dashboard-header .logo img {
+                margin-right: 0;
+            }
+            .institution-details h1 {
+                font-size: 1.4em;
+            }
+            .institution-details p {
+                font-size: 0.9em;
+            }
+            .header-info {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .date-selector {
+                align-self: center;
+                width: 100%;
+                text-align: center;
+            }
+            .date-selector input {
+                width: calc(100% - 40px);
+            }
+
+
+            .dashboard-main {
+                padding: 20px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .kpi-card {
+                padding: 20px;
+            }
+
+            .kpi-value {
+                font-size: 1.8em;
+            }
+
+            .bottom-section-grid {
+                grid-template-columns: 1fr; /* Single column on small screens */
+                gap: 20px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .bank-balance-section .balance-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            .bank-balance-section .balance-value {
+                align-self: flex-end; /* Push value to right */
+            }
+            .match-status-item .balance-value {
+                align-self: flex-start;
+            }
+
+            table th, table td {
+                padding: 10px;
+                font-size: 0.85em;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+                padding: 20px;
+            }
+        }
+        /* -------------------------------------------------------------------------- */
+        /* END of CSS */
+        /* -------------------------------------------------------------------------- */
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="https://via.placeholder.com/60x60?text=Logo" alt="लोकपर्याय पतसंस्था लोगो"> <!-- Replace with your actual logo URL (e.g., 'your_logo.png') -->
+                    <div class="institution-details">
+                        <h1>लोकपर्याय जिल्हा सहकारी पतसंस्था मर्यादीत</h1>
+                        <p>हासेगाव, हाराशिय</p>
+                    </div>
+                </div>
+                <div class="header-info">
+                    <span id="currentDateDisplay">आजची तारीख: 01 जानेवारी 2024, वेळ: 10:30 AM</span>
+                    <span class="help-icon" title="या डॅशबोर्डमधील माहिती तुमच्या गुगल शीट्समधून येते. डेटा अपडेट करण्यासाठी, कर्मचारी डेटा एंट्री फॉर्म वापरा."><a href="#" onclick="return false;">?</a></span>
+                </div>
+            </div>
+            <div class="date-selector">
+                <label for="dashboardDate">माहिती पहाण्यासाठी दिनांक:</label>
+                <input type="date" id="dashboardDate">
+            </div>
+        </header>
+
+        <main class="dashboard-main">
+            <section class="kpi-section-wrapper">
+                <h2>KPI :</h2>
+                <div class="kpi-grid">
+                    <div class="kpi-card red" id="pigmyKpi">
+                        <h3>आजची पिग्मी कलेक्शन</h3>
+                        <p class="kpi-value">₹ <span id="pigmyAmount">0.00</span></p>
+                        <span class="kpi-detail-btn">तपशील पहा</span>
+                    </div>
+                    <div class="kpi-card blue" id="rdKpi">
+                        <h3>आजची आरडी कलेक्शन</h3>
+                        <p class="kpi-value">₹ <span id="rdAmount">0.00</span></p>
+                        <span class="kpi-detail-btn">तपशील पहा</span>
+                    </div>
+                    <div class="kpi-card purple" id="fdKpi">
+                        <h3>आजची एफडी कलेक्शन</h3>
+                        <p class="kpi-value">₹ <span id="fdAmount">0.00</span></p>
+                        <span class="kpi-detail-btn">तपशील पहा</span>
+                    </div>
+                    <div class="kpi-card green" id="totalCollectionKpi">
+                        <h3>आजचे एकूण कलेक्शन</h3>
+                        <p class="kpi-value">₹ <span id="totalCollectionAmount">0.00</span></p>
+                        <span class="kpi-detail-btn">तपशील पहा</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bottom-section-grid">
+                <div class="bank-balance-section card">
+                    <h2>बँक बॅलन्स स्थिती <span class="help-icon" title="येथे बँकेतील आणि सिस्टममधील शिल्लक दाखवली जाते. दोन्ही जुळल्यास हिरवा टिक, नसल्यास लाल क्रॉस."><a href="#" onclick="return false;">?</a></span></h2>
+                    <div class="balance-details">
+                        <div class="balance-item">
+                            <p>सिस्टमनुसार सध्याची शिल्लक:</p>
+                            <p class="balance-value system-balance">₹ <span id="systemBalance">0.00</span></p>
+                        </div>
+                        <div class="balance-item">
+                            <p>बँकेतील शिल्लक:</p>
+                            <p class="balance-value bank-balance">₹ <span id="bankBalance">0.00</span></p>
+                        </div>
+                        <div class="balance-item match-status-item">
+                            <p>बॅलन्स जुळले काय?</p>
+                            <p class="balance-value match-status"><span id="matchStatusIcon" class="match-icon">❓</span> <span id="matchStatusText">माहिती अपूर्ण</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="agent-collection-section card">
+                    <h2>आजचे कलेक्शन (एजंट-निहाय)</h2>
+                    <div class="table-container">
+                        <table id="agentCollectionTable">
+                            <thead>
+                                <tr>
+                                    <th>एजंटचे नाव</th>
+                                    <th>पिग्मी</th>
+                                    <th>आरडी</th>
+                                    <th>एफडी</th>
+                                    <th>एकूण कलेक्शन</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded here by JavaScript -->
+                                <tr><td colspan="5">माहिती उपलब्ध नाही.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="utility-sidebar card">
+                    <h2>कर्मचारी डेटा एन्ट्री</h2>
+                    <p class="sidebar-text">नवीन डेटा भरण्यासाठी किंवा अपडेट करण्यासाठी खालील लिंक वापरा.</p>
+                    <a href="staff-entry.html" class="action-button primary-button">डेटा एंट्री करा</a>
+
+                    <h2 class="mt-30">एजंट माहिती अपडेट</h2>
+                    <p class="sidebar-text">नवीन एजंट जोडण्यासाठी किंवा एजंटची माहिती अपडेट करण्यासाठी ही गुगल शीट वापरा.</p>
+                    <a id="agentMasterSheetLink" href="#" target="_blank" class="action-button secondary-button">एजंट मास्तर शीट</a>
+                    <!-- The href for agentMasterSheetLink will be set by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Loading Spinner -->
+            <div id="loading" class="loading-spinner" style="display:none;">
+                <div class="spinner"></div>
+                <p>माहिती लोड होत आहे...</p>
+            </div>
+        </main>
+
+        <!-- Detail Modal -->
+        <div id="detailModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h3 id="modalTitle">कलेक्शन तपशील</h3>
+                <div class="table-container">
+                    <table id="modalDetailTable">
+                        <thead>
+                            <tr>
+                                <th>एजंटचे नाव</th>
+                                <th>खाते क्रमांक</th>
+                                <th>रक्कम</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* -------------------------------------------------------------------------- */
+        /* START of JavaScript (dashboard-script.js content) */
+        /* -------------------------------------------------------------------------- */
+        // Replace with your deployed Google Apps Script Web App URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPWggFzjKWUTkbzARN4W7b50mrDFMAoqZ4j0eJM7tNvHcouM_YZuEPol8AV_BiXzc/exec'; // Your Apps Script Web App URL
+        // Replace with the actual ID of your Google Sheet for Agent Master link
+        // You can find this ID in the URL of your Google Sheet:
+        // https://docs.google.com/spreadsheets/d/THIS_IS_YOUR_ID/edit#gid=0
+        const GOOGLE_SHEET_ID = 'YOUR_GOOGLE_SHEET_ID_HERE'; // <--- IMPORTANT: Update this with your actual Google Sheet ID!
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set current date and time in header
+            updateCurrentDateTime();
+            setInterval(updateCurrentDateTime, 60000); // Update every minute
+
+            const dashboardDateInput = document.getElementById('dashboardDate');
+            const today = new Date();
+            const formattedToday = today.toISOString().split('T')[0];
+            dashboardDateInput.value = formattedToday;
+
+            fetchDashboardData(formattedToday); // Load data for today on initial load
+
+            dashboardDateInput.addEventListener('change', (event) => {
+                fetchDashboardData(event.target.value);
+            });
+
+            // KPI Detail Button Clicks
+            document.getElementById('pigmyKpi').querySelector('.kpi-detail-btn').addEventListener('click', () => showDetailModal('पिग्मी कलेक्शन', 'Pigmy'));
+            document.getElementById('rdKpi').querySelector('.kpi-detail-btn').addEventListener('click', () => showDetailModal('आरडी कलेक्शन', 'RD'));
+            document.getElementById('fdKpi').querySelector('.kpi-detail-btn').addEventListener('click', () => showDetailModal('एफडी कलेक्शन', 'FD'));
+            document.getElementById('totalCollectionKpi').querySelector('.kpi-detail-btn').addEventListener('click', () => showDetailModal('आजचे एकूण कलेक्शन', 'All Collection'));
+
+
+            // Modal Close Button
+            document.querySelector('.close-button').addEventListener('click', () => {
+                document.getElementById('detailModal').style.display = 'none';
+            });
+            window.addEventListener('click', (event) => {
+                if (event.target == document.getElementById('detailModal')) {
+                    document.getElementById('detailModal').style.display = 'none';
+                }
+            });
+
+            // Update Agent Master Sheet Link
+            if (GOOGLE_SHEET_ID === 'YOUR_GOOGLE_SHEET_ID_HERE') {
+                document.getElementById('agentMasterSheetLink').textContent = 'Google Sheet ID अपडेट करा';
+                document.getElementById('agentMasterSheetLink').style.backgroundColor = '#dc3545';
+                document.getElementById('agentMasterSheetLink').href = '#'; // Make it non-functional
+                alert("महत्वाचे: कृपया dashboard-script.js (किंवा index.html मधील <script> टॅग) मध्ये तुमच्या Google Sheet चा ID अपडेट करा!");
+            } else {
+                document.getElementById('agentMasterSheetLink').href = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/edit#gid=0`;
+            }
+        });
+
+        function updateCurrentDateTime() {
+            const now = new Date();
+            const optionsDate = { year: 'numeric', month: 'long', day: 'numeric' };
+            const optionsTime = { hour: 'numeric', minute: 'numeric', hour12: true };
+            const dateString = now.toLocaleDateString('mr-IN', optionsDate); // For Marathi date format
+            const timeString = now.toLocaleTimeString('en-US', optionsTime); // English time format
+            document.getElementById('currentDateDisplay').textContent = `आजची तारीख: ${dateString}, वेळ: ${timeString}`;
+        }
+
+        async function fetchDashboardData(date) {
+            const loadingSpinner = document.getElementById('loading');
+            loadingSpinner.style.display = 'flex'; // Show loading spinner
+
+            try {
+                const collections = await fetchDataFromSheet('०१-आजचे कलेक्शन', date);
+                const bankBalances = await fetchDataFromSheet('०३-बँक व सिस्टम बॅलन्स', date);
+                const systemLedger = await fetchDataFromSheet('०४-सिस्टम जमा-खर्च', date);
+
+                updateKPIs(collections, bankBalances, systemLedger, date);
+                updateAgentWiseCollection(collections, date);
+
+            } catch (error) {
+                console.error('डॅशबोर्ड डेटा लोड करताना त्रुटी आली:', error);
+                alert('डॅशबोर्ड डेटा लोड करताना त्रुटी आली. कृपया नंतर प्रयत्न करा किंवा स्टाफ डेटा एंट्री फॉर्म तपासा. कंसोलमध्ये अधिक तपशील पहा.');
+            } finally {
+                loadingSpinner.style.display = 'none'; // Hide loading spinner
+            }
+        }
+
+        async function fetchDataFromSheet(sheetName, date) {
+            const url = `${SCRIPT_URL}?sheet=${sheetName}&date=${date}`;
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status} for sheet: ${sheetName}`);
+            }
+            return response.json();
+        }
+
+        function updateKPIs(collections, bankBalances, systemLedger, selectedDate) {
+            let totalPigmy = 0;
+            let totalRD = 0;
+            let totalFD = 0;
+            let grandTotalCollection = 0;
+
+            collections.forEach(item => {
+                // Dates from Apps Script are ISO strings, convert to local date for comparison
+                const itemDate = new Date(item['दिनांक']).toISOString().split('T')[0];
+                if (itemDate === selectedDate) {
+                    const amount = parseFloat(item['रक्कम']) || 0;
+                    if (item['व्यवहाराचा प्रकार'] === 'Pigmy') totalPigmy += amount;
+                    if (item['व्यवहाराचा प्रकार'] === 'RD') totalRD += amount;
+                    if (item['व्यवहाराचा प्रकार'] === 'FD') totalFD += amount;
+                    grandTotalCollection += amount;
+                }
+            });
+
+            document.getElementById('pigmyAmount').textContent = totalPigmy.toFixed(2);
+            document.getElementById('rdAmount').textContent = totalRD.toFixed(2);
+            document.getElementById('fdAmount').textContent = totalFD.toFixed(2);
+            document.getElementById('totalCollectionAmount').textContent = grandTotalCollection.toFixed(2);
+
+            // Bank and System Balance
+            let currentBankBalance = 0;
+            let currentSystemBalance = 0;
+
+            // Get latest bank balance for the selected date or prior
+            const relevantBankBalanceEntry = bankBalances
+                .filter(item => item['दिनांक'] && new Date(item['दिनांक']).toISOString().split('T')[0] <= selectedDate)
+                .sort((a, b) => new Date(b['दिनांक']) - new Date(a['दिनांक']))[0]; // Latest entry up to or on selected date
+
+            if (relevantBankBalanceEntry) {
+                currentBankBalance = parseFloat(relevantBankBalanceEntry['बँकेतील शिल्लक']) || 0;
+                currentSystemBalance = parseFloat(relevantBankBalanceEntry['सिस्टमची शिल्लक']) || 0;
+            }
+
+            // If System Balance not directly entered for that day, calculate from ledger
+            // This is a robust way to get the system balance even if 'System Balance' field wasn't updated manually
+            if (systemLedger.length > 0) {
+                let lastLedgerEntry = systemLedger
+                    .filter(item => item['दिनांक'] && new Date(item['दिनांक']).toISOString().split('T')[0] <= selectedDate)
+                    .sort((a, b) => new Date(b['दिनांक']) - new Date(a['दिनांक']))[0]; // Latest entry up to or on selected date
+
+                if (lastLedgerEntry) {
+                    // Ensure to pick the correct running balance column
+                    currentSystemBalance = parseFloat(lastLedgerEntry['सद्यस्थितीतील शिल्लक']) || 0;
+                } else {
+                    currentSystemBalance = 0; // No ledger entry before or on this date
+                }
+            }
+
+            document.getElementById('systemBalance').textContent = currentSystemBalance.toFixed(2);
+            document.getElementById('bankBalance').textContent = currentBankBalance.toFixed(2);
+
+            const matchStatusIcon = document.getElementById('matchStatusIcon');
+            const matchStatusText = document.getElementById('matchStatusText');
+
+            if (currentBankBalance > 0 || currentSystemBalance > 0) { // Check if at least one balance is entered
+                if (Math.abs(currentBankBalance - currentSystemBalance) < 0.01) { // Allow for tiny floating point differences
+                    matchStatusIcon.textContent = '✅';
+                    matchStatusIcon.className = 'match-icon matched';
+                    matchStatusText.textContent = 'जुळले आहे';
+                } else {
+                    matchStatusIcon.textContent = '❌';
+                    matchStatusIcon.className = 'match-icon unmatched';
+                    matchStatusText.textContent = 'जुळले नाही';
+                }
+            } else {
+                matchStatusIcon.textContent = '❓';
+                matchStatusIcon.className = 'match-icon unknown';
+                matchStatusText.textContent = 'माहिती अपूर्ण';
+            }
+        }
+
+
+        function updateAgentWiseCollection(collections, selectedDate) {
+            const tableBody = document.querySelector('#agentCollectionTable tbody');
+            tableBody.innerHTML = '';
+            
+            const agentData = {}; // { 'Agent Name': { Pigmy: 0, RD: 0, FD: 0, Total: 0 } }
+
+            collections.forEach(item => {
+                const itemDate = new Date(item['दिनांक']).toISOString().split('T')[0];
+                if (itemDate === selectedDate) {
+                    const agentName = item['एजंटचे नाव'] || 'अज्ञात एजंट';
+                    const transactionType = item['व्यवहाराचा प्रकार'];
+                    const amount = parseFloat(item['रक्कम']) || 0;
+
+                    if (!agentData[agentName]) {
+                        agentData[agentName] = { Pigmy: 0, RD: 0, FD: 0, Total: 0 };
+                    }
+                    if (agentData[agentName][transactionType] !== undefined) { // Ensure the type exists
+                        agentData[agentName][transactionType] += amount;
+                    }
+                    agentData[agentName]['Total'] += amount;
+                }
+            });
+
+            if (Object.keys(agentData).length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5">आज एजंटकडून कलेक्शन नाही.</td></tr>';
+                return;
+            }
+
+            for (const agentName in agentData) {
+                const data = agentData[agentName];
+                const row = tableBody.insertRow();
+                row.insertCell().textContent = agentName;
+                row.insertCell().textContent = `₹ ${data['Pigmy'].toFixed(2)}`;
+                row.insertCell().textContent = `₹ ${data['RD'].toFixed(2)}`;
+                row.insertCell().textContent = `₹ ${data['FD'].toFixed(2)}`;
+                row.insertCell().textContent = `₹ ${data['Total'].toFixed(2)}`;
+            }
+        }
+
+        async function showDetailModal(title, type) {
+            document.getElementById('modalTitle').textContent = `${title} तपशील (${document.getElementById('dashboardDate').value})`;
+            const tableBody = document.querySelector('#modalDetailTable tbody');
+            tableBody.innerHTML = '<tr><td colspan="3">माहिती लोड होत आहे...</td></tr>';
+            document.getElementById('detailModal').style.display = 'block';
+
+            try {
+                const selectedDate = document.getElementById('dashboardDate').value;
+                const collections = await fetchDataFromSheet('०१-आजचे कलेक्शन', selectedDate);
+
+                tableBody.innerHTML = ''; // Clear loading message
+
+                let filteredCollections = [];
+                if (type === 'All Collection') {
+                    filteredCollections = collections.filter(item =>
+                        new Date(item['दिनांक']).toISOString().split('T')[0] === selectedDate
+                    );
+                } else {
+                    filteredCollections = collections.filter(item =>
+                        new Date(item['दिनांक']).toISOString().split('T')[0] === selectedDate &&
+                        item['व्यवहाराचा प्रकार'] === type
+                    );
+                }
+
+                if (filteredCollections.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="3">आज ${title} चे कोणतेही कलेक्शन नाही.</td></tr>`;
+                    return;
+                }
+
+                filteredCollections.forEach(item => {
+                    const row = tableBody.insertRow();
+                    row.insertCell().textContent = item['एजंटचे नाव'] || 'अज्ञात एजंट';
+                    row.insertCell().textContent = item['खाते क्रमांक'];
+                    row.insertCell().textContent = `₹ ${parseFloat(item['रक्कम']).toFixed(2)}`;
+                });
+
+            } catch (error) {
+                console.error(`Error fetching ${title} details:`, error);
+                tableBody.innerHTML = '<tr><td colspan="3">तपशील लोड करताना त्रुटी आली.</td></tr>';
+            }
+        }
+        /* -------------------------------------------------------------------------- */
+        /* END of JavaScript */
+        /* -------------------------------------------------------------------------- */
+    </script>
+</body>
+</html>

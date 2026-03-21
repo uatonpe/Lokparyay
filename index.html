@@ -1,3 +1,6 @@
+--- START OF FILE Paste March 21, 2026 - 7:14PM ---
+
+
 <!DOCTYPE html>
 <html lang="mr">
 <head>
@@ -88,6 +91,27 @@
         .form-select {
              @apply w-full p-3 border-2 border-slate-200 rounded-xl focus:outline-none text-lg bg-slate-50 font-medium transition appearance-none;
         }
+        .form-textarea {
+             @apply w-full p-3 border-2 border-slate-200 rounded-xl focus:outline-none text-lg bg-slate-50 font-medium transition resize-none;
+        }
+        .action-button {
+            @apply px-6 py-3 font-bold rounded-xl shadow-md transition flex items-center gap-2;
+        }
+        .action-button.save {
+            @apply bg-green-600 text-white hover:bg-green-700 hover:-translate-y-1;
+        }
+        .action-button.reset {
+            @apply bg-slate-200 text-slate-700 hover:bg-slate-300;
+        }
+        .action-button.search {
+            @apply bg-blue-600 text-white hover:bg-blue-700;
+        }
+        .report-card {
+            @apply bg-white p-6 rounded-2xl shadow-md border-t-8 flex flex-col gap-4;
+        }
+        .report-card h3 {
+            @apply text-2xl font-bold text-slate-800 flex items-center gap-2;
+        }
     </style>
 </head>
 <body class="text-slate-800">
@@ -106,6 +130,7 @@
             <div class="space-x-8 hidden md:flex font-semibold text-lg">
                 <button onclick="showSection('dashboard')" class="hover:text-blue-400 transition flex items-center"><i class="fa-solid fa-gauge mr-2"></i> मुख्य डॅशबोर्ड</button>
                 <button onclick="showSection('add-collection')" class="hover:text-green-400 transition flex items-center"><i class="fa-solid fa-plus mr-2"></i> नवीन जमा नोंद</button>
+                <button onclick="showSection('reports')" class="hover:text-teal-400 transition flex items-center"><i class="fa-solid fa-chart-bar mr-2"></i> रिपोर्ट्स</button>
             </div>
             <button class="md:hidden text-2xl" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"><i class="fa-solid fa-bars"></i></button>
         </div>
@@ -113,6 +138,7 @@
         <div id="mobile-menu" class="hidden md:hidden flex flex-col mt-4 space-y-3 bg-slate-800 p-4 rounded-lg border border-slate-700">
             <button onclick="showSection('dashboard')" class="text-left font-semibold text-lg"><i class="fa-solid fa-gauge mr-2"></i> मुख्य डॅशबोर्ड</button>
             <button onclick="showSection('add-collection')" class="text-left font-semibold text-lg text-green-400"><i class="fa-solid fa-plus mr-2"></i> नवीन जमा नोंद</button>
+            <button onclick="showSection('reports')" class="text-left font-semibold text-lg text-teal-400"><i class="fa-solid fa-chart-bar mr-2"></i> रिपोर्ट्स</button>
         </div>
     </nav>
 
@@ -123,15 +149,15 @@
             
             <!-- Date Filter -->
             <div class="bg-white p-5 rounded-2xl shadow-md border-l-8 border-blue-500 mb-8 flex items-center gap-4 flex-wrap">
-                <h3 class="text-2xl font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-filter text-blue-500 mr-2"></i> फिल्टर करा:</h3>
+                <h3 class="text-2xl font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-filter text-blue-500 mr-2"></i> तारीख फिल्टर:</h3>
                 <div class="flex items-center gap-3">
-                    <label for="filter-date" class="text-lg font-semibold text-slate-700">तारीख:</label>
+                    <label for="filter-date" class="text-lg font-semibold text-slate-700">निवडा:</label>
                     <input type="date" id="filter-date" value="" class="form-input text-lg w-auto px-4">
                 </div>
-                <button onclick="fetchData(true)" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition flex items-center gap-2">
+                <button onclick="fetchData(true)" class="action-button search">
                     <i class="fa-solid fa-magnifying-glass"></i> शोधा
                 </button>
-                <button onclick="resetFilter()" class="px-6 py-3 bg-slate-200 text-slate-700 font-bold rounded-xl shadow-md hover:bg-slate-300 transition flex items-center gap-2">
+                <button onclick="resetFilter()" class="action-button reset">
                     <i class="fa-solid fa-rotate-left"></i> रीसेट
                 </button>
             </div>
@@ -160,13 +186,13 @@
                 <!-- Bank Balance KPI -->
                 <div class="kpi-card kpi-dark">
                     <div class="icon"><i class="fa-solid fa-building-columns"></i></div>
-                    <div><div class="value" id="kpi-bank-balance">₹ 0</div><div class="label">बँक बॅलन्स (स्टेटमेंट)</div></div>
+                    <div><div class="value" id="kpi-bank-balance">₹ 0</div><div class="label">आजचे बँक बॅलन्स (स्टेटमेंट)</div></div>
                 </div>
 
                 <!-- System Balance KPI -->
                 <div class="kpi-card kpi-orange">
                     <div class="icon"><i class="fa-solid fa-calculator"></i></div>
-                    <div><div class="value" id="kpi-system-balance">₹ 0</div><div class="label">सिस्टम बॅलन्स (कलेक्शन)</div></div>
+                    <div><div class="value" id="kpi-system-balance">₹ 0</div><div class="label">आजचे सिस्टम बॅलन्स (कलेक्शन)</div></div>
                 </div>
 
                 <!-- Match/Mismatch Status KPI -->
@@ -177,7 +203,7 @@
             </div>
 
             <!-- Detailed Collection Table -->
-            <div class="bg-white p-6 rounded-2xl shadow-md border-t-8 border-green-500">
+            <div class="report-card bg-white">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b pb-4">
                     <h3 class="text-2xl font-bold text-slate-800"><i class="fa-solid fa-list-check text-green-500 mr-2"></i> आजचे कलेक्शन तपशील</h3>
                     <div class="relative w-full md:w-96">
@@ -192,7 +218,7 @@
                                 <th class="p-4 font-bold w-28">तारीख</th>
                                 <th class="p-4 font-bold w-32">प्रकार</th>
                                 <th class="p-4 font-bold">एजंटचे नाव</th>
-                                <th class="p-4 font-bold">खाते क्र.</th>
+                                <th class="p-4 font-bold">एकुण खात्यांची संख्या</th>
                                 <th class="p-4 font-bold">ग्राहकाचे नाव</th>
                                 <th class="p-4 font-bold text-right w-32">रक्कम (₹)</th>
                             </tr>
@@ -212,41 +238,174 @@
             
             <form id="collection-form" onsubmit="submitCollection(event)">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-slate-700 font-bold mb-2 text-lg">तारीख <span class="text-red-500">*</span></label>
+                    <div class="md:col-span-2">
+                        <label class="block text-slate-700 font-bold mb-2 text-lg">आजचा दिनांक <span class="text-red-500">*</span></label>
                         <input type="date" id="coll-date" required class="form-input">
                     </div>
-                    <div>
-                        <label class="block text-slate-700 font-bold mb-2 text-lg">जमा प्रकार <span class="text-red-500">*</span></label>
-                        <select id="coll-type" required class="form-select">
-                            <option value="">निवडा...</option>
-                            <!-- Options will be populated by JS -->
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-slate-700 font-bold mb-2 text-lg">एजंटचे नाव <span class="text-red-500">*</span></label>
-                        <select id="coll-agent" required class="form-select">
-                            <option value="">निवडा...</option>
-                            <!-- Options will be populated by JS -->
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-slate-700 font-bold mb-2 text-lg">खाते क्र. (असल्यास)</label>
-                        <input type="text" id="coll-account" placeholder="उदा. PIG1001, RD202305" class="form-input">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-slate-700 font-bold mb-2 text-lg">ग्राहकाचे नाव</label>
-                        <input type="text" id="coll-customer" placeholder="उदा. राजेश पाटील" class="form-input">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-slate-700 font-bold mb-2 text-lg">रक्कम (₹) <span class="text-red-500">*</span></label>
-                        <input type="number" id="coll-amount" required placeholder="50000" class="form-input-amount income" step="0.01">
+                    
+                    <!-- Pigmy Collection -->
+                    <fieldset class="border border-green-200 rounded-xl p-4 md:col-span-2">
+                        <legend class="text-lg font-bold text-green-700 px-2">आजचे पिग्मी कलेक्शन</legend>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">एजंटचे नाव <span class="text-red-500">*</span></label>
+                                <select id="coll-pigmy-agent" required class="form-select">
+                                    <option value="">निवडा...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">एकुण खात्यांची संख्या</label>
+                                <input type="number" id="coll-pigmy-account-count" placeholder="उदा. 15" class="form-input">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">एकूण पिग्मी रक्कम (₹) <span class="text-red-500">*</span></label>
+                                <input type="number" id="coll-pigmy-amount" required placeholder="50000" class="form-input-amount income" step="0.01">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- RD Collection -->
+                    <fieldset class="border border-teal-200 rounded-xl p-4 md:col-span-2">
+                        <legend class="text-lg font-bold text-teal-700 px-2">आजचे आरडी कलेक्शन</legend>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">एजंटचे नाव <span class="text-red-500">*</span></label>
+                                <select id="coll-rd-agent" required class="form-select">
+                                    <option value="">निवडा...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">एकुण खात्यांची संख्या</label>
+                                <input type="number" id="coll-rd-account-count" placeholder="उदा. 5" class="form-input">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">एकूण आरडी रक्कम (₹) <span class="text-red-500">*</span></label>
+                                <input type="number" id="coll-rd-amount" required placeholder="25000" class="form-input-amount income" step="0.01">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- FD Collection -->
+                    <fieldset class="border border-blue-200 rounded-xl p-4 md:col-span-2">
+                        <legend class="text-lg font-bold text-blue-700 px-2">आजचे एफडी कलेक्शन</legend>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">एजंटचे नाव <span class="text-red-500">*</span></label>
+                                <select id="coll-fd-agent" required class="form-select">
+                                    <option value="">निवडा...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">एकुण खात्यांची संख्या</label>
+                                <input type="number" id="coll-fd-account-count" placeholder="उदा. 2" class="form-input">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">एकूण एफडी रक्कम (₹) <span class="text-red-500">*</span></label>
+                                <input type="number" id="coll-fd-amount" required placeholder="100000" class="form-input-amount income" step="0.01">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Other Expenses -->
+                    <fieldset class="border border-red-200 rounded-xl p-4 md:col-span-2">
+                        <legend class="text-lg font-bold text-red-700 px-2">आजचे इतर खर्च</legend>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">खर्चाचा प्रकार</label>
+                                <input type="text" id="coll-expense-type" placeholder="उदा. स्टेशनरी, प्रवास खर्च" class="form-input">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">खर्चाची रक्कम (₹)</label>
+                                <input type="number" id="coll-expense-amount" placeholder="1000" class="form-input-amount expense" step="0.01">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Bank Balance Section -->
+                    <fieldset class="border border-blue-200 rounded-xl p-4 md:col-span-2">
+                        <legend class="text-lg font-bold text-blue-700 px-2">बँक व्यवहार</legend>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">ओपनिंग बँक बॅलन्स (₹)</label>
+                                <input type="number" id="coll-opening-bank-balance" placeholder="उदा. 500000" class="form-input-amount bank" step="0.01">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">आजचे क्लोजिंग बँक बॅलन्स (₹) (स्टेटमेंट नुसार)</label>
+                                <input type="number" id="coll-closing-bank-balance" placeholder="उदा. 550000" class="form-input-amount bank" step="0.01">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">सिस्टम नुसार आजचे क्लोजिंग बॅलन्स (₹)</label>
+                                <input type="text" id="coll-system-closing-balance" disabled readonly class="form-input-amount bank bg-slate-100 text-slate-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">फरक (₹)</label>
+                                <input type="text" id="coll-difference" disabled readonly class="form-input-amount bank bg-slate-100 text-slate-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-slate-700 font-bold mb-2 text-lg">फरकाचे कारण (असल्यास)</label>
+                                <textarea id="coll-difference-reason" rows="3" placeholder="उदा. चेक क्लिअरन्स बाकी, विड्रॉअल..." class="form-textarea"></textarea>
+                            </div>
+                        </div>
+                    </fieldset>
+                    
+                    <div class="md:col-span-2 flex justify-center">
+                        <button type="submit" class="action-button save w-full max-w-sm text-2xl">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> माहिती सेव्ह करा
+                        </button>
                     </div>
                 </div>
-                <button type="submit" class="mt-8 w-full bg-green-600 text-white font-bold text-2xl py-4 rounded-xl hover:bg-green-700 shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex justify-center items-center gap-3">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> माहिती सेव्ह करा
-                </button>
             </form>
+        </div>
+
+        <!-- ================= 3. REPORTS SECTION ================= -->
+        <div id="reports" class="section hidden-section">
+            <h2 class="text-3xl font-bold text-slate-800 mb-6 flex items-center gap-2"><i class="fa-solid fa-chart-bar text-teal-500 mr-2"></i> रिपोर्ट्स</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                <!-- Product-wise Collection Report -->
+                <div class="report-card border-teal-500">
+                    <h3 class="text-teal-500"><i class="fa-solid fa-chart-pie mr-2"></i> उत्पादन-निहाय कलेक्शन</h3>
+                    <div class="flex flex-col gap-3">
+                        <label class="font-semibold text-lg">तारीख रेंज:</label>
+                        <div class="flex gap-3 flex-wrap">
+                            <input type="date" id="report-product-start-date" class="form-input w-auto text-base">
+                            <span class="text-lg font-bold text-slate-600">-</span>
+                            <input type="date" id="report-product-end-date" class="form-input w-auto text-base">
+                        </div>
+                        <button onclick="generateProductReport()" class="action-button save w-full justify-center mt-2">
+                            <i class="fa-solid fa-chart-line"></i> रिपोर्ट पहा
+                        </button>
+                    </div>
+                    <div id="product-report-details" class="mt-4 text-center text-slate-500 hidden">
+                        <!-- Report details will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Agent Performance Report -->
+                <div class="report-card border-orange-500">
+                    <h3 class="text-orange-500"><i class="fa-solid fa-user-tie mr-2"></i> एजंट परफॉर्मन्स</h3>
+                    <div class="flex flex-col gap-3">
+                        <label class="font-semibold text-lg">तारीख रेंज:</label>
+                        <div class="flex gap-3 flex-wrap">
+                            <input type="date" id="report-agent-start-date" class="form-input w-auto text-base">
+                            <span class="text-lg font-bold text-slate-600">-</span>
+                            <input type="date" id="report-agent-end-date" class="form-input w-auto text-base">
+                        </div>
+                        <button onclick="generateAgentReport()" class="action-button save w-full justify-center mt-2">
+                            <i class="fa-solid fa-ranking-star"></i> रिपोर्ट पहा
+                        </button>
+                    </div>
+                    <div id="agent-report-details" class="mt-4 text-center text-slate-500 hidden">
+                        <!-- Report details will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chart Placeholder (Optional) -->
+            <div class="report-card border-purple-500 hidden" id="chart-container">
+                <h3 class="text-purple-500"><i class="fa-solid fa-chart-area mr-2"></i> कलेक्शन ट्रेंड (चार्ट)</h3>
+                <canvas id="collectionChart"></canvas>
+            </div>
         </div>
 
     </div>
@@ -279,117 +438,107 @@
     <!-- ================= JAVASCRIPT LOGIC ================= -->
     <script>
         // ⚠️⚠️⚠️ येथे तुमची Google Apps Script Web App URL टाका ⚠️⚠️⚠️
-        // **तुमच्या Web App ची URL येथे पेस्ट करा.**
-        const API_URL = "https://script.google.com/macros/s/AKfycbxkeQE2twplupxvjykSF9b0B7ziNIR0xXOD5PST_Kx7BMQTpId19lNtvamMeQXk1Tw/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbyKavhCEYmzWAhqDOcFDI_OPx26pUmACewgX7m3Lz7-jW70yR1P3871niVcN5sPXcg/exec"; 
 
-        let allData = { dailyCollections: [], bankTransactions: [], settings: { collectionTypes: [], agentNames: [] } };
-        let filteredData = { dailyCollections: [], bankTransactions: [] };
+        let allData = { dailyCollections: [], bankTransactions: [], expenses: [], settings: { collectionTypes: [], agentNames: [] } };
+        let filteredData = { dailyCollections: [], bankTransactions: [], expenses: [] };
         let currentDate = new Date(); // Dashboard load करताना आजची तारीख
         let isFilterActive = false;
+        let chartInstance = null; // For Chart.js
 
-        // --- Helper Functions ---
-        function formatMoney(num) {
-            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num || 0);
+        // Helper functions
+        function formatMoney(num, showCurrency = true) {
+            if (typeof num !== 'number' || isNaN(num)) return showCurrency ? '₹ 0' : '0';
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
         }
-        
-        // Updated parseDate function to handle YYYY-MM-DD and potential issues
         function parseDate(dateString) {
             if (!dateString) return null;
             if (dateString instanceof Date) return dateString;
-            
-            // Try parsing directly, which should handle YYYY-MM-DD well
+            // Handle formats like 'YYYY-MM-DD' or 'MM/DD/YYYY'
             try {
-                // Ensure input is a string before attempting to parse
-                const parsed = new Date(String(dateString));
-                
-                // Check if the parsed date is valid
-                if (!isNaN(parsed.getTime())) {
-                    return parsed;
-                } else {
-                    console.error("Invalid date string after parsing:", dateString);
-                    return null; // Return null for invalid date strings
-                }
+                return new Date(dateString.replace(/-/g, '/')); 
             } catch (e) {
-                console.error("Error parsing date string:", dateString, e);
-                return null; // Return null if there's an error during parsing
+                console.error("Error parsing date:", dateString, e);
+                return null;
             }
         }
-
         function formatDateForInput(date) {
-            if (!date || !(date instanceof Date) || isNaN(date.getTime())) return '';
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const day = date.getDate().toString().padStart(2, '0');
-            return `${date.getFullYear()}-${month}-${day}`;
+            if (!date) return '';
+            const d = new Date(date);
+            const month = (d.getMonth() + 1).toString().padStart(2, '0');
+            const day = d.getDate().toString().padStart(2, '0');
+            return `${d.getFullYear()}-${month}-${day}`;
         }
-
         function formatDateForDisplay(date) {
-             if (!date || !(date instanceof Date) || isNaN(date.getTime())) return 'N/A';
+             if (!date) return 'N/A';
              try {
+                const d = parseDate(date);
+                if (!d) return 'Invalid Date';
                 // Format: DD-MM-YYYY
-                const day = date.getDate().toString().padStart(2, '0');
-                const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                return `${day}-${month}-${date.getFullYear()}`;
+                return `${d.getDate().toString().padStart(2, '0')}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getFullYear()}`;
              } catch (e) {
                  console.error("Error formatting date for display:", date, e);
                  return 'Invalid Date';
              }
         }
 
-        // --- Section Management ---
+        // Show/Hide Sections
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(el => el.classList.add('hidden-section'));
             document.getElementById(sectionId).classList.remove('hidden-section');
             document.getElementById('mobile-menu').classList.add('hidden'); // Close mobile menu
         }
 
-        // --- Loader Management ---
+        // Show Loader
         function showLoader(message = "माहिती लोड होत आहे...") {
             document.getElementById('loader').style.display = 'flex';
             document.getElementById('loader').querySelector('h2').innerText = message;
         }
         
+        // Hide Loader
         function hideLoader() {
             document.getElementById('loader').style.display = 'none';
         }
 
-        // --- Fetch Data from API ---
+        // Fetch Data from API
         async function fetchData(isFilterCall = false) {
             showLoader("डेटा लोड करत आहे...");
             try {
-                console.log("Fetching data from API:", API_URL);
                 const response = await fetch(API_URL);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
                 const data = await response.json();
-                console.log("API Response Data:", data);
                 
-                allData = data;
+                // Ensure data structures exist
+                allData = {
+                    dailyCollections: data.dailyCollections || [],
+                    bankTransactions: data.bankTransactions || [],
+                    expenses: data.expenses || [],
+                    settings: data.settings || { collectionTypes: [], agentNames: [] }
+                };
                 
                 // Populate dropdowns in the form
-                populateSelect('coll-type', allData.settings.collectionTypes);
-                populateSelect('coll-agent', allData.settings.agentNames);
+                populateSelect('coll-pigmy-agent', allData.settings.agentNames);
+                populateSelect('coll-rd-agent', allData.settings.agentNames);
+                populateSelect('coll-fd-agent', allData.settings.agentNames);
                 
-                // Set default date if not filtered or if filter is reset
-                if (!isFilterActive || !document.getElementById('filter-date').value) {
+                // Set default date if not filtered
+                if (!isFilterCall) {
                     currentDate = new Date(); // Reset to today's date for default display
                     document.getElementById('filter-date').value = formatDateForInput(currentDate);
                 } else {
                     // If filtering, use the date from the input
                     currentDate = parseDate(document.getElementById('filter-date').value);
-                    if (!currentDate || isNaN(currentDate.getTime())) { // Handle invalid date from filter input
-                        console.error("Invalid date selected in filter input. Resetting to today.");
+                    if (!currentDate) { // Fallback if date input is invalid
                         currentDate = new Date();
                         document.getElementById('filter-date').value = formatDateForInput(currentDate);
                     }
                 }
-                isFilterActive = true; // Mark filter as active once date is set
+
                 filterAndRenderData(); // Process and display data based on current date/filter
                 
                 hideLoader();
             } catch (error) {
                 console.error("Error fetching data:", error);
-                Swal.fire('त्रुटी!', `API मधून डेटा मिळवण्यात समस्या आली: ${error.message}. कृपया API URL तपासा किंवा नंतर प्रयत्न करा.`, 'error');
+                Swal.fire('त्रुटी!', 'API मधून डेटा मिळवण्यात समस्या आली. कृपया API URL तपासा किंवा नंतर प्रयत्न करा.', 'error');
                 hideLoader();
             }
         }
@@ -397,100 +546,78 @@
         function populateSelect(elementId, optionsArr) {
             const select = document.getElementById(elementId);
             select.innerHTML = '<option value="">निवडा...</option>'; // Reset
-            optionsArr.forEach(opt => {
-                let option = document.createElement('option');
-                option.value = opt; option.text = opt;
-                select.appendChild(option);
-            });
+            if (optionsArr && Array.isArray(optionsArr)) {
+                optionsArr.forEach(opt => {
+                    let option = document.createElement('option');
+                    option.value = opt; option.text = opt;
+                    select.appendChild(option);
+                });
+            }
         }
 
         // Filter Data and Render Dashboard Components
         function filterAndRenderData() {
-            console.log("--- Starting filterAndRenderData ---");
-            const selectedDateInput = document.getElementById('filter-date').value;
-            let selectedDate = null;
-
-            if (selectedDateInput) {
-                selectedDate = parseDate(selectedDateInput);
-            }
-            
-            // If filter input is invalid or empty, default to today
-            if (!selectedDate || isNaN(selectedDate.getTime())) {
-                console.warn("Invalid or no date selected in filter. Defaulting to today.");
-                selectedDate = new Date();
-                document.getElementById('filter-date').value = formatDateForInput(selectedDate); // Update input field
-            }
-            currentDate = selectedDate; // Update global currentDate
-
-            console.log("Selected Date for filtering:", formatDateForInput(selectedDate));
-            console.log("Type of selectedDate:", typeof selectedDate, "Valid:", !isNaN(selectedDate.getTime()));
+            const selectedDate = currentDate; // Use the date determined by fetchData or filter
 
             // --- Filter Daily Collections ---
             filteredData.dailyCollections = allData.dailyCollections.filter(row => {
-                const rowDateStr = row[0];
-                const rowDate = parseDate(rowDateStr);
-                console.log(`Processing daily collection row: ${rowDateStr}. Parsed date: ${rowDate}`);
-                
-                if (!rowDate || isNaN(rowDate.getTime())) {
-                    console.warn("Skipping daily collection row due to invalid date:", rowDateStr);
-                    return false; // Skip if date is invalid
-                }
-                
-                // Compare Year, Month, and Day
-                const dateMatch = rowDate.getFullYear() === selectedDate.getFullYear() &&
-                                  rowDate.getMonth() === selectedDate.getMonth() &&
-                                  rowDate.getDate() === selectedDate.getDate();
-                // console.log(`  Row Date: ${rowDate}, Selected Date: ${selectedDate}, Match: ${dateMatch}`);
-                return dateMatch;
+                const rowDate = parseDate(row[0]); // Assuming row[0] is date
+                return rowDate && rowDate.getFullYear() === selectedDate.getFullYear() &&
+                       rowDate.getMonth() === selectedDate.getMonth() &&
+                       rowDate.getDate() === selectedDate.getDate();
             });
-            console.log("Filtered Daily Collections:", filteredData.dailyCollections);
 
             // --- Filter Bank Transactions ---
-            // For bank balance, we need the latest transaction on or before the selected date
             const relevantBankTransactions = allData.bankTransactions.filter(row => {
-                const rowDateStr = row[0];
-                const rowDate = parseDate(rowDateStr);
-                console.log(`Processing bank transaction row: ${rowDateStr}. Parsed date: ${rowDate}`);
-
-                if (!rowDate || isNaN(rowDate.getTime())) {
-                    console.warn("Skipping bank transaction row due to invalid date:", rowDateStr);
-                    return false; // Skip if date is invalid
-                }
-                
-                // Return true if the transaction date is on or before the selected date
-                return rowDate <= selectedDate;
+                const rowDate = parseDate(row[0]); // Assuming row[0] is date
+                return rowDate && rowDate <= selectedDate;
             });
             
-            // Get the latest bank transaction's balance
-            let latestBankBalance = 0;
-            let latestBankTxnDate = null;
+            let latestBankTxn = null;
             if (relevantBankTransactions.length > 0) {
-                // Sort by date descending to get the latest transaction
-                relevantBankTransactions.sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
-                const latestTxn = relevantBankTransactions[0];
-                latestBankBalance = Number(latestTxn[4] || 0); // BankBalance is at index 4
-                latestBankTxnDate = parseDate(latestTxn[0]);
-                console.log("Latest Bank Transaction Date:", latestBankTxnDate, "Balance:", latestBankBalance);
-            } else {
-                console.log("No relevant bank transactions found on or before the selected date.");
+                relevantBankTransactions.sort((a, b) => parseDate(b[0]) - parseDate(a[0])); // Sort by date descending
+                latestBankTxn = relevantBankTransactions[0];
             }
+            const latestBankBalance = latestBankTxn ? Number(latestBankTxn[4] || 0) : 0; // Assuming index 4 is balance
+            const latestBankTxnDate = latestBankTxn ? parseDate(latestBankTxn[0]) : null;
+
+            // --- Filter Expenses ---
+            filteredData.expenses = allData.expenses.filter(row => {
+                 const rowDate = parseDate(row[0]); // Assuming row[0] is date
+                return rowDate && rowDate.getFullYear() === selectedDate.getFullYear() &&
+                       rowDate.getMonth() === selectedDate.getMonth() &&
+                       rowDate.getDate() === selectedDate.getDate();
+            });
 
             // --- Calculate KPIs ---
             let pigmyAmount = 0;
+            let pigmyCount = 0;
             let rdAmount = 0;
+            let rdCount = 0;
             let fdAmount = 0;
-            let systemBalance = 0;
+            let fdCount = 0;
+            let totalCollectionAmount = 0;
+            let totalCollectionCount = 0;
+            let totalExpenseAmount = 0;
             
             filteredData.dailyCollections.forEach(row => {
                 const amount = Number(row[5] || 0);
-                const type = row[1];
-                systemBalance += amount; // System balance is sum of all collections for the day
-                console.log(`Processing collection: Type=${type}, Amount=${amount}`);
+                const count = Number(row[6] || 0); // Assuming index 6 is account count
+                const type = row[1]; // Assuming index 1 is type
 
-                if (type === 'Pigmy') pigmyAmount += amount;
-                else if (type === 'RD') rdAmount += amount;
-                else if (type === 'FD') fdAmount += amount;
+                totalCollectionAmount += amount;
+                totalCollectionCount += count;
+
+                if (type === 'Pigmy') { pigmyAmount += amount; pigmyCount += count; }
+                else if (type === 'RD') { rdAmount += amount; rdCount += count; }
+                else if (type === 'FD') { fdAmount += amount; fdCount += count; }
             });
+
+            filteredData.expenses.forEach(row => {
+                totalExpenseAmount += Number(row[2] || 0); // Assuming index 2 is amount
+            });
+
+            const systemBalance = totalCollectionAmount - totalExpenseAmount;
 
             // --- Update KPIs on Dashboard ---
             document.getElementById('kpi-pigmy-amount').innerText = formatMoney(pigmyAmount);
@@ -498,8 +625,6 @@
             document.getElementById('kpi-fd-amount').innerText = formatMoney(fdAmount);
             document.getElementById('kpi-system-balance').innerText = formatMoney(systemBalance);
             document.getElementById('kpi-bank-balance').innerText = formatMoney(latestBankBalance);
-            
-            console.log("Calculated KPIs: Pigmy=", pigmyAmount, "RD=", rdAmount, "FD=", fdAmount, "System Balance=", systemBalance, "Bank Balance=", latestBankBalance);
 
             // --- Match Status ---
             const matchStatusEl = document.getElementById('kpi-match-status');
@@ -508,66 +633,58 @@
             const matchLabelEl = matchStatusEl.querySelector('.label');
             
             let isMatch = false;
-            // Compare only if bank data exists and its date is on or before selected date
+            // Compare only if bank transaction exists on or before the selected date
             if (latestBankTxnDate && latestBankTxnDate <= selectedDate) {
                  isMatch = systemBalance === latestBankBalance;
-            } else if (!latestBankTxnDate && systemBalance === 0) { 
-                 // If no bank transactions found AND system balance is 0, consider it a match
+            } else if (latestBankTxnDate === null && systemBalance === 0) { // No bank data, system is zero
                  isMatch = true;
-            } else if (latestBankTxnDate && latestBankTxnDate > selectedDate && systemBalance === 0) {
-                 // If bank transactions are from the future (relative to selected date) and system is 0
-                 isMatch = true; // Assume match if no relevant bank data and system is 0
-            } else if (latestBankTxnDate === null && systemBalance !== 0) {
-                 // No bank transactions but system has balance - Mismatch
-                 isMatch = false;
-            } else if (latestBankTxnDate && latestBankTxnDate <= selectedDate && systemBalance !== latestBankBalance) {
-                // Bank data exists, date is relevant, but values don't match
-                isMatch = false;
-            } else {
-                // Default to false if none of the above conditions are met
-                isMatch = false;
+            } else if (!latestBankTxnDate && systemBalance === 0) { // No bank data, system is zero
+                 isMatch = true;
+            } else if (latestBankTxnDate && latestBankTxnDate > selectedDate && systemBalance === 0) { // Bank data from future, system is 0
+                 isMatch = true; // Consider it matched for the day before future transactions
             }
             
             if (isMatch) {
-                matchStatusEl.style.color = 'var(--green)'; // Use green color for match
-                matchIconEl.className = 'fa-solid fa-check-circle'; // Checkmark icon
+                matchStatusEl.style.color = 'var(--green)';
+                matchIconEl.className = 'fa-solid fa-check-circle';
                 matchValueEl.innerText = 'होय';
                 matchLabelEl.innerText = 'बँक vs सिस्टम';
             } else {
-                matchStatusEl.style.color = 'var(--red)'; // Use red color for mismatch
-                matchIconEl.className = 'fa-solid fa-xmark-circle'; // Cross icon
+                matchStatusEl.style.color = 'var(--red)';
+                matchIconEl.className = 'fa-solid fa-xmark-circle';
                 matchValueEl.innerText = 'नाही';
                 matchLabelEl.innerText = 'बँक vs सिस्टम';
             }
-            console.log("Match Status determined:", isMatch);
 
             // --- Render Today's Collection Table ---
             renderCollectionTable(filteredData.dailyCollections);
             
-            console.log("--- Finished filterAndRenderData ---");
+            // Update the current date for reference (e.g., for form default)
+            if (!isFilterActive) {
+                 document.getElementById('filter-date').value = formatDateForInput(selectedDate);
+            }
         }
 
         function renderCollectionTable(rows) {
             const tbody = document.getElementById('collection-table-body');
-            tbody.innerHTML = ''; // Clear existing rows
+            tbody.innerHTML = '';
             
             if (rows.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 font-bold">या तारखेसाठी कोणताही कलेक्शन डेटा उपलब्ध नाही.</td></tr>`;
                 return;
             }
 
-            rows.forEach((row, index) => {
+            rows.forEach(row => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition";
-                // Add click listener to open modal for detailed view
-                // Pass relevant data for drill-down
+                tr.className = "hover:bg-slate-50 transition cursor-pointer";
+                // Add click listener to open modal
                 tr.onclick = () => openDetailModal(row[1], row[0], row[2], row[3]); // Type, Date, Agent, AccountNumber
 
                 tr.innerHTML = `
-                    <td class="p-4 font-medium whitespace-nowrap">${formatDateForDisplay(parseDate(row[0]))}</td>
+                    <td class="p-4 font-medium whitespace-nowrap">${formatDateForDisplay(row[0])}</td>
                     <td class="p-4 font-bold text-slate-700">${row[1] || 'N/A'}</td>
                     <td class="p-4 font-semibold text-slate-700">${row[2] || '-'}</td>
-                    <td class="p-4 font-medium">${row[3] || '-'}</td>
+                    <td class="p-4 font-medium">${row[6] || '0'}</td> <!-- Account Count -->
                     <td class="p-4">${row[4] || '-'}</td>
                     <td class="p-4 text-right font-bold text-green-600">${formatMoney(row[5])}</td>
                 `;
@@ -580,11 +697,9 @@
             let input = document.getElementById("searchInput").value.toUpperCase();
             let table = document.getElementById("collectionTable");
             let tr = table.getElementsByTagName("tr");
-            
-            for (let i = 1; i < tr.length; i++) { // Start from 1 to skip the header row
+            for (let i = 1; i < tr.length; i++) {
                 let tds = tr[i].getElementsByTagName("td");
                 let found = false;
-                
                 // Check Agent Name (index 2) and Account Number (index 3)
                 if (tds[2] && (tds[2].textContent || tds[2].innerText).toUpperCase().indexOf(input) > -1) {
                     found = true;
@@ -603,17 +718,13 @@
 
         // Reset Date Filter
         function resetFilter() {
-            document.getElementById('filter-date').value = ''; // Clear the input value
+            document.getElementById('filter-date').value = '';
             isFilterActive = false; // Reset filter flag
-            currentDate = new Date(); // Reset currentDate to today
-            document.getElementById('filter-date').value = formatDateForInput(currentDate); // Update input field to today's date
-            fetchData(false); // Reload data with today's date
-            console.log("Filter reset. Showing today's data.");
+            fetchData(); // Reload with today's date
         }
 
         // Open Modal for detailed view (KPI Click or Table Row Click)
         function openDetailModal(collectionType, date, agentName, accountNumber) {
-            console.log(`Opening modal with: Type=${collectionType}, Date=${date}, Agent=${agentName}, Account=${accountNumber}`);
             const modal = document.getElementById('detailsModal');
             const modalTitle = document.getElementById('modal-title');
             const modalThead = document.getElementById('modal-thead');
@@ -626,56 +737,45 @@
             backBtn.style.display = 'none'; // Hide back button by default
 
             let filteredRows = [];
-            let headerHTML = '';
+            const displayDate = formatDateForDisplay(date);
 
-            // --- Logic for opening modal based on how it was called ---
-            
-            // Case 1: Called from KPI click (collectionType is 'Pigmy', 'RD', 'FD', 'today')
-            if (arguments.length === 2 && typeof arguments[1] === 'string' && arguments[1] === 'today') {
+            // Determine data and title based on how modal was opened
+            if (arguments.length === 2 && arguments[0] && arguments[1] === 'today') { // KPI Click: Type and 'today'
                 const type = collectionType; // 'Pigmy', 'RD', 'FD'
                 
-                // Filter daily collections for the current date and selected type
                 filteredRows = filteredData.dailyCollections.filter(row => row[1] === type);
                 
-                modalTitle.innerHTML = `<i class="fa-solid fa-chart-pie mr-2 text-green-500"></i> ${type} कलेक्शन तपशील (${formatDateForDisplay(currentDate)})`;
-                headerHTML = `
+                modalTitle.innerHTML = `<i class="fa-solid fa-chart-pie mr-2 text-green-500"></i> ${type} कलेक्शन तपशील (${displayDate})`;
+                modalThead.innerHTML = `
                     <tr>
                         <th class="p-4 border-b">एजंटचे नाव</th>
                         <th class="p-4 border-b">खाते क्र.</th>
                         <th class="p-4 border-b">ग्राहकाचे नाव</th>
+                        <th class="p-4 border-b">खात्यांची संख्या</th>
                         <th class="p-4 border-b text-right">रक्कम (₹)</th>
                     </tr>`;
-                console.log(`Modal opened from KPI: Type=${type}, Rows:`, filteredRows);
-
-            // Case 2: Called from Table Row click (collectionType, date, agentName, accountNumber)
-            } else if (arguments.length === 4) {
-                // Filter for the specific row data
+            } else if (arguments.length === 4) { // Table Row Click: Type, Date, Agent, Account
                 filteredRows = filteredData.dailyCollections.filter(row => 
                     row[1] === collectionType && 
-                    formatDateForDisplay(parseDate(row[0])) === formatDateForDisplay(parseDate(date)) && 
+                    formatDateForDisplay(parseDate(row[0])) === displayDate && 
                     row[2] === agentName && 
                     row[3] === accountNumber
                 );
-                modalTitle.innerHTML = `<i class="fa-solid fa-info-circle mr-2 text-blue-500"></i> ${collectionType} - ${agentName} (खाते: ${accountNumber})`;
-                 headerHTML = `
+                modalTitle.innerHTML = `<i class="fa-solid fa-info-circle mr-2 text-blue-500"></i> ${collectionType} - ${agentName} (${accountNumber})`;
+                 modalThead.innerHTML = `
                     <tr>
                         <th class="p-4 border-b">तारीख</th>
                         <th class="p-4 border-b">खाते क्र.</th>
                         <th class="p-4 border-b">ग्राहकाचे नाव</th>
+                        <th class="p-4 border-b">खात्यांची संख्या</th>
                         <th class="p-4 border-b text-right">रक्कम (₹)</th>
                     </tr>`;
-                console.log(`Modal opened from Table Row: Type=${collectionType}, Date=${date}, Agent=${agentName}, Account=${accountNumber}, Rows:`, filteredRows);
-            } else { 
-                console.error("Invalid arguments passed to openDetailModal");
+            } else { // Generic call or error
                 modalTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2 text-orange-500"></i> अज्ञात तपशील`;
-                headerHTML = `<tr><th class="p-4 border-b">माहिती</th></tr>`;
-                modalTbody.innerHTML = `<tr><td class="p-4">मोडल उघडण्यात त्रुटी आली.</td></tr>`;
+                modalThead.innerHTML = `<tr><th class="p-4 border-b">माहिती</th></tr>`;
+                modalTbody.innerHTML = `<tr><td class="p-4">माहिती लोड करताना त्रुटी आली.</td></tr>`;
             }
             
-            // Render header
-            modalThead.innerHTML = headerHTML;
-
-            // Render body
             if (filteredRows.length === 0) {
                 modalTbody.innerHTML = `<tr><td colspan="${modalThead.querySelector('tr').children.length}" class="p-4 text-center text-slate-500 font-bold">या तपशिलासाठी कोणताही डेटा उपलब्ध नाही.</td></tr>`;
             } else {
@@ -686,13 +786,15 @@
                             <td class="p-4 border-b">${row[2] || '-'}</td>
                             <td class="p-4 border-b">${row[3] || '-'}</td>
                             <td class="p-4 border-b">${row[4] || '-'}</td>
+                            <td class="p-4 border-b">${row[6] || '0'}</td> <!-- Account Count -->
                             <td class="p-4 border-b text-right font-bold text-green-600">${formatMoney(row[5])}</td>
                         `;
                     } else if (arguments.length === 4) { // Table row click data
                          tr.innerHTML = `
-                            <td class="p-4 border-b whitespace-nowrap">${formatDateForDisplay(parseDate(row[0]))}</td>
+                            <td class="p-4 border-b whitespace-nowrap">${formatDateForDisplay(row[0])}</td>
                             <td class="p-4 border-b">${row[3] || '-'}</td>
                             <td class="p-4 border-b">${row[4] || '-'}</td>
+                            <td class="p-4 border-b">${row[6] || '0'}</td> <!-- Account Count -->
                             <td class="p-4 border-b text-right font-bold text-green-600">${formatMoney(row[5])}</td>
                         `;
                     }
@@ -718,29 +820,64 @@
             
             const form = event.target;
             const dateInput = document.getElementById('coll-date');
-            const typeInput = document.getElementById('coll-type');
-            const agentInput = document.getElementById('coll-agent');
-            const accountInput = document.getElementById('coll-account');
-            const customerInput = document.getElementById('coll-customer');
-            const amountInput = document.getElementById('coll-amount');
+            const pigmyAgentInput = document.getElementById('coll-pigmy-agent');
+            const pigmyAmountInput = document.getElementById('coll-pigmy-amount');
+            const pigmyCountInput = document.getElementById('coll-pigmy-account-count');
+            
+            const rdAgentInput = document.getElementById('coll-rd-agent');
+            const rdAmountInput = document.getElementById('coll-rd-amount');
+            const rdCountInput = document.getElementById('coll-rd-account-count');
+            
+            const fdAgentInput = document.getElementById('coll-fd-agent');
+            const fdAmountInput = document.getElementById('coll-fd-amount');
+            const fdCountInput = document.getElementById('coll-fd-account-count');
+            
+            const expenseTypeInput = document.getElementById('coll-expense-type');
+            const expenseAmountInput = document.getElementById('coll-expense-amount');
+            
+            const openingBankBalanceInput = document.getElementById('coll-opening-bank-balance');
+            const closingBankBalanceInput = document.getElementById('coll-closing-bank-balance');
+            const differenceReasonInput = document.getElementById('coll-difference-reason');
 
-            // Basic validation
-            if (!dateInput.value || !typeInput.value || !agentInput.value || !amountInput.value) {
-                Swal.fire('त्रुटी!', 'कृपया सर्व आवश्यक फील्ड्स (तारीख, जमा प्रकार, एजंट, रक्कम) भरा.', 'warning');
-                return;
-            }
+            // Basic validation for required fields
+            let requiredFieldsValid = true;
+            if (!dateInput.value) { Swal.fire('त्रुटी!', 'कृपया दिनांक निवडा.', 'warning'); requiredFieldsValid = false; }
+            if (parseFloat(pigmyAmountInput.value || 0) > 0 && !pigmyAgentInput.value) { Swal.fire('त्रुटी!', 'पिग्मी रकमेसाठी कृपया एजंट निवडा.', 'warning'); requiredFieldsValid = false; }
+            if (parseFloat(rdAmountInput.value || 0) > 0 && !rdAgentInput.value) { Swal.fire('त्रुटी!', 'आरडी रकमेसाठी कृपया एजंट निवडा.', 'warning'); requiredFieldsValid = false; }
+            if (parseFloat(fdAmountInput.value || 0) > 0 && !fdAgentInput.value) { Swal.fire('त्रुटी!', 'एफडी रकमेसाठी कृपया एजंट निवडा.', 'warning'); requiredFieldsValid = false; }
+            if (parseFloat(expenseAmountInput.value || 0) > 0 && !expenseTypeInput.value) { Swal.fire('त्रुटी!', 'खर्चाच्या रकमेसाठी कृपया खर्चाचा प्रकार नमूद करा.', 'warning'); requiredFieldsValid = false; }
+            if (!openingBankBalanceInput.value && closingBankBalanceInput.value) { Swal.fire('त्रुटी!', 'कृपया ओपनिंग बँक बॅलन्स नमूद करा.', 'warning'); requiredFieldsValid = false; }
+
+            if (!requiredFieldsValid) return;
 
             const payload = {
-                type: "daily_collection",
-                date: dateInput.value, // This will be in YYYY-MM-DD format
-                collectionType: typeInput.value,
-                agentName: agentInput.value,
-                accountNumber: accountInput.value,
-                customerName: customerInput.value,
-                amount: parseFloat(amountInput.value)
+                type: "daily_entry",
+                date: dateInput.value,
+                pigmy: {
+                    agent: pigmyAgentInput.value,
+                    amount: parseFloat(pigmyAmountInput.value || 0),
+                    accountCount: parseInt(pigmyCountInput.value || 0)
+                },
+                rd: {
+                    agent: rdAgentInput.value,
+                    amount: parseFloat(rdAmountInput.value || 0),
+                    accountCount: parseInt(rdCountInput.value || 0)
+                },
+                fd: {
+                    agent: fdAgentInput.value,
+                    amount: parseFloat(fdAmountInput.value || 0),
+                    accountCount: parseInt(fdCountInput.value || 0)
+                },
+                expense: {
+                    type: expenseTypeInput.value,
+                    amount: parseFloat(expenseAmountInput.value || 0)
+                },
+                bank: {
+                    openingBalance: parseFloat(openingBankBalanceInput.value || 0),
+                    closingBalance: parseFloat(closingBankBalanceInput.value || 0),
+                    differenceReason: differenceReasonInput.value
+                }
             };
-            
-            console.log("Submitting payload:", payload);
 
             // Show loading indicator
             Swal.fire({
@@ -759,49 +896,274 @@
                     body: JSON.stringify(payload)
                 });
 
-                // With 'no-cors' mode, response status is not accessible. We assume success if no network error.
-                console.log("POST request sent. Assuming success.");
-                
+                // Note: With 'no-cors' mode, you won't get actual response from the server.
+                // We assume success if no network error occurs, and then refresh.
                 Swal.fire({
                     icon: 'success',
                     title: 'यशस्वी!',
-                    text: 'नवीन जमा नोंद यशस्वीरित्या सेव्ह झाली.',
+                    text: 'दैनंदिन नोंद यशस्वीरित्या सेव्ह झाली.',
                     confirmButtonColor: '#10b981'
                 }).then(() => {
                     form.reset(); // Clear the form
-                    // Reset date to today's date for the form input
+                    // Reset date to today's date for the form
                     document.getElementById('coll-date').value = formatDateForInput(new Date());
-                    fetchData(true); // Refresh data to show the new entry
-                    showSection('dashboard'); // Navigate back to dashboard
+                    fetchData(true); // Refresh data, stay on current view or today's date
+                    showSection('dashboard'); // Go back to dashboard
                 });
 
             } catch (error) {
                 console.error("Error submitting collection:", error);
-                Swal.fire('त्रुटी!', `जमा नोंद सेव्ह करण्यात समस्या आली: ${error.message}. कृपया पुन्हा प्रयत्न करा.`, 'error');
+                Swal.fire('त्रुटी!', 'दैनंदिन नोंद सेव्ह करण्यात समस्या आली. कृपया पुन्हा प्रयत्न करा.', 'error');
             }
         }
 
-        // --- Initial Load and Event Listeners ---
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM fully loaded.");
+        // --- Reports Section Functions ---
+        function generateProductReport() {
+            showLoader("प्रोडक्ट रिपोर्ट तयार करत आहे...");
+            const startDate = document.getElementById('report-product-start-date').value;
+            const endDate = document.getElementById('report-product-end-date').value;
+            const reportDetailsEl = document.getElementById('report-product-details');
+            reportDetailsEl.classList.add('hidden'); // Hide previous results
 
-            // Set default date to today for the date filter and the form input
+            if (!startDate || !endDate) {
+                Swal.fire('त्रुटी!', 'कृपया रिपोर्टसाठी सुरुवातीची आणि अंतिम तारीख निवडा.', 'warning');
+                hideLoader();
+                return;
+            }
+
+            const start = parseDate(startDate);
+            const end = parseDate(endDate);
+
+            if (!start || !end || start > end) {
+                Swal.fire('त्रुटी!', 'कृपया वैध तारीख रेंज निवडा.', 'warning');
+                hideLoader();
+                return;
+            }
+
+            const filteredCollections = allData.dailyCollections.filter(row => {
+                const rowDate = parseDate(row[0]);
+                return rowDate && rowDate >= start && rowDate <= end;
+            });
+
+            const reportData = {}; // { 'Pigmy': { amount: 0, count: 0 }, ... }
+
+            filteredCollections.forEach(row => {
+                const type = row[1];
+                const amount = Number(row[5] || 0);
+                const count = Number(row[6] || 0);
+
+                if (!reportData[type]) {
+                    reportData[type] = { amount: 0, count: 0 };
+                }
+                reportData[type].amount += amount;
+                reportData[type].count += count;
+            });
+
+            // Render report
+            let reportHTML = `<h4 class="font-bold text-lg mb-3">उत्पादन-निहाय कलेक्शन (${formatDateForDisplay(start)} ते ${formatDateForDisplay(end)})</h4>`;
+            if (Object.keys(reportData).length === 0) {
+                reportHTML += '<p class="text-slate-500">या कालावधीत कोणताही कलेक्शन डेटा उपलब्ध नाही.</p>';
+            } else {
+                reportHTML += '<ul class="list-disc list-inside text-left mx-auto max-w-sm">';
+                for (const type in reportData) {
+                    reportHTML += `
+                        <li>
+                            <strong>${type}:</strong> 
+                            <span class="font-semibold text-green-600">${formatMoney(reportData[type].amount)}</span>
+                            (<span class="font-medium">${reportData[type].count} खाती</span>)
+                        </li>`;
+                }
+                reportHTML += '</ul>';
+            }
+            
+            reportDetailsEl.innerHTML = reportHTML;
+            reportDetailsEl.classList.remove('hidden');
+            hideLoader();
+        }
+
+        function generateAgentReport() {
+            showLoader("एजंट रिपोर्ट तयार करत आहे...");
+            const startDate = document.getElementById('report-agent-start-date').value;
+            const endDate = document.getElementById('report-agent-end-date').value;
+            const reportDetailsEl = document.getElementById('agent-report-details');
+            reportDetailsEl.classList.add('hidden'); // Hide previous results
+
+            if (!startDate || !endDate) {
+                Swal.fire('त्रुटी!', 'कृपया रिपोर्टसाठी सुरुवातीची आणि अंतिम तारीख निवडा.', 'warning');
+                hideLoader();
+                return;
+            }
+
+            const start = parseDate(startDate);
+            const end = parseDate(endDate);
+
+            if (!start || !end || start > end) {
+                Swal.fire('त्रुटी!', 'कृपया वैध तारीख रेंज निवडा.', 'warning');
+                hideLoader();
+                return;
+            }
+
+            const filteredCollections = allData.dailyCollections.filter(row => {
+                const rowDate = parseDate(row[0]);
+                return rowDate && rowDate >= start && rowDate <= end;
+            });
+
+            const reportData = {}; // { 'Agent Name': { pigmy: { amount: 0, count: 0 }, rd: {...}, fd: {...}, totalAmount: 0, totalCount: 0 }, ... }
+
+            filteredCollections.forEach(row => {
+                const agentName = row[2];
+                const type = row[1];
+                const amount = Number(row[5] || 0);
+                const count = Number(row[6] || 0);
+
+                if (!reportData[agentName]) {
+                    reportData[agentName] = {
+                        pigmy: { amount: 0, count: 0 },
+                        rd: { amount: 0, count: 0 },
+                        fd: { amount: 0, count: 0 },
+                        totalAmount: 0,
+                        totalCount: 0
+                    };
+                }
+
+                reportData[agentName].totalAmount += amount;
+                reportData[agentName].totalCount += count;
+
+                if (type === 'Pigmy') {
+                    reportData[agentName].pigmy.amount += amount;
+                    reportData[agentName].pigmy.count += count;
+                } else if (type === 'RD') {
+                    reportData[agentName].rd.amount += amount;
+                    reportData[agentName].rd.count += count;
+                } else if (type === 'FD') {
+                    reportData[agentName].fd.amount += amount;
+                    reportData[agentName].fd.count += count;
+                }
+            });
+
+            // Render report
+            let reportHTML = `<h4 class="font-bold text-lg mb-3">एजंट परफॉर्मन्स (${formatDateForDisplay(start)} ते ${formatDateForDisplay(end)})</h4>`;
+            if (Object.keys(reportData).length === 0) {
+                reportHTML += '<p class="text-slate-500">या कालावधीत कोणताही कलेक्शन डेटा उपलब्ध नाही.</p>';
+            } else {
+                reportHTML += '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
+                for (const agent in reportData) {
+                    const data = reportData[agent];
+                    reportHTML += `
+                        <div class="border border-orange-300 rounded-lg p-4 bg-orange-50">
+                            <h5 class="font-bold text-xl text-orange-700 mb-2">${agent}</h5>
+                            <p class="mb-1"><strong>एकूण कलेक्शन:</strong> <span class="font-semibold text-orange-600">${formatMoney(data.totalAmount)}</span> (<span class="font-medium">${data.totalCount} खाती</span>)</p>
+                            <hr class="my-2 border-orange-200">
+                            <p class="text-sm">पिग्मी: <span class="font-medium text-green-700">${formatMoney(data.pigmy.amount)}</span> (${data.pigmy.count} खाती)</p>
+                            <p class="text-sm">आरडी: <span class="font-medium text-teal-700">${formatMoney(data.rd.amount)}</span> (${data.rd.count} खाती)</p>
+                            <p class="text-sm">एफडी: <span class="font-medium text-blue-700">${formatMoney(data.fd.amount)}</span> (${data.fd.count} खाती)</p>
+                        </div>
+                    `;
+                }
+                reportHTML += '</div>';
+            }
+            
+            reportDetailsEl.innerHTML = reportHTML;
+            reportDetailsEl.classList.remove('hidden');
+            hideLoader();
+        }
+
+        // Function to initialize Chart.js (example)
+        function setupChart() {
+            const ctx = document.getElementById('collectionChart').getContext('2d');
+            if (chartInstance) {
+                chartInstance.destroy(); // Destroy previous instance if it exists
+            }
+            chartInstance = new Chart(ctx, {
+                type: 'line', // or 'bar', 'pie', etc.
+                data: {
+                    labels: [], // Dates or other labels
+                    datasets: [{
+                        label: 'Total Collection',
+                        data: [], // Amounts
+                        borderColor: 'rgb(54, 162, 235)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'कलेक्शन ट्रेंड'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initial load and event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default date to today for the date filter and the form
             const today = new Date();
             document.getElementById('filter-date').value = formatDateForInput(today);
             document.getElementById('coll-date').value = formatDateForInput(today);
-            currentDate = today; // Initialize currentDate
-            isFilterActive = true; // Set to true as we are showing today's data by default
+            document.getElementById('report-product-start-date').value = formatDateForInput(new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000))); // Last 7 days
+            document.getElementById('report-product-end-date').value = formatDateForInput(today);
+            document.getElementById('report-agent-start-date').value = formatDateForInput(new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000))); // Last 7 days
+            document.getElementById('report-agent-end-date').value = formatDateForInput(today);
 
-            fetchData(); // Load initial data for today
-            showSection('dashboard'); // Set initial section to dashboard
+            fetchData(); // Load initial data
+            setupChart(); // Initialize chart placeholder
+
+            // Event listener for date filter change
+            document.getElementById('filter-date').addEventListener('change', (e) => {
+                const selectedDateStr = e.target.value;
+                if (selectedDateStr) {
+                    currentDate = parseDate(selectedDateStr);
+                    isFilterActive = true; // Mark filter as active
+                    filterAndRenderData();
+                } else {
+                    resetFilter(); // If date is cleared, reset filter
+                }
+            });
+
+            // Auto-calculate difference and update closing balance based on input
+            const openingBalanceInput = document.getElementById('coll-opening-bank-balance');
+            const closingBalanceInput = document.getElementById('coll-closing-bank-balance');
+            const systemBalanceInput = document.getElementById('coll-system-closing-balance');
+            const differenceInput = document.getElementById('coll-difference');
+
+            const updateBankCalculations = () => {
+                const openingBalance = parseFloat(openingBalanceInput.value || 0);
+                const closingBalance = parseFloat(closingBalanceInput.value || 0);
+                // System balance for the day is already calculated in filterAndRenderData and can be accessed if needed
+                // For now, we use the already filtered data's systemBalance
+                const systemBalance = parseFloat(document.getElementById('kpi-system-balance').innerText.replace('₹', '').replace(/,/g, '')); // Get from KPI
+
+                systemBalanceInput.value = formatMoney(systemBalance, false); // Display without currency
+                const difference = closingBalance - systemBalance;
+                differenceInput.value = formatMoney(difference, false); // Display without currency
+
+                // Highlight difference
+                if (difference !== 0) {
+                    differenceInput.classList.add('border-red-400', 'bg-red-50', 'text-red-700');
+                    differenceInput.classList.remove('border-blue-300', 'bg-blue-50', 'text-blue-700');
+                } else {
+                    differenceInput.classList.add('border-blue-300', 'bg-blue-50', 'text-blue-700');
+                    differenceInput.classList.remove('border-red-400', 'bg-red-50', 'text-red-700');
+                }
+            };
+
+            openingBalanceInput.addEventListener('input', updateBankCalculations);
+            closingBalanceInput.addEventListener('input', updateBankCalculations);
+            
+            // Initial calculation on load if values are present
+            updateBankCalculations();
+
+             // Set initial section to dashboard
+            showSection('dashboard');
         });
-
-        // This will run after DOMContentLoaded, so it should be safe.
-        window.onload = () => {
-            console.log("Window loaded.");
-            // All main logic is handled by DOMContentLoaded
-        };
 
     </script>
 </body>
 </html>
+--- END OF FILE ---

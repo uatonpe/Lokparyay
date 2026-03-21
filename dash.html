@@ -682,7 +682,7 @@
         // **महत्वाचे:** हे व्हॅल्यूज तुमच्या दिलेल्या URL/IDs सह थेट कोडमध्ये समाविष्ट केले आहेत.
         // जर ते बदलले, तर तुम्हाला ते येथे थेट अपडेट करावे लागतील.
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzexC0TkMbvoa39tWYCVzC7kmHTEF1vwYpCwYclejPOVAep1_FG0l-tp-NKb2vNRJg/exec'; // तुमचा Apps Script वेब ॲप URL
-        const GOOGLE_SHEET_ID = '1P2g0-4mxUqEQUxdkGqFL_WhHH_MoQw9WpGQ_6QYo-cs'; // तुमच्या Google Sheet चा मुख्य ID
+        const GOOGLE_SHEET_ID = '1P2g0-4mxUqEQUxdkGqFL_WhHH_MoQw9WpGQ_6QYo-cs'; // तुमच्या Google Sheet चा मुख्य ID (Publish to web केलेला)
 
         document.addEventListener('DOMContentLoaded', () => {
             // हेडरमध्ये वर्तमान तारीख आणि वेळ सेट करा
@@ -718,7 +718,9 @@
             });
 
             // एजंट मास्तर शीटची लिंक अपडेट करा - आता प्रदान केलेला ID थेट वापरला जात आहे
-            document.getElementById('agentMasterSheetLink').href = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/edit#gid=0`;
+            // Publish to web केलेल्या Google Sheet चा ID वापरून 'एजंट मास्तर' शीटची लिंक तयार करा.
+            // ही लिंक थेट edit मोडमध्ये उघडेल जेणेकरून एजंट माहिती अपडेट करता येईल.
+            document.getElementById('agentMasterSheetLink').href = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/edit#gid=1061487835`; // <--- GID बदलले आहे!
         });
 
         function updateCurrentDateTime() {
@@ -735,7 +737,7 @@
             loadingSpinner.style.display = 'flex'; // लोडिंग स्पिनर दाखवा
 
             try {
-                // Apps Script API मधून डेटा मिळवा
+                // Apps Script API मधून डेटा मिळवा (जे आता CSV URLs मधून वाचेल)
                 const collections = await fetchDataFromSheet('०१-आजचे कलेक्शन', date);
                 const bankBalances = await fetchDataFromSheet('०३-बँक व सिस्टम बॅलन्स', date);
                 const systemLedger = await fetchDataFromSheet('०४-सिस्टम जमा-खर्च', date);
@@ -752,11 +754,13 @@
         }
 
         async function fetchDataFromSheet(sheetName, date) {
-            // Apps Script वेब ॲप URL वापरून डेटा रिक्वेस्ट करा
+            // Apps Script वेब ॲप URL वापरून डेटा रिक्वेस्ट करा (हे Apps Script आता CSV मधून वाचेल)
             const url = `${SCRIPT_URL}?sheet=${sheetName}&date=${date}`;
             const response = await fetch(url);
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status} for sheet: ${sheetName}. Response: ${await response.text()}`);
+                // Apps Script कडून मिळालेला प्रतिसाद पाहण्यासाठी 'response.text()' वापरा
+                const errorText = await response.text();
+                throw new Error(`HTTP error! status: ${response.status} for sheet: ${sheetName}. Details: ${errorText}`);
             }
             return response.json();
         }
@@ -768,7 +772,6 @@
             let grandTotalCollection = 0;
 
             collections.forEach(item => {
-                // Apps Script मधून आलेल्या तारखा ISO स्ट्रिंग फॉरमॅटमध्ये असतात, तुलना करण्यासाठी स्थानिक तारखेत रूपांतरित करा.
                 const itemDate = new Date(item['दिनांक']).toISOString().split('T')[0];
                 if (itemDate === selectedDate) {
                     const amount = parseFloat(item['रक्कम']) || 0;
@@ -788,27 +791,24 @@
             let currentBankBalance = 0;
             let currentSystemBalance = 0;
 
-            // निवडलेल्या तारखेपर्यंतची किंवा त्यापूर्वीची नवीनतम बँक बॅलन्स एंट्री मिळवा
             const relevantBankBalanceEntry = bankBalances
                 .filter(item => item['दिनांक'] && new Date(item['दिनांक']).toISOString().split('T')[0] <= selectedDate)
-                .sort((a, b) => new Date(b['दिनांक']) - new Date(a['दिनांक']))[0]; // निवडलेल्या तारखेपर्यंतची किंवा त्यादिवशीची नवीनतम एंट्री
+                .sort((a, b) => new Date(b['दिनांक']) - new Date(a['दिनांक']))[0];
 
             if (relevantBankBalanceEntry) {
                 currentBankBalance = parseFloat(relevantBankBalanceEntry['बँकेतील शिल्लक']) || 0;
                 currentSystemBalance = parseFloat(relevantBankBalanceEntry['सिस्टमची शिल्लक']) || 0;
             }
-
-            // जर 'सिस्टम बॅलन्स' फील्ड मॅन्युअली अपडेट केले नसेल, तर लेजरमधून सिस्टम बॅलन्स कॅल्क्युलेट करा
+            
             if (systemLedger.length > 0) {
                 let lastLedgerEntry = systemLedger
                     .filter(item => item['दिनांक'] && new Date(item['दिनांक']).toISOString().split('T')[0] <= selectedDate)
-                    .sort((a, b) => new Date(b['दिनांक']) - new Date(a['दिनांक']))[0]; // निवडलेल्या तारखेपर्यंतची किंवा त्यादिवशीची नवीनतम एंट्री
+                    .sort((a, b) => new Date(b['दिनांक']) - new Date(a['दिनांक']))[0];
 
                 if (lastLedgerEntry) {
-                    // योग्य 'सद्यस्थितीतील शिल्लक' कॉलम मधून व्हॅल्यू मिळवा
                     currentSystemBalance = parseFloat(lastLedgerEntry['सद्यस्थितीतील शिल्लक']) || 0;
                 } else {
-                    currentSystemBalance = 0; // या तारखेपूर्वी किंवा या तारखेला कोणतीही लेजर एंट्री नाही
+                    currentSystemBalance = 0;
                 }
             }
 
@@ -818,8 +818,8 @@
             const matchStatusIcon = document.getElementById('matchStatusIcon');
             const matchStatusText = document.getElementById('matchStatusText');
 
-            if (currentBankBalance > 0 || currentSystemBalance > 0) { // किमान एक शिल्लक नोंदवली असल्यास तपासा
-                if (Math.abs(currentBankBalance - currentSystemBalance) < 0.01) { // लहान फ्लोटिंग पॉइंट फरकांसाठी सहिष्णुता
+            if (currentBankBalance > 0 || currentSystemBalance > 0) {
+                if (Math.abs(currentBankBalance - currentSystemBalance) < 0.01) {
                     matchStatusIcon.textContent = '✅';
                     matchStatusIcon.className = 'match-icon matched';
                     matchStatusText.textContent = 'जुळले आहे';
@@ -838,9 +838,9 @@
 
         function updateAgentWiseCollection(collections, selectedDate) {
             const tableBody = document.querySelector('#agentCollectionTable tbody');
-            tableBody.innerHTML = ''; // टेबल बॉडी साफ करा
+            tableBody.innerHTML = '';
             
-            const agentData = {}; // { 'एजंटचे नाव': { Pigmy: 0, RD: 0, FD: 0, Total: 0 } }
+            const agentData = {};
 
             collections.forEach(item => {
                 const itemDate = new Date(item['दिनांक']).toISOString().split('T')[0];
@@ -852,7 +852,7 @@
                     if (!agentData[agentName]) {
                         agentData[agentName] = { Pigmy: 0, RD: 0, FD: 0, Total: 0 };
                     }
-                    if (agentData[agentName][transactionType] !== undefined) { // व्यवहार प्रकार अस्तित्वात असल्याची खात्री करा
+                    if (agentData[agentName][transactionType] !== undefined) {
                         agentData[agentName][transactionType] += amount;
                     }
                     agentData[agentName]['Total'] += amount;
@@ -885,7 +885,7 @@
                 const selectedDate = document.getElementById('dashboardDate').value;
                 const collections = await fetchDataFromSheet('०१-आजचे कलेक्शन', selectedDate);
 
-                tableBody.innerHTML = ''; // लोडिंग संदेश साफ करा
+                tableBody.innerHTML = '';
 
                 let filteredCollections = [];
                 if (type === 'All Collection') {

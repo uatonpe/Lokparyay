@@ -1,1362 +1,1885 @@
-<!-- Global Loader -->
-<div id="loader" class="loader-wrapper">
-    <div class="loader mb-4"></div>
-    <h2 class="text-xl font-bold text-slate-700">माहिती लोड होत आहे...</h2>
-    <p class="text-slate-500 font-medium mt-1">कृपया प्रतीक्षा करा</p>
-</div>
-
-<!-- Header Navigation -->
-<nav class="bg-slate-900 text-white p-4 shadow-md sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-        <h1 class="text-2xl font-bold tracking-wide flex items-center"><i class="fa-solid fa-piggy-bank text-blue-400 mr-3 text-3xl"></i> पतसंस्था डॅशबोर्ड</h1>
-        <div class="space-x-8 hidden md:flex font-semibold text-lg">
-            <button onclick="showSection('dashboard')" class="hover:text-blue-400 transition flex items-center"><i class="fa-solid fa-gauge mr-2"></i> मुख्य डॅशबोर्ड</button>
-            <button onclick="showSection('add-collection')" class="hover:text-green-400 transition flex items-center"><i class="fa-solid fa-plus mr-2"></i> नवीन जमा नोंद</button>
-            <button onclick="showSection('reports')" class="hover:text-orange-400 transition flex items-center"><i class="fa-solid fa-chart-bar mr-2"></i> अहवाल</button>
-        </div>
-        <button class="md:hidden text-2xl" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"><i class="fa-solid fa-bars"></i></button>
-    </div>
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="hidden md:hidden flex flex-col mt-4 space-y-3 bg-slate-800 p-4 rounded-lg border border-slate-700">
-        <button onclick="showSection('dashboard')" class="text-left font-semibold text-lg"><i class="fa-solid fa-gauge mr-2"></i> मुख्य डॅशबोर्ड</button>
-        <button onclick="showSection('add-collection')" class="text-left font-semibold text-lg text-green-400"><i class="fa-solid fa-plus mr-2"></i> नवीन जमा नोंद</button>
-        <button onclick="showSection('reports')" class="text-left font-semibold text-lg text-orange-400"><i class="fa-solid fa-chart-bar mr-2"></i> अहवाल</button>
-    </div>
-</nav>
-
-<div class="max-w-[1600px] mx-auto p-4 md:p-6 mt-4">
-
-    <!-- ================= 1. DASHBOARD SECTION ================= -->
-    <div id="dashboard" class="section active">
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>पतसंस्था डॅशबोर्ड</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- चार्ट्ससाठी (गरज पडल्यास) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- पॉपअप मेसेजसाठी -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <style>
+        /* Google Fonts import */
+        @import url('https://fonts.googleapis.com/css2?family=Mukta:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
         
-        <!-- Date Filter -->
-        <div class="bg-white p-5 rounded-2xl shadow-md border-l-8 border-blue-500 mb-8 flex items-center gap-4 flex-wrap">
-            <h3 class="text-2xl font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-filter text-blue-500 mr-2"></i> फिल्टर करा:</h3>
-            <div class="flex items-center gap-3">
-                <label for="filter-date" class="text-lg font-semibold text-slate-700">तारीख:</label>
-                <input type="date" id="filter-date" value="" class="form-input text-lg w-auto px-4">
-            </div>
-            <button onclick="fetchData(true)" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition flex items-center gap-2">
-                <i class="fa-solid fa-magnifying-glass"></i> शोधा
-            </button>
-            <button onclick="resetFilter()" class="px-6 py-3 bg-slate-200 text-slate-700 font-bold rounded-xl shadow-md hover:bg-slate-300 transition flex items-center gap-2">
-                <i class="fa-solid fa-rotate-left"></i> रीसेट
-            </button>
-        </div>
+        /* Root variables for consistent styling */
+        :root {
+            --bg-color: #f0f4f8; /* Background color for the body */
+            --card-bg: #ffffff;  /* Background color for cards and sections */
+            --primary-text: #1e293b; /* Primary text color */
+            --primary-color: #3b82f6; /* Main blue color for primary actions */
+            --dark-blue: #0f172a; /* Dark blue for headers/navigation */
+            --green: #10b981; /* Color for success messages and positive indicators */
+            --red: #ef4444;   /* Color for errors and negative indicators */
+            --orange: #f59e0b; /* Color for reports and warnings */
+            --teal: #14b8a6;  /* Secondary color */
+            --shadow: 0 10px 20px rgba(0, 0, 0, 0.04); /* Standard shadow for cards */
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transition for UI elements */
+        }
 
-        <!-- Top KPI Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-            
-            <!-- Pigmy Collection KPI -->
-            <div class="kpi-card kpi-green" onclick="openDetailModal('Pigmy', 'today')">
-                <div class="icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
-                <div><div class="value" id="kpi-pigmy-amount">₹ 0</div><div class="label">आजची पिग्मी जमा</div></div>
-            </div>
-            
-            <!-- RD Collection KPI -->
-            <div class="kpi-card kpi-teal" onclick="openDetailModal('RD', 'today')">
-                <div class="icon"><i class="fa-solid fa-boxes-stacked"></i></div>
-                <div><div class="value" id="kpi-rd-amount">₹ 0</div><div class="label">आजची आरडी जमा</div></div>
-            </div>
-            
-            <!-- FD Collection KPI -->
-            <div class="kpi-card kpi-blue" onclick="openDetailModal('FD', 'today')">
-                <div class="icon"><i class="fa-solid fa-building-flag"></i></div>
-                <div><div class="value" id="kpi-fd-amount">₹ 0</div><div class="label">आजची एफडी जमा</div></div>
-            </div>
-            
-            <!-- Bank Balance KPI -->
-            <div class="kpi-card kpi-dark" onclick="openDetailModal('BankBalance', 'today')">
-                <div class="icon"><i class="fa-solid fa-building-columns"></i></div>
-                <div><div class="value" id="kpi-bank-balance">₹ 0</div><div class="label">आजचा बँक बॅलन्स</div></div>
-            </div>
-
-            <!-- System Balance KPI -->
-            <div class="kpi-card kpi-orange" onclick="openDetailModal('SystemBalance', 'today')">
-                <div class="icon"><i class="fa-solid fa-calculator"></i></div>
-                <div><div class="value" id="kpi-system-balance">₹ 0</div><div class="label">आजचा सिस्टम बॅलन्स</div></div>
-            </div>
-
-            <!-- Match/Mismatch Status KPI -->
-            <div class="kpi-card kpi-red" id="kpi-match-status">
-                <div class="icon"><i class="fa-solid fa-scale-balanced"></i></div>
-                <div><div class="value">N/A</div><div class="label">बँक vs सिस्टम</div></div>
-            </div>
-        </div>
-
-        <!-- Today's Collection Summary (New Section) -->
-        <div class="bg-white p-6 rounded-2xl shadow-md border-t-8 border-green-500 mb-8">
-            <h3 class="text-2xl font-bold text-slate-800 mb-5 flex items-center gap-2"><i class="fa-solid fa-list-check text-green-500 mr-2"></i> आजचे कलेक्शन तपशील</h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <!-- Pigmy Summary -->
-                <div class="summary-box bg-green-50 border border-green-200 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                    <div class="text-lg font-semibold text-green-700">पिग्मी जमा</div>
-                    <div class="text-3xl font-bold text-green-800 mt-2" id="today-pigmy-summary">₹ 0</div>
-                </div>
-                <!-- RD Summary -->
-                <div class="summary-box bg-teal-50 border border-teal-200 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                    <div class="text-lg font-semibold text-teal-700">आरडी जमा</div>
-                    <div class="text-3xl font-bold text-teal-800 mt-2" id="today-rd-summary">₹ 0</div>
-                </div>
-                <!-- FD Summary -->
-                <div class="summary-box bg-blue-50 border border-blue-200 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                    <div class="text-lg font-semibold text-blue-700">एफडी जमा</div>
-                    <div class="text-3xl font-bold text-blue-800 mt-2" id="today-fd-summary">₹ 0</div>
-                </div>
-            </div>
-
-            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b pb-4">
-                <div class="flex items-center gap-2">
-                    <h4 class="text-xl font-bold text-slate-700">कलेक्शन तपशील:</h4>
-                </div>
-                <div class="relative w-full md:w-96">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 text-lg"></i>
-                    <input type="text" id="searchInput" onkeyup="searchCollectionTable()" placeholder="एजंट किंवा खाते क्र. शोधा..." class="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-green-500 bg-slate-50 font-medium transition">
-                </div>
-            </div>
-            <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-                <table class="w-full text-left border-collapse" id="collectionTable">
-                    <thead>
-                        <tr class="bg-slate-100 text-slate-700 text-lg">
-                            <th class="p-4 font-bold w-28">तारीख</th>
-                            <th class="p-4 font-bold w-32">प्रकार</th>
-                            <th class="p-4 font-bold">एजंटचे नाव</th>
-                            <th class="p-4 font-bold">खाते क्र.</th>
-                            <th class="p-4 font-bold">ग्राहकाचे नाव</th>
-                            <th class="p-4 font-bold text-right w-32">रक्कम (₹)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="collection-table-body" class="text-md divide-y divide-slate-100">
-                        <!-- Rows injected via JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================= 2. ADD COLLECTION FORM SECTION ================= -->
-    <div id="add-collection" class="section hidden-section max-w-3xl mx-auto bg-white p-8 md:p-10 rounded-2xl shadow-xl border-t-8 border-green-500 mt-10">
-        <h2 class="text-3xl font-bold text-slate-800 mb-2"><i class="fa-solid fa-plus text-green-500 mr-2"></i> नवीन जमा नोंद करा</h2>
-        <p class="text-slate-500 mb-8 font-semibold text-lg border-b pb-4">पिग्मी, आरडी, एफडी किंवा इतर कोणतीही जमा येथे नोंदवा.</p>
+        /* Body styling */
+        body { 
+            font-family: 'Mukta', 'Poppins', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--primary-text); 
+            margin: 0; 
+        }
         
-        <form id="collection-form" onsubmit="submitCollection(event)">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-slate-700 font-bold mb-2 text-lg">तारीख <span class="text-red-500">*</span></label>
-                    <input type="date" id="coll-date" required class="form-input">
-                </div>
-                <div>
-                    <label class="block text-slate-700 font-bold mb-2 text-lg">जमा प्रकार <span class="text-red-500">*</span></label>
-                    <select id="coll-type" required class="form-select">
-                        <option value="">निवडा...</option>
-                        <!-- Options will be populated by JS -->
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-slate-700 font-bold mb-2 text-lg">एजंटचे नाव <span class="text-red-500">*</span></label>
-                    <select id="coll-agent" required class="form-select">
-                        <option value="">निवडा...</option>
-                        <!-- Options will be populated by JS -->
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-slate-700 font-bold mb-2 text-lg">खाते क्र. (असल्यास)</label>
-                    <input type="text" id="coll-account" placeholder="उदा. PIG1001, RD202305" class="form-input">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-slate-700 font-bold mb-2 text-lg">ग्राहकाचे नाव</label>
-                    <input type="text" id="coll-customer" placeholder="उदा. राजेश पाटील" class="form-input">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-slate-700 font-bold mb-2 text-lg">रक्कम (₹) <span class="text-red-500">*</span></label>
-                    <input type="number" id="coll-amount" required placeholder="50000" class="form-input-amount income" step="0.01">
-                </div>
-            </div>
-            <button type="submit" class="mt-8 w-full bg-green-600 text-white font-bold text-2xl py-4 rounded-xl hover:bg-green-700 shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex justify-center items-center gap-3">
-                <i class="fa-solid fa-cloud-arrow-up"></i> माहिती सेव्ह करा
-            </button>
-        </form>
+        /* Scrollbar styling for better user experience */
+        ::-webkit-scrollbar { 
+            width: 8px; 
+            height: 8px; 
+        }
+        ::-webkit-scrollbar-thumb { 
+            background: #cbd5e1; /* Light gray thumb */
+            border-radius: 10px; 
+        }
+        ::-webkit-scrollbar-thumb:hover { 
+            background: #94a3b8; /* Darker gray on hover */
+        }
+
+        /* Class to hide sections initially or when not active */
+        .hidden-section { 
+            display: none !important; 
+        }
+
+        /* KPI Cards Styling */
+        .kpi-card {
+            background: var(--card-bg); 
+            padding: 1.25rem; 
+            border-radius: 16px; 
+            box-shadow: var(--shadow);
+            display: flex; 
+            align-items: center; 
+            gap: 1rem; 
+            cursor: pointer; /* Indicates it's clickable */
+            transition: var(--transition);
+            border: 1px solid rgba(0,0,0,0.02); /* Subtle border */
+            position: relative; 
+            overflow: hidden; /* Ensures the ::before pseudo-element stays within bounds */
+        }
+        .kpi-card:hover { 
+            transform: translateY(-4px); /* Subtle lift effect on hover */
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08); /* Enhanced shadow on hover */
+        }
+        /* Decorative vertical line on the left of KPI cards */
+        .kpi-card::before { 
+            content: ''; 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 5px; 
+            height: 100%; 
+            background: currentColor; /* Inherits color from the card's text color */
+            opacity: 0.9; 
+        }
+        .kpi-card .icon { 
+            font-size: 1.8rem; 
+            min-width: 55px; 
+            height: 55px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 12px; 
+            background: #f8fafc; /* Light background for icon */
+            transition: var(--transition); 
+        }
+        .kpi-card:hover .icon { 
+            transform: scale(1.1); /* Slight enlargement of icon on hover */
+        }
+        .kpi-card .value { 
+            font-size: 1.6rem; 
+            font-weight: 700; 
+            line-height: 1.2; 
+            margin-bottom: 2px; 
+            font-family: 'Poppins', sans-serif; /* Different font for emphasis */
+            letter-spacing: -0.5px; /* Subtle adjustment for better visual appeal */
+        }
+        .kpi-card .label { 
+            font-size: 0.9rem; 
+            color: #64748b; /* Muted color for labels */
+            font-weight: 600; 
+            line-height: 1.1; 
+        }
+
+        /* KPI Card Specific Colors */
+        .kpi-blue { color: var(--primary-color); } 
+        .kpi-green { color: var(--green); }
+        .kpi-red { color: var(--red); } 
+        .kpi-orange { color: var(--orange); }
+        .kpi-dark { color: var(--dark-blue); } 
+        .kpi-teal { color: var(--teal); }
+
+        /* Modal Custom CSS */
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(15, 23, 42, 0.6); /* Semi-transparent dark overlay */
+            display: none; /* Hidden by default */
+            justify-content: center; 
+            align-items: center; 
+            z-index: 2000; /* High z-index to appear on top */
+            padding: 1rem; 
+            backdrop-filter: blur(5px); /* Frosted glass effect */
+        }
+        .modal-content { 
+            background: white; 
+            border-radius: 20px; 
+            padding: 1.5rem 2rem; 
+            width: 100%; 
+            max-width: 700px; 
+            max-height: 85vh; /* Max height to prevent overflow */
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); /* Strong shadow for modal */
+            animation: slideUp 0.3s ease; /* Smooth slide-up animation */
+        }
+        @keyframes slideUp { 
+            from { transform: translateY(20px); opacity: 0; } 
+            to { transform: translateY(0); opacity: 1; } 
+        }
+        
+        /* Table row hover effects in modal */
+        .clickable-row { 
+            cursor: pointer; 
+            transition: background 0.2s; 
+        }
+        .clickable-row:hover { 
+            background-color: #f1f5f9; /* Light hover effect on table rows */
+        }
+
+        /* Loader styling */
+        .loader-wrapper { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(255,255,255,0.9); /* Semi-transparent white background */
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 9999; /* Very high z-index to be on top of everything */
+            backdrop-filter: blur(5px); /* Frosted glass effect */
+        }
+        .loader { 
+            border: 4px solid #f3f3f3; /* Light gray border */
+            border-top: 4px solid var(--primary-color); /* Primary color for the spinning part */
+            border-radius: 50%; 
+            width: 50px; 
+            height: 50px; 
+            animation: spin 1s linear infinite; /* Spin animation */
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+
+        /* Custom input styles for forms */
+        .form-input {
+            @apply w-full p-3 border-2 border-slate-200 rounded-xl focus:outline-none text-lg bg-slate-50 font-medium transition;
+        }
+        /* Styles for amount input fields */
+        .form-input-amount {
+            @apply w-full p-4 border-2 rounded-xl focus:outline-none font-bold text-3xl text-center tracking-wider transition;
+        }
+        .form-input-amount.income {
+            @apply border-green-300 bg-green-50 focus:border-green-600 text-green-700; /* Green theme for income */
+        }
+        .form-input-amount.expense {
+            @apply border-red-300 bg-red-50 focus:border-red-600 text-red-700; /* Red theme for expenses */
+        }
+        .form-input-amount.bank {
+             @apply border-blue-300 bg-blue-50 focus:border-blue-600 text-blue-700; /* Blue theme for bank */
+        }
+        /* Custom styles for select dropdowns */
+        .form-select {
+             @apply w-full p-3 border-2 border-slate-200 rounded-xl focus:outline-none text-lg bg-slate-50 font-medium transition appearance-none; /* appearance-none hides default arrow */
+        }
+        /* Summary Box Styling */
+        .summary-box {
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        .summary-box:hover {
+            transform: translateY(-4px); /* Lift effect */
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08); /* Enhanced shadow */
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Global Loader -->
+    <!-- This loader is displayed while data is being fetched from the API -->
+    <div id="loader" class="loader-wrapper">
+        <div class="loader mb-4"></div>
+        <h2 class="text-xl font-bold text-slate-700">माहिती लोड होत आहे...</h2>
+        <p class="text-slate-500 font-medium mt-1">कृपया प्रतीक्षा करा</p>
     </div>
 
-    <!-- ================= 3. REPORTS SECTION ================= -->
-    <div id="reports" class="section hidden-section bg-white p-8 md:p-10 rounded-2xl shadow-xl border-t-8 border-orange-500 mt-10">
-        <h2 class="text-3xl font-bold text-slate-800 mb-2"><i class="fa-solid fa-chart-bar text-orange-500 mr-2"></i> अहवाल</h2>
-        <p class="text-slate-500 mb-8 font-semibold text-lg border-b pb-4">विविध अहवाल येथे पहा.</p>
-
-        <!-- Date Range Filter for Reports -->
-        <div class="bg-white p-5 rounded-2xl shadow-md border-l-8 border-orange-500 mb-8 flex items-center gap-4 flex-wrap">
-            <h3 class="text-2xl font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-calendar-days text-orange-500 mr-2"></i> कालावधी निवडा:</h3>
-            <div class="flex items-center gap-3">
-                <label for="report-start-date" class="text-lg font-semibold text-slate-700">पासून:</label>
-                <input type="date" id="report-start-date" class="form-input text-lg w-auto px-4">
+    <!-- Header Navigation -->
+    <nav class="bg-slate-900 text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <!-- Logo and Title -->
+            <h1 class="text-2xl font-bold tracking-wide flex items-center">
+                <i class="fa-solid fa-piggy-bank text-blue-400 mr-3 text-3xl"></i> 
+                पतसंस्था डॅशबोर्ड
+            </h1>
+            <!-- Desktop Navigation Links -->
+            <div class="space-x-8 hidden md:flex font-semibold text-lg">
+                <button onclick="showSection('dashboard')" class="hover:text-blue-400 transition flex items-center"><i class="fa-solid fa-gauge mr-2"></i> मुख्य डॅशबोर्ड</button>
+                <button onclick="showSection('add-collection')" class="hover:text-green-400 transition flex items-center"><i class="fa-solid fa-plus mr-2"></i> नवीन जमा नोंद</button>
+                <button onclick="showSection('reports')" class="hover:text-orange-400 transition flex items-center"><i class="fa-solid fa-chart-bar mr-2"></i> अहवाल</button>
             </div>
-            <div class="flex items-center gap-3">
-                <label for="report-end-date" class="text-lg font-semibold text-slate-700">पर्यंत:</label>
-                <input type="date" id="report-end-date" class="form-input text-lg w-auto px-4">
-            </div>
-            <button onclick="generateReports()" class="px-6 py-3 bg-orange-600 text-white font-bold rounded-xl shadow-md hover:bg-orange-700 transition flex items-center gap-2">
-                <i class="fa-solid fa-play"></i> अहवाल तयार करा
-            </button>
-            <button onclick="resetReportFilter()" class="px-6 py-3 bg-slate-200 text-slate-700 font-bold rounded-xl shadow-md hover:bg-slate-300 transition flex items-center gap-2">
-                <i class="fa-solid fa-rotate-left"></i> रीसेट
+            <!-- Mobile Menu Toggle Button -->
+            <button class="md:hidden text-2xl" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <i class="fa-solid fa-bars"></i>
             </button>
         </div>
-
-        <!-- Report Section: Agent Performance -->
-        <div class="bg-white p-6 rounded-2xl shadow-md border-t-8 border-purple-500 mb-8">
-            <div class="flex justify-between items-center mb-6 gap-4 border-b pb-4">
-                <h3 class="text-2xl font-bold text-slate-800"><i class="fa-solid fa-user-tie text-purple-500 mr-2"></i> एजंट कार्यप्रदर्शन अहवाल</h3>
-                <button id="export-agent-report" class="px-4 py-2 bg-teal-600 text-white font-bold rounded-lg shadow-md hover:bg-teal-700 transition flex items-center gap-2"><i class="fa-solid fa-file-excel"></i> एक्सपोर्ट</button>
-            </div>
-            <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-                <table class="w-full text-left border-collapse" id="agentReportTable">
-                    <thead>
-                        <tr class="bg-slate-100 text-slate-700 text-lg">
-                            <th class="p-4 font-bold">एजंटचे नाव</th>
-                            <th class="p-4 font-bold">एकूण कलेक्शन (₹)</th>
-                            <th class="p-4 font-bold">पिग्मी कलेक्शन (₹)</th>
-                            <th class="p-4 font-bold">आरडी कलेक्शन (₹)</th>
-                            <th class="p-4 font-bold">एफडी कलेक्शन (₹)</th>
-                            <th class="p-4 font-bold text-center">सविस्तर</th>
-                        </tr>
-                    </thead>
-                    <tbody id="agent-report-body" class="text-md divide-y divide-slate-100">
-                        <!-- Agent report rows will be injected here -->
-                        <tr><td colspan="6" class="p-4 text-center text-slate-500 font-bold">अहवाल तयार करण्यासाठी कृपया कालावधी निवडा.</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden flex flex-col mt-4 space-y-3 bg-slate-800 p-4 rounded-lg border border-slate-700">
+            <button onclick="showSection('dashboard')" class="text-left font-semibold text-lg"><i class="fa-solid fa-gauge mr-2"></i> मुख्य डॅशबोर्ड</button>
+            <button onclick="showSection('add-collection')" class="text-left font-semibold text-lg text-green-400"><i class="fa-solid fa-plus mr-2"></i> नवीन जमा नोंद</button>
+            <button onclick="showSection('reports')" class="text-left font-semibold text-lg text-orange-400"><i class="fa-solid fa-chart-bar mr-2"></i> अहवाल</button>
         </div>
+    </nav>
 
-         <!-- Report Section: Product Wise Collection -->
-        <div class="bg-white p-6 rounded-2xl shadow-md border-t-8 border-indigo-500 mb-8">
-            <div class="flex justify-between items-center mb-6 gap-4 border-b pb-4">
-                <h3 class="text-2xl font-bold text-slate-800"><i class="fa-solid fa-boxes-packing text-indigo-500 mr-2"></i> उत्पादन (Product) नुसार कलेक्शन अहवाल</h3>
-                <button id="export-product-report" class="px-4 py-2 bg-teal-600 text-white font-bold rounded-lg shadow-md hover:bg-teal-700 transition flex items-center gap-2"><i class="fa-solid fa-file-excel"></i> एक्सपोर्ट</button>
-            </div>
-            <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-                <table class="w-full text-left border-collapse" id="productReportTable">
-                    <thead>
-                        <tr class="bg-slate-100 text-slate-700 text-lg">
-                            <th class="p-4 font-bold">उत्पादन प्रकार</th>
-                            <th class="p-4 font-bold text-right">एकूण कलेक्शन (₹)</th>
-                            <th class="p-4 font-bold text-center">खात्यांची संख्या</th>
-                        </tr>
-                    </thead>
-                    <tbody id="product-report-body" class="text-md divide-y divide-slate-100">
-                         <!-- Product report rows will be injected here -->
-                        <tr><td colspan="3" class="p-4 text-center text-slate-500 font-bold">अहवाल तयार करण्यासाठी कृपया कालावधी निवडा.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <!-- Main Content Area -->
+    <div class="max-w-[1600px] mx-auto p-4 md:p-6 mt-4">
 
-        <!-- Bank Balance Entry Section (New) -->
-        <div class="bg-white p-6 rounded-2xl shadow-md border-t-8 border-cyan-500 mt-10">
-            <h2 class="text-3xl font-bold text-slate-800 mb-2"><i class="fa-solid fa-building-columns text-cyan-500 mr-2"></i> बँक बॅलन्स नोंद</h2>
-            <p class="text-slate-500 mb-8 font-semibold text-lg border-b pb-4">दैनंदिन बँक स्टेटमेंट बॅलन्स येथे नोंदवा.</p>
+        <!-- ================= 1. DASHBOARD SECTION ================= -->
+        <!-- This section displays the main overview and daily collection details -->
+        <div id="dashboard" class="section active">
             
-            <form id="bank-balance-form" onsubmit="submitBankBalance(event)">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            <!-- Date Filter Section -->
+            <div class="bg-white p-5 rounded-2xl shadow-md border-l-8 border-blue-500 mb-8 flex items-center gap-4 flex-wrap">
+                <h3 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-filter text-blue-500 mr-2"></i> फिल्टर करा:
+                </h3>
+                <div class="flex items-center gap-3">
+                    <label for="filter-date" class="text-lg font-semibold text-slate-700">तारीख:</label>
+                    <!-- Date input for filtering dashboard data -->
+                    <input type="date" id="filter-date" value="" class="form-input text-lg w-auto px-4">
+                </div>
+                <!-- Button to apply filter -->
+                <button onclick="fetchData(true)" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass"></i> शोधा
+                </button>
+                <!-- Button to reset filter -->
+                <button onclick="resetFilter()" class="px-6 py-3 bg-slate-200 text-slate-700 font-bold rounded-xl shadow-md hover:bg-slate-300 transition flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i> रीसेट
+                </button>
+            </div>
+
+            <!-- Top KPI Cards Section -->
+            <!-- Displays key performance indicators for the selected date -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                
+                <!-- Pigmy Collection KPI -->
+                <div class="kpi-card kpi-green" onclick="openDetailModal('Pigmy', 'today')">
+                    <div class="icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+                    <div>
+                        <div class="value" id="kpi-pigmy-amount">₹ 0</div>
+                        <div class="label">आजची पिग्मी जमा</div>
+                    </div>
+                </div>
+                
+                <!-- RD Collection KPI -->
+                <div class="kpi-card kpi-teal" onclick="openDetailModal('RD', 'today')">
+                    <div class="icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+                    <div>
+                        <div class="value" id="kpi-rd-amount">₹ 0</div>
+                        <div class="label">आजची आरडी जमा</div>
+                    </div>
+                </div>
+                
+                <!-- FD Collection KPI -->
+                <div class="kpi-card kpi-blue" onclick="openDetailModal('FD', 'today')">
+                    <div class="icon"><i class="fa-solid fa-building-flag"></i></div>
+                    <div>
+                        <div class="value" id="kpi-fd-amount">₹ 0</div>
+                        <div class="label">आजची एफडी जमा</div>
+                    </div>
+                </div>
+                
+                <!-- Bank Balance KPI -->
+                <div class="kpi-card kpi-dark" onclick="openDetailModal('BankBalance', 'today')">
+                    <div class="icon"><i class="fa-solid fa-building-columns"></i></div>
+                    <div>
+                        <div class="value" id="kpi-bank-balance">₹ 0</div>
+                        <div class="label">आजचा बँक बॅलन्स</div>
+                    </div>
+                </div>
+
+                <!-- System Balance KPI -->
+                <div class="kpi-card kpi-orange" onclick="openDetailModal('SystemBalance', 'today')">
+                    <div class="icon"><i class="fa-solid fa-calculator"></i></div>
+                    <div>
+                        <div class="value" id="kpi-system-balance">₹ 0</div>
+                        <div class="label">आजचा सिस्टम बॅलन्स</div>
+                    </div>
+                </div>
+
+                <!-- Match/Mismatch Status KPI -->
+                <div class="kpi-card kpi-red" id="kpi-match-status">
+                    <div class="icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                    <div>
+                        <div class="value">N/A</div>
+                        <div class="label">बँक vs सिस्टम</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today's Collection Summary Section -->
+            <!-- Displays a quick summary of collections by product type for the current day -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border-t-8 border-green-500 mb-8">
+                <h3 class="text-2xl font-bold text-slate-800 mb-5 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-green-500 mr-2"></i> आजचे कलेक्शन तपशील
+                </h3>
+                
+                <!-- Summary Boxes for Pigmy, RD, FD -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <!-- Pigmy Summary -->
+                    <div class="summary-box bg-green-50 border border-green-200 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                        <div class="text-lg font-semibold text-green-700">पिग्मी जमा</div>
+                        <div class="text-3xl font-bold text-green-800 mt-2" id="today-pigmy-summary">₹ 0</div>
+                    </div>
+                    <!-- RD Summary -->
+                    <div class="summary-box bg-teal-50 border border-teal-200 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                        <div class="text-lg font-semibold text-teal-700">आरडी जमा</div>
+                        <div class="text-3xl font-bold text-teal-800 mt-2" id="today-rd-summary">₹ 0</div>
+                    </div>
+                    <!-- FD Summary -->
+                    <div class="summary-box bg-blue-50 border border-blue-200 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                        <div class="text-lg font-semibold text-blue-700">एफडी जमा</div>
+                        <div class="text-3xl font-bold text-blue-800 mt-2" id="today-fd-summary">₹ 0</div>
+                    </div>
+                </div>
+
+                <!-- Search Bar for Collection Table -->
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b pb-4">
+                    <div class="flex items-center gap-2">
+                        <h4 class="text-xl font-bold text-slate-700">कलेक्शन तपशील:</h4>
+                    </div>
+                    <div class="relative w-full md:w-96">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 text-lg"></i>
+                        <!-- Input field for searching the table -->
+                        <input type="text" id="searchInput" onkeyup="searchCollectionTable()" placeholder="एजंट किंवा खाते क्र. शोधा..." class="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-green-500 bg-slate-50 font-medium transition">
+                    </div>
+                </div>
+                <!-- Collection Details Table -->
+                <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                    <table class="w-full text-left border-collapse" id="collectionTable">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 text-lg">
+                                <th class="p-4 font-bold w-28">तारीख</th>
+                                <th class="p-4 font-bold w-32">प्रकार</th>
+                                <th class="p-4 font-bold">एजंटचे नाव</th>
+                                <th class="p-4 font-bold">खाते क्र.</th>
+                                <th class="p-4 font-bold">ग्राहकाचे नाव</th>
+                                <th class="p-4 font-bold text-right w-32">रक्कम (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="collection-table-body" class="text-md divide-y divide-slate-100">
+                            <!-- Table rows will be dynamically injected here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 2. ADD COLLECTION FORM SECTION ================= -->
+        <!-- This section contains the form to add new collection entries -->
+        <div id="add-collection" class="section hidden-section max-w-3xl mx-auto bg-white p-8 md:p-10 rounded-2xl shadow-xl border-t-8 border-green-500 mt-10">
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">
+                <i class="fa-solid fa-plus text-green-500 mr-2"></i> नवीन जमा नोंद करा
+            </h2>
+            <p class="text-slate-500 mb-8 font-semibold text-lg border-b pb-4">पिग्मी, आरडी, एफडी किंवा इतर कोणतीही जमा येथे नोंदवा.</p>
+            
+            <!-- Form for submitting new collection data -->
+            <form id="collection-form" onsubmit="submitCollection(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Date Input -->
                     <div>
                         <label class="block text-slate-700 font-bold mb-2 text-lg">तारीख <span class="text-red-500">*</span></label>
-                        <input type="date" id="bank-bal-date" required class="form-input">
+                        <input type="date" id="coll-date" required class="form-input">
                     </div>
+                    <!-- Collection Type Dropdown -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-2 text-lg">बँक स्टेटमेंट बॅलन्स (₹) <span class="text-red-500">*</span></label>
-                        <input type="number" id="bank-bal-amount" required placeholder="उदा. 500000" class="form-input-amount bank" step="0.01">
+                        <label class="block text-slate-700 font-bold mb-2 text-lg">जमा प्रकार <span class="text-red-500">*</span></label>
+                        <select id="coll-type" required class="form-select">
+                            <option value="">निवडा...</option>
+                            <!-- Options will be populated by JavaScript from API settings -->
+                        </select>
                     </div>
-                    <div class="md:self-end">
-                         <button type="submit" class="w-full bg-cyan-600 text-white font-bold text-xl py-3 rounded-xl hover:bg-cyan-700 shadow-lg transition transform hover:-translate-y-1 flex justify-center items-center gap-3">
-                            <i class="fa-solid fa-save"></i> बॅलन्स सेव्ह करा
-                        </button>
+                    <!-- Agent Name Dropdown -->
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-2 text-lg">एजंटचे नाव <span class="text-red-500">*</span></label>
+                        <select id="coll-agent" required class="form-select">
+                            <option value="">निवडा...</option>
+                            <!-- Options will be populated by JavaScript from API settings -->
+                        </select>
+                    </div>
+                    <!-- Account Number Input -->
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-2 text-lg">खाते क्र. (असल्यास)</label>
+                        <input type="text" id="coll-account" placeholder="उदा. PIG1001, RD202305" class="form-input">
+                    </div>
+                    <!-- Customer Name Input -->
+                    <div class="md:col-span-2">
+                        <label class="block text-slate-700 font-bold mb-2 text-lg">ग्राहकाचे नाव</label>
+                        <input type="text" id="coll-customer" placeholder="उदा. राजेश पाटील" class="form-input">
+                    </div>
+                    <!-- Amount Input -->
+                    <div class="md:col-span-2">
+                        <label class="block text-slate-700 font-bold mb-2 text-lg">रक्कम (₹) <span class="text-red-500">*</span></label>
+                        <input type="number" id="coll-amount" required placeholder="50000" class="form-input-amount income" step="0.01">
                     </div>
                 </div>
+                <!-- Submit Button -->
+                <button type="submit" class="mt-8 w-full bg-green-600 text-white font-bold text-2xl py-4 rounded-xl hover:bg-green-700 shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex justify-center items-center gap-3">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> माहिती सेव्ह करा
+                </button>
             </form>
-            <div class="mt-8 text-sm text-slate-500 italic">
-                * हा बॅलन्स 'डॅशबोर्ड' विभागात 'आजचा बँक बॅलन्स' म्हणून दर्शविला जाईल.
+        </div>
+
+        <!-- ================= 3. REPORTS SECTION ================= -->
+        <!-- This section allows users to generate and view various financial reports -->
+        <div id="reports" class="section hidden-section bg-white p-8 md:p-10 rounded-2xl shadow-xl border-t-8 border-orange-500 mt-10">
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">
+                <i class="fa-solid fa-chart-bar text-orange-500 mr-2"></i> अहवाल
+            </h2>
+            <p class="text-slate-500 mb-8 font-semibold text-lg border-b pb-4">विविध अहवाल येथे पहा.</p>
+
+            <!-- Date Range Filter for Reports -->
+            <div class="bg-white p-5 rounded-2xl shadow-md border-l-8 border-orange-500 mb-8 flex items-center gap-4 flex-wrap">
+                <h3 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-days text-orange-500 mr-2"></i> कालावधी निवडा:
+                </h3>
+                <!-- Start Date Input -->
+                <div class="flex items-center gap-3">
+                    <label for="report-start-date" class="text-lg font-semibold text-slate-700">पासून:</label>
+                    <input type="date" id="report-start-date" class="form-input text-lg w-auto px-4">
+                </div>
+                <!-- End Date Input -->
+                <div class="flex items-center gap-3">
+                    <label for="report-end-date" class="text-lg font-semibold text-slate-700">पर्यंत:</label>
+                    <input type="date" id="report-end-date" class="form-input text-lg w-auto px-4">
+                </div>
+                <!-- Button to generate reports -->
+                <button onclick="generateReports()" class="px-6 py-3 bg-orange-600 text-white font-bold rounded-xl shadow-md hover:bg-orange-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-play"></i> अहवाल तयार करा
+                </button>
+                <!-- Button to reset report filters -->
+                <button onclick="resetReportFilter()" class="px-6 py-3 bg-slate-200 text-slate-700 font-bold rounded-xl shadow-md hover:bg-slate-300 transition flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i> रीसेट
+                </button>
             </div>
+
+            <!-- Report Section: Agent Performance -->
+            <!-- Displays performance metrics for each agent within the selected date range -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border-t-8 border-purple-500 mb-8">
+                <div class="flex justify-between items-center mb-6 gap-4 border-b pb-4">
+                    <h3 class="text-2xl font-bold text-slate-800">
+                        <i class="fa-solid fa-user-tie text-purple-500 mr-2"></i> एजंट कार्यप्रदर्शन अहवाल
+                    </h3>
+                    <!-- Export button for the agent report table -->
+                    <button id="export-agent-report" class="px-4 py-2 bg-teal-600 text-white font-bold rounded-lg shadow-md hover:bg-teal-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> एक्सपोर्ट
+                    </button>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                    <table class="w-full text-left border-collapse" id="agentReportTable">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 text-lg">
+                                <th class="p-4 font-bold">एजंटचे नाव</th>
+                                <th class="p-4 font-bold">एकूण कलेक्शन (₹)</th>
+                                <th class="p-4 font-bold">पिग्मी कलेक्शन (₹)</th>
+                                <th class="p-4 font-bold">आरडी कलेक्शन (₹)</th>
+                                <th class="p-4 font-bold">एफडी कलेक्शन (₹)</th>
+                                <th class="p-4 font-bold text-center">सविस्तर</th>
+                            </tr>
+                        </thead>
+                        <tbody id="agent-report-body" class="text-md divide-y divide-slate-100">
+                            <!-- Agent report rows will be dynamically injected here -->
+                            <tr><td colspan="6" class="p-4 text-center text-slate-500 font-bold">अहवाल तयार करण्यासाठी कृपया कालावधी निवडा.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+             <!-- Report Section: Product Wise Collection -->
+             <!-- Displays collection data aggregated by product type (Pigmy, RD, FD, etc.) -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border-t-8 border-indigo-500 mb-8">
+                <div class="flex justify-between items-center mb-6 gap-4 border-b pb-4">
+                    <h3 class="text-2xl font-bold text-slate-800">
+                        <i class="fa-solid fa-boxes-packing text-indigo-500 mr-2"></i> उत्पादन (Product) नुसार कलेक्शन अहवाल
+                    </h3>
+                    <!-- Export button for the product report table -->
+                    <button id="export-product-report" class="px-4 py-2 bg-teal-600 text-white font-bold rounded-lg shadow-md hover:bg-teal-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> एक्सपोर्ट
+                    </button>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                    <table class="w-full text-left border-collapse" id="productReportTable">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 text-lg">
+                                <th class="p-4 font-bold">उत्पादन प्रकार</th>
+                                <th class="p-4 font-bold text-right">एकूण कलेक्शन (₹)</th>
+                                <th class="p-4 font-bold text-center">खात्यांची संख्या</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-report-body" class="text-md divide-y divide-slate-100">
+                             <!-- Product report rows will be dynamically injected here -->
+                            <tr><td colspan="3" class="p-4 text-center text-slate-500 font-bold">अहवाल तयार करण्यासाठी कृपया कालावधी निवडा.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bank Balance Entry Section -->
+            <!-- Allows manual entry of daily bank statement balance -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border-t-8 border-cyan-500 mt-10">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">
+                    <i class="fa-solid fa-building-columns text-cyan-500 mr-2"></i> बँक बॅलन्स नोंद
+                </h2>
+                <p class="text-slate-500 mb-8 font-semibold text-lg border-b pb-4">दैनंदिन बँक स्टेटमेंट बॅलन्स येथे नोंदवा.</p>
+                
+                <!-- Form for submitting bank balance -->
+                <form id="bank-balance-form" onsubmit="submitBankBalance(event)">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                        <!-- Date Input for Bank Balance -->
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-2 text-lg">तारीख <span class="text-red-500">*</span></label>
+                            <input type="date" id="bank-bal-date" required class="form-input">
+                        </div>
+                        <!-- Bank Balance Amount Input -->
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-2 text-lg">बँक स्टेटमेंट बॅलन्स (₹) <span class="text-red-500">*</span></label>
+                            <input type="number" id="bank-bal-amount" required placeholder="उदा. 500000" class="form-input-amount bank" step="0.01">
+                        </div>
+                        <!-- Submit Button for Bank Balance -->
+                        <div class="md:self-end">
+                             <button type="submit" class="w-full bg-cyan-600 text-white font-bold text-xl py-3 rounded-xl hover:bg-cyan-700 shadow-lg transition transform hover:-translate-y-1 flex justify-center items-center gap-3">
+                                <i class="fa-solid fa-save"></i> बॅलन्स सेव्ह करा
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <!-- Informational Note -->
+                <div class="mt-8 text-sm text-slate-500 italic">
+                    * हा बॅलन्स 'डॅशबोर्ड' विभागात 'आजचा बँक बॅलन्स' म्हणून दर्शविला जाईल.
+                </div>
+            </div>
+
         </div>
 
     </div>
 
-</div>
-
-<!-- ================= DRILL-DOWN MODAL (तपशील पाहण्यासाठी) ================= -->
-<div id="detailsModal" class="modal-overlay">
-    <div class="modal-content relative flex flex-col h-full max-h-[85vh]">
-        <div class="flex justify-between items-center mb-4 pb-4 border-b-2 border-slate-100 shrink-0">
-            <div class="flex items-center gap-4">
-                <button id="modal-back-btn" class="hidden w-10 h-10 rounded-full bg-slate-100 hover:bg-blue-500 hover:text-white transition text-slate-600 text-xl shadow-sm"><i class="fa-solid fa-arrow-left"></i></button>
-                <h2 id="modal-title" class="text-2xl font-bold text-slate-800 flex items-center gap-2"></h2>
+    <!-- ================= DRILL-DOWN MODAL (तपशील पाहण्यासाठी) ================= -->
+    <!-- This modal is used to display detailed information when clicking on KPIs or table rows -->
+    <div id="detailsModal" class="modal-overlay">
+        <div class="modal-content relative flex flex-col h-full max-h-[85vh]">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center mb-4 pb-4 border-b-2 border-slate-100 shrink-0">
+                <div class="flex items-center gap-4">
+                    <!-- Back Button (currently hidden, can be used for multi-step modals) -->
+                    <button id="modal-back-btn" class="hidden w-10 h-10 rounded-full bg-slate-100 hover:bg-blue-500 hover:text-white transition text-slate-600 text-xl shadow-sm"><i class="fa-solid fa-arrow-left"></i></button>
+                    <!-- Modal Title -->
+                    <h2 id="modal-title" class="text-2xl font-bold text-slate-800 flex items-center gap-2"></h2>
+                </div>
+                <!-- Close Button -->
+                <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-red-500 hover:text-white transition text-slate-600 text-xl shadow-sm"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-red-500 hover:text-white transition text-slate-600 text-xl shadow-sm"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        
-        <!-- Table Container for Drill-down -->
-        <div id="modal-table-container" class="overflow-y-auto flex-grow pr-2">
-            <table class="w-full text-left border-collapse">
-                <thead id="modal-thead" class="sticky top-0 bg-white shadow-sm text-slate-700 font-bold text-lg z-10">
-                    <!-- Headings injected -->
-                </thead>
-                <tbody id="modal-tbody" class="divide-y divide-slate-100 text-md text-slate-600">
-                    <!-- Data injected -->
-                </tbody>
-            </table>
+            
+            <!-- Modal Table Container -->
+            <!-- This container holds the table for displaying detailed data -->
+            <div id="modal-table-container" class="overflow-y-auto flex-grow pr-2">
+                <table class="w-full text-left border-collapse">
+                    <!-- Modal Table Header (sticky at the top) -->
+                    <thead id="modal-thead" class="sticky top-0 bg-white shadow-sm text-slate-700 font-bold text-lg z-10">
+                        <!-- Table headers will be injected here by JavaScript -->
+                    </thead>
+                    <!-- Modal Table Body -->
+                    <tbody id="modal-tbody" class="divide-y divide-slate-100 text-md text-slate-600">
+                        <!-- Table data will be injected here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- ================= JAVASCRIPT LOGIC ================= -->
-<script>
-    // ⚠️⚠️⚠️ येथे तुमची Google Apps Script Web App URL टाका ⚠️⚠️⚠️
-    const API_URL = "https://script.google.com/macros/s/AKfycbxkeQE2twplupxvjykSF9b0B7ziNIR0xXOD5PST_Kx7BMQTpId19lNtvamMeQXk1Tw/exec"; 
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        // ⚠️⚠️⚠️ येथे तुमची Google Apps Script Web App URL टाका ⚠️⚠️⚠️
+        // Please paste your Google Apps Script Web App URL here.
+        const API_URL = "https://script.google.com/macros/s/AKfycbxkeQE2twplupxvjykSF9b0B7ziNIR0xXOD5PST_Kx7BMQTpId19lNtvamMeQXk1Tw/exec"; 
 
-    // Initialize allData with default empty arrays to prevent "Cannot read properties of undefined" errors
-    let allData = { 
-        dailyCollections: [], 
-        bankTransactions: [], 
-        expenses: [], 
-        bankBalances: [],
-        settings: { 
-            collectionTypes: [], 
-            agentNames: [] 
-        } 
-    };
-    let filteredData = { dailyCollections: [], bankTransactions: [], expenses: [], bankBalances: [] };
-    let currentDate = new Date(); // Dashboard load करताना आजची तारीख
-    let isFilterActive = false;
+        // Initialize allData with default empty arrays to prevent errors if API response is missing properties.
+        let allData = { 
+            dailyCollections: [], 
+            bankTransactions: [], 
+            expenses: [], 
+            bankBalances: [],
+            settings: { 
+                collectionTypes: [], 
+                agentNames: [] 
+            } 
+        };
+        // filteredData will store data filtered by the current date/filters
+        let filteredData = { dailyCollections: [], bankTransactions: [], expenses: [], bankBalances: [] };
+        // currentDate stores the date selected in the main filter (defaults to today)
+        let currentDate = new Date(); 
+        let isFilterActive = false; // Flag to track if a filter is applied
 
-    // --- Helper Functions ---
-    function formatMoney(num) {
-        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num || 0);
-    }
-    
-    // Improved date parsing with better error handling
-    function parseDate(dateString) {
-        if (!dateString) return null;
-        if (dateString instanceof Date) return dateString;
-        
-        try {
-            // Ensure the input is a string before Date constructor
-            const parsed = new Date(String(dateString));
-            
-            // Check if the parsed date is valid (getTime() returns NaN for invalid dates)
-            if (!isNaN(parsed.getTime())) {
-                return parsed;
-            } else {
-                console.error("Invalid date string after parsing:", dateString);
-                return null; // Return null for invalid date strings
-            }
-        } catch (e) {
-            console.error("Error parsing date string:", dateString, e);
-            return null; // Return null if there's an error during parsing
+        // --- Helper Functions ---
+
+        /**
+         * Formats a number into INR currency string (e.g., ₹1,00,000).
+         * @param {number} num - The number to format.
+         * @returns {string} The formatted currency string.
+         */
+        function formatMoney(num) {
+            // Use Intl.NumberFormat for locale-aware currency formatting.
+            return new Intl.NumberFormat('en-IN', { 
+                style: 'currency', 
+                currency: 'INR', 
+                maximumFractionDigits: 0 // No decimal places for whole rupees
+            }).format(num || 0); // Default to 0 if num is null/undefined
         }
-    }
-
-    function formatDateForInput(date) {
-        if (!date || !(date instanceof Date) || isNaN(date.getTime())) return '';
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const day = date.getDate().toString().padStart(2, '0');
-        return `${date.getFullYear()}-${month}-${day}`;
-    }
-
-    function formatDateForDisplay(date) {
-         if (!date || !(date instanceof Date) || isNaN(date.getTime())) return 'N/A';
-         try {
-            // Format: DD-MM-YYYY
-            const day = date.getDate().toString().padStart(2, '0');
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            return `${day}-${month}-${date.getFullYear()}`;
-         } catch (e) {
-             console.error("Error formatting date for display:", date, e);
-             return 'Invalid Date';
-         }
-    }
-
-    // --- Section Management ---
-    function showSection(sectionId) {
-        document.querySelectorAll('.section').forEach(el => el.classList.add('hidden-section'));
-        document.getElementById(sectionId).classList.remove('hidden-section');
-        document.getElementById('mobile-menu').classList.add('hidden'); // Close mobile menu
-    }
-
-    // --- Loader Management ---
-    function showLoader(message = "माहिती लोड होत आहे...") {
-        document.getElementById('loader').style.display = 'flex';
-        document.getElementById('loader').querySelector('h2').innerText = message;
-    }
-    
-    function hideLoader() {
-        document.getElementById('loader').style.display = 'none';
-    }
-
-    // --- Fetch Data from API ---
-    async function fetchData(isFilterCall = false) {
-        showLoader("डेटा लोड करत आहे...");
-        try {
-            console.log("Fetching data from API:", API_URL);
-            const response = await fetch(API_URL);
-            if (!response.ok) {
-                // More specific error handling for HTTP status codes
-                throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-            }
-            const data = await response.json();
-            console.log("API Response Data:", data);
+        
+        /**
+         * Parses a date string (YYYY-MM-DD) or Date object into a JavaScript Date object.
+         * Includes robust error handling for invalid date strings.
+         * @param {string|Date} dateString - The date string or Date object to parse.
+         * @returns {Date|null} A Date object if parsing is successful, otherwise null.
+         */
+        function parseDate(dateString) {
+            if (!dateString) return null; // Return null if input is empty
+            if (dateString instanceof Date) return dateString; // If it's already a Date object, return it
             
-            // Assign data to allData, ensuring all expected properties exist as arrays
-            allData = {
-                dailyCollections: data.dailyCollections || [],
-                bankTransactions: data.bankTransactions || [],
-                expenses: data.expenses || [],
-                bankBalances: data.bankBalances || [],
-                settings: {
-                    collectionTypes: data.settings?.collectionTypes || [],
-                    agentNames: data.settings?.agentNames || []
+            try {
+                // Attempt to create a Date object from the string.
+                // Ensure input is a string before passing to Date constructor.
+                const parsed = new Date(String(dateString));
+                
+                // Check if the parsed date is valid. `getTime()` returns NaN for invalid dates.
+                if (!isNaN(parsed.getTime())) {
+                    return parsed;
+                } else {
+                    console.error("Invalid date string after parsing:", dateString);
+                    return null; // Return null if the date is invalid
                 }
-            };
-            
-            populateSelect('coll-type', allData.settings.collectionTypes);
-            populateSelect('coll-agent', allData.settings.agentNames);
-            
-            const filterDateInput = document.getElementById('filter-date');
-            const reportStartDateInput = document.getElementById('report-start-date');
-            const reportEndDateInput = document.getElementById('report-end-date');
-            const bankBalDateInput = document.getElementById('bank-bal-date');
-
-            // Set and validate the main filter date (for dashboard)
-            if (!isFilterCall || !filterDateInput.value) {
-                currentDate = new Date(); // Default to today
-                filterDateInput.value = formatDateForInput(currentDate);
-            } else {
-                currentDate = parseDate(filterDateInput.value);
-                if (!currentDate || isNaN(currentDate.getTime())) { // Handle invalid date from filter input
-                    console.warn("Invalid date selected in filter. Resetting to today.");
-                    currentDate = new Date();
-                    filterDateInput.value = formatDateForInput(currentDate); // Update input field
-                }
+            } catch (e) {
+                // Catch any exceptions during Date object creation
+                console.error("Error parsing date string:", dateString, e);
+                return null; // Return null in case of errors
             }
-            isFilterActive = true; // Mark filter as active once date is set
-
-            // Set report and bank balance dates to today by default, or keep if already set
-            const todayForInput = new Date();
-            if (!reportStartDateInput.value) reportStartDateInput.value = formatDateForInput(todayForInput);
-            if (!reportEndDateInput.value) reportEndDateInput.value = formatDateForInput(todayForInput);
-            if (!bankBalDateInput.value) bankBalDateInput.value = formatDateForInput(todayForInput);
-            
-            filterAndRenderData(); // Process and display data based on current date/filter
-            generateReports(); // Generate reports on initial load as well
-
-            hideLoader();
-        } catch (error) {
-            console.error("Error fetching data:", error);
-            Swal.fire('त्रुटी!', `API मधून डेटा मिळवण्यात समस्या आली: ${error.message}. कृपया API URL तपासा किंवा नंतर प्रयत्न करा.`, 'error');
-            hideLoader();
-        }
-    }
-
-    function populateSelect(elementId, optionsArr) {
-        const select = document.getElementById(elementId);
-        select.innerHTML = '<option value="">निवडा...</option>'; // Reset
-        if (optionsArr && optionsArr.length > 0) {
-            optionsArr.forEach(opt => {
-                let option = document.createElement('option');
-                option.value = opt; option.text = opt;
-                select.appendChild(option);
-            });
-        }
-    }
-
-    // Filter Data and Render Dashboard Components
-    function filterAndRenderData() {
-        console.log("--- Starting filterAndRenderData ---");
-        const selectedDateInput = document.getElementById('filter-date').value;
-        let selectedDate = null;
-
-        if (selectedDateInput) {
-            selectedDate = parseDate(selectedDateInput);
-        }
-        
-        // If filter input is invalid or empty, default to today
-        if (!selectedDate || isNaN(selectedDate.getTime())) {
-            console.warn("Invalid or no date selected in filter. Defaulting to today.");
-            selectedDate = new Date();
-            document.getElementById('filter-date').value = formatDateForInput(selectedDate); // Update input field
-        }
-        currentDate = selectedDate; // Update global currentDate
-
-        console.log("Selected Date for filtering:", formatDateForInput(selectedDate));
-
-        // --- Filter Daily Collections ---
-        // Use || [] to ensure it's always an array, even if API fails partially
-        const dailyCollections = allData.dailyCollections || [];
-        filteredData.dailyCollections = dailyCollections.filter(row => {
-            const rowDateStr = row[0];
-            const rowDate = parseDate(rowDateStr);
-            if (!rowDate || isNaN(rowDate.getTime())) {
-                console.warn("Skipping daily collection row due to invalid date:", rowDateStr);
-                return false; // Skip if date is invalid
-            }
-            // Compare Year, Month, and Day
-            return rowDate.getFullYear() === selectedDate.getFullYear() &&
-                   rowDate.getMonth() === selectedDate.getMonth() &&
-                   rowDate.getDate() === selectedDate.getDate();
-        });
-        console.log("Filtered Daily Collections:", filteredData.dailyCollections);
-
-        // --- Filter Bank Transactions (for balance on the selected date) ---
-        const bankTransactions = allData.bankTransactions || [];
-        const relevantBankTransactions = bankTransactions.filter(row => {
-            const rowDateStr = row[0];
-            const rowDate = parseDate(rowDateStr);
-            if (!rowDate || isNaN(rowDate.getTime())) {
-                console.warn("Skipping bank transaction row due to invalid date:", rowDateStr);
-                return false; // Skip if date is invalid
-            }
-            // Return true if the transaction date is on or before the selected date
-            return rowDate <= selectedDate;
-        });
-        
-        let latestBankBalance = 0;
-        let latestBankTxnDate = null;
-        if (relevantBankTransactions.length > 0) {
-            // Sort by date descending to get the latest transaction
-            relevantBankTransactions.sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
-            const latestTxn = relevantBankTransactions[0];
-            latestBankBalance = Number(latestTxn[4] || 0); // BankBalance is at index 4
-            latestBankTxnDate = parseDate(latestTxn[0]);
-            console.log("Latest Bank Transaction Date:", latestBankTxnDate, "Balance:", latestBankBalance);
-        } 
-        
-        // If no bank transactions found, check for manually entered bank balances
-        const bankBalances = allData.bankBalances || [];
-        const relevantBankBalances = bankBalances.filter(row => {
-            const rowDate = parseDate(row[0]);
-             if (!rowDate || isNaN(rowDate.getTime())) return false;
-            return rowDate <= selectedDate;
-        });
-
-        if (relevantBankBalances.length > 0) {
-            relevantBankBalances.sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
-            const latestManualBalance = relevantBankBalances[0];
-            // If manual balance is more recent or the only one available
-            if (!latestBankTxnDate || parseDate(latestManualBalance[0]) > latestBankTxnDate) {
-                latestBankBalance = Number(latestManualBalance[1] || 0);
-                latestBankTxnDate = parseDate(latestManualBalance[0]);
-                console.log("Latest Manual Bank Balance Date:", latestBankTxnDate, "Balance:", latestBankBalance);
-            }
-        } else if (latestBankTxnDate === null) { // If neither found
-             console.log("No relevant bank transactions or manual balances found.");
         }
 
-
-        // --- Calculate KPIs & Summaries ---
-        let pigmyAmount = 0;
-        let rdAmount = 0;
-        let fdAmount = 0;
-        let totalCollections = 0; // Total for system balance
-        
-        filteredData.dailyCollections.forEach(row => {
-            const amount = Number(row[5] || 0);
-            const type = row[1];
-            totalCollections += amount;
-
-            if (type === 'Pigmy') pigmyAmount += amount;
-            else if (type === 'RD') rdAmount += amount;
-            else if (type === 'FD') fdAmount += amount;
-        });
-
-        // Filter expenses for the selected date
-        const expenses = allData.expenses || [];
-        filteredData.expenses = expenses.filter(row => {
-            const rowDate = parseDate(row[0]);
-            if (!rowDate || isNaN(rowDate.getTime())) return false;
-            return rowDate.getFullYear() === selectedDate.getFullYear() &&
-                   rowDate.getMonth() === selectedDate.getMonth() &&
-                   rowDate.getDate() === selectedDate.getDate();
-        });
-        
-        let totalExpenses = 0;
-        filteredData.expenses.forEach(row => {
-            totalExpenses += Number(row[2] || 0);
-        });
-
-        // Calculate effective System Balance
-        const effectiveSystemBalance = totalCollections - totalExpenses;
-
-        // --- Update KPIs and Summaries on Dashboard ---
-        document.getElementById('kpi-pigmy-amount').innerText = formatMoney(pigmyAmount);
-        document.getElementById('kpi-rd-amount').innerText = formatMoney(rdAmount);
-        document.getElementById('kpi-fd-amount').innerText = formatMoney(fdAmount);
-        document.getElementById('kpi-system-balance').innerText = formatMoney(effectiveSystemBalance); // Updated to effective balance
-        document.getElementById('kpi-bank-balance').innerText = formatMoney(latestBankBalance);
-        
-        document.getElementById('today-pigmy-summary').innerText = formatMoney(pigmyAmount);
-        document.getElementById('today-rd-summary').innerText = formatMoney(rdAmount);
-        document.getElementById('today-fd-summary').innerText = formatMoney(fdAmount);
-        
-        console.log("Calculated KPIs: Pigmy=", pigmyAmount, "RD=", rdAmount, "FD=", fdAmount, "Total Collections=", totalCollections, "Expenses=", totalExpenses, "Effective System Balance=", effectiveSystemBalance, "Bank Balance=", latestBankBalance);
-
-        // --- Match Status ---
-        const matchStatusEl = document.getElementById('kpi-match-status');
-        const matchIconEl = matchStatusEl.querySelector('.icon i');
-        const matchValueEl = matchStatusEl.querySelector('.value');
-        const matchLabelEl = matchStatusEl.querySelector('.label');
-        
-        let isMatch = false;
-        // Compare effective system balance with bank balance
-        if (latestBankTxnDate && latestBankTxnDate <= selectedDate) {
-             isMatch = effectiveSystemBalance === latestBankBalance;
-        } else if (latestBankTxnDate === null && effectiveSystemBalance === 0) { // No bank data and system balance is zero
-             isMatch = true;
-        } else if (latestBankTxnDate === null && effectiveSystemBalance !== 0) { // No bank data but system has balance
-             isMatch = false;
+        /**
+         * Formats a Date object into 'YYYY-MM-DD' string suitable for input[type="date"] fields.
+         * @param {Date} date - The Date object to format.
+         * @returns {string} The formatted date string, or an empty string if input is invalid.
+         */
+        function formatDateForInput(date) {
+            if (!date || !(date instanceof Date) || isNaN(date.getTime())) return ''; // Return empty if input is not a valid Date
+            const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Month is 0-indexed, add 1 and pad
+            const day = date.getDate().toString().padStart(2, '0'); // Pad day with leading zero
+            return `${date.getFullYear()}-${month}-${day}`;
         }
-        // If latestBankTxnDate is before selectedDate but effectiveSystemBalance doesn't match latestBankBalance
-        else if (latestBankTxnDate && latestBankTxnDate <= selectedDate && effectiveSystemBalance !== latestBankBalance) {
-            isMatch = false;
-        }
-        
-        if (isMatch) {
-            matchStatusEl.style.color = 'var(--green)'; // Use green color for match
-            matchIconEl.className = 'fa-solid fa-check-circle'; // Checkmark icon
-            matchValueEl.innerText = 'होय';
-            matchLabelEl.innerText = 'बँक vs सिस्टम';
-        } else {
-            matchStatusEl.style.color = 'var(--red)'; // Use red color for mismatch
-            matchIconEl.className = 'fa-solid fa-xmark-circle'; // Cross icon
-            matchValueEl.innerText = 'नाही';
-            matchLabelEl.innerText = 'बँक vs सिस्टम';
-             // Show difference if mismatch and bank data is relevant
-             if(latestBankTxnDate && latestBankTxnDate <= selectedDate) {
-                 const difference = effectiveSystemBalance - latestBankBalance;
-                 matchLabelEl.innerText += ` (फरक: ${formatMoney(difference)})`;
-             } else if (latestBankTxnDate === null && effectiveSystemBalance !== 0) {
-                 matchLabelEl.innerText += ` (सिस्टम बॅलन्स: ${formatMoney(effectiveSystemBalance)})`;
+
+        /**
+         * Formats a Date object into 'DD-MM-YYYY' string for display purposes.
+         * @param {Date} date - The Date object to format.
+         * @returns {string} The formatted date string, or 'N/A' if input is invalid.
+         */
+        function formatDateForDisplay(date) {
+             if (!date || !(date instanceof Date) || isNaN(date.getTime())) return 'N/A'; // Return N/A for invalid dates
+             try {
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                return `${day}-${month}-${date.getFullYear()}`;
+             } catch (e) {
+                 console.error("Error formatting date for display:", date, e);
+                 return 'Invalid Date'; // Return error message for unexpected issues
              }
         }
-        console.log("Match Status determined:", isMatch);
 
-        // --- Render Today's Collection Table ---
-        renderCollectionTable(filteredData.dailyCollections);
-        
-        console.log("--- Finished filterAndRenderData ---");
-    }
+        // --- Section Management ---
 
-    function renderCollectionTable(rows) {
-        const tbody = document.getElementById('collection-table-body');
-        tbody.innerHTML = ''; // Clear existing rows
-        
-        if (rows.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 font-bold">या तारखेसाठी कोणताही कलेक्शन डेटा उपलब्ध नाही.</td></tr>`;
-            return;
+        /**
+         * Hides all sections and shows the one specified by sectionId.
+         * Also closes the mobile menu if it's open.
+         * @param {string} sectionId - The ID of the section to show.
+         */
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(el => el.classList.add('hidden-section'));
+            document.getElementById(sectionId).classList.remove('hidden-section');
+            document.getElementById('mobile-menu').classList.add('hidden'); // Close mobile menu when a section is shown
         }
 
-        rows.forEach((row, index) => {
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-slate-50 transition clickable-row"; // Added clickable-row class
-            // Add click listener to open modal for detailed view
-            // Pass relevant data for drill-down
-            tr.onclick = () => openDetailModal(row[1], row[0], row[2], row[3]); // Type, Date, Agent, AccountNumber
+        // --- Loader Management ---
 
-            tr.innerHTML = `
-                <td class="p-4 font-medium whitespace-nowrap">${formatDateForDisplay(parseDate(row[0]))}</td>
-                <td class="p-4 font-bold text-slate-700">${row[1] || 'N/A'}</td>
-                <td class="p-4 font-semibold text-slate-700">${row[2] || '-'}</td>
-                <td class="p-4 font-medium">${row[3] || '-'}</td>
-                <td class="p-4">${row[4] || '-'}</td>
-                <td class="p-4 text-right font-bold text-green-600">${formatMoney(row[5])}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    // Search functionality for the collection table
-    function searchCollectionTable() {
-        let input = document.getElementById("searchInput").value.toUpperCase();
-        let table = document.getElementById("collectionTable");
-        let tr = table.getElementsByTagName("tr");
-        
-        for (let i = 1; i < tr.length; i++) { // Start from 1 to skip the header row
-            let tds = tr[i].getElementsByTagName("td");
-            let found = false;
-            
-            // Check Agent Name (index 2) and Account Number (index 3)
-            if (tds[2] && (tds[2].textContent || tds[2].innerText).toUpperCase().indexOf(input) > -1) {
-                found = true;
-            }
-            if (!found && tds[3] && (tds[3].textContent || tds[3].innerText).toUpperCase().indexOf(input) > -1) {
-                found = true;
-            }
-            
-            if (found) {
-                tr[i].style.display = "";
-            } else {
-                tr[i].style.display = "none";
-            }
+        /**
+         * Displays the global loader overlay with a given message.
+         * @param {string} message - The message to display on the loader.
+         */
+        function showLoader(message = "माहिती लोड होत आहे...") {
+            document.getElementById('loader').style.display = 'flex';
+            document.getElementById('loader').querySelector('h2').innerText = message;
         }
-    }
+        
+        /**
+         * Hides the global loader overlay.
+         */
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
 
-    // Reset Date Filter
-    function resetFilter() {
-        document.getElementById('filter-date').value = ''; // Clear the input value
-        isFilterActive = false; // Reset filter flag
-        currentDate = new Date(); // Reset currentDate to today
-        document.getElementById('filter-date').value = formatDateForInput(currentDate); // Update input field to today's date
-        fetchData(false); // Reload data with today's date
-        console.log("Filter reset. Showing today's data.");
-    }
+        // --- Data Fetching and Initial Load ---
 
-    // Open Modal for detailed view (KPI Click or Table Row Click)
-    // Modified to handle different modal types and data structures
-    function openDetailModal(collectionType, date, agentName, accountNumber) {
-        const modal = document.getElementById('detailsModal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalThead = document.getElementById('modal-thead');
-        const modalTbody = document.getElementById('modal-tbody');
-        const backBtn = document.getElementById('modal-back-btn'); // Not currently used, but kept for potential future use
-
-        modalTitle.innerHTML = ''; // Clear previous title
-        modalThead.innerHTML = ''; // Clear previous headers
-        modalTbody.innerHTML = ''; // Clear previous body
-        backBtn.style.display = 'none'; // Hide back button by default
-
-        let filteredRows = [];
-        let headerHTML = '';
-        let modalType = ''; // To distinguish calls
-
-        // Case 1: Called from KPI click (arguments.length === 2)
-        if (arguments.length === 2 && typeof arguments[1] === 'string' && arguments[1] === 'today') {
-            modalType = 'kpi';
-            const type = collectionType; // 'Pigmy', 'RD', 'FD', 'BankBalance', 'SystemBalance'
-            
-            if (type === 'Pigmy' || type === 'RD' || type === 'FD') {
-                // Filter daily collections for the current date and selected type
-                filteredRows = (allData.dailyCollections || []).filter(row => row[1] === type);
+        /**
+         * Fetches all necessary data from the API (Google Apps Script Web App).
+         * This function is called on initial page load and when filters are applied.
+         * @param {boolean} isFilterCall - Flag to indicate if this call is due to a filter change.
+         */
+        async function fetchData(isFilterCall = false) {
+            showLoader("डेटा लोड करत आहे..."); // Show loader while fetching
+            try {
+                console.log("Fetching data from API:", API_URL);
+                const response = await fetch(API_URL);
                 
-                modalTitle.innerHTML = `<i class="fa-solid fa-chart-pie mr-2 text-green-500"></i> ${type} कलेक्शन तपशील (${formatDateForDisplay(currentDate)})`;
-                headerHTML = `
+                // Check if the HTTP request was successful (status code 200-299)
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+                }
+                const data = await response.json(); // Parse JSON response
+                console.log("API Response Data:", data);
+                
+                // Assign fetched data to allData, ensuring all expected properties exist as arrays.
+                // This prevents "Cannot read properties of undefined" errors later.
+                allData = {
+                    dailyCollections: data.dailyCollections || [],
+                    bankTransactions: data.bankTransactions || [],
+                    expenses: data.expenses || [],
+                    bankBalances: data.bankBalances || [],
+                    settings: {
+                        collectionTypes: data.settings?.collectionTypes || [], // Use optional chaining for safety
+                        agentNames: data.settings?.agentNames || []
+                    }
+                };
+                
+                // Populate dropdown menus in the 'Add Collection' form
+                populateSelect('coll-type', allData.settings.collectionTypes);
+                populateSelect('coll-agent', allData.settings.agentNames);
+                
+                // Get references to input elements for dates
+                const filterDateInput = document.getElementById('filter-date');
+                const reportStartDateInput = document.getElementById('report-start-date');
+                const reportEndDateInput = document.getElementById('report-end-date');
+                const bankBalDateInput = document.getElementById('bank-bal-date');
+
+                // Set and validate the main filter date (for dashboard)
+                if (!isFilterCall || !filterDateInput.value) {
+                    currentDate = new Date(); // Default to today's date if no filter is applied or reset
+                    filterDateInput.value = formatDateForInput(currentDate); // Set input value to today
+                } else {
+                    currentDate = parseDate(filterDateInput.value); // Use the selected date from filter
+                    if (!currentDate || isNaN(currentDate.getTime())) { // Handle invalid date selection
+                        console.warn("Invalid date selected in filter. Resetting to today.");
+                        currentDate = new Date(); // Reset to today
+                        filterDateInput.value = formatDateForInput(currentDate); // Update input field
+                    }
+                }
+                isFilterActive = true; // Mark filter as active
+
+                // Set default dates for report and bank balance inputs to today if they are empty
+                const todayForInput = new Date();
+                if (!reportStartDateInput.value) reportStartDateInput.value = formatDateForInput(todayForInput);
+                if (!reportEndDateInput.value) reportEndDateInput.value = formatDateForInput(todayForInput);
+                if (!bankBalDateInput.value) bankBalDateInput.value = formatDateForInput(todayForInput);
+                
+                filterAndRenderData(); // Render dashboard data based on the current date/filter
+                generateReports(); // Generate initial reports based on default (today's) date range
+
+                hideLoader(); // Hide loader once data is loaded and rendered
+            } catch (error) {
+                // Handle any errors during fetch or parsing
+                console.error("Error fetching data:", error);
+                Swal.fire('त्रुटी!', `API मधून डेटा मिळवण्यात समस्या आली: ${error.message}. कृपया API URL तपासा किंवा नंतर प्रयत्न करा.`, 'error');
+                hideLoader(); // Ensure loader is hidden even on error
+            }
+        }
+
+        /**
+         * Populates a <select> dropdown element with options.
+         * @param {string} elementId - The ID of the <select> element.
+         * @param {string[]} optionsArr - An array of strings to be used as option values and text.
+         */
+        function populateSelect(elementId, optionsArr) {
+            const select = document.getElementById(elementId);
+            select.innerHTML = '<option value="">निवडा...</option>'; // Reset and add default option
+            // Check if optionsArr is valid and has items before iterating
+            if (optionsArr && optionsArr.length > 0) {
+                optionsArr.forEach(opt => {
+                    let option = document.createElement('option');
+                    option.value = opt; 
+                    option.text = opt;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        // --- Dashboard Rendering Logic ---
+
+        /**
+         * Filters data based on the selected date and renders the dashboard components (KPIs, summaries, table).
+         */
+        function filterAndRenderData() {
+            console.log("--- Starting filterAndRenderData ---");
+            const selectedDateInput = document.getElementById('filter-date').value;
+            let selectedDate = null;
+
+            if (selectedDateInput) {
+                selectedDate = parseDate(selectedDateInput); // Parse the selected date
+            }
+            
+            // If the selected date is invalid or empty, default to today's date
+            if (!selectedDate || isNaN(selectedDate.getTime())) {
+                console.warn("Invalid or no date selected in filter. Defaulting to today.");
+                selectedDate = new Date();
+                document.getElementById('filter-date').value = formatDateForInput(selectedDate); // Update input field to today
+            }
+            currentDate = selectedDate; // Update the global currentDate variable
+
+            console.log("Selected Date for filtering:", formatDateForInput(selectedDate));
+
+            // --- Filter Daily Collections ---
+            // Use `|| []` to ensure `allData.dailyCollections` is always an array.
+            const dailyCollections = allData.dailyCollections || [];
+            filteredData.dailyCollections = dailyCollections.filter(row => {
+                const rowDateStr = row[0];
+                const rowDate = parseDate(rowDateStr);
+                if (!rowDate || isNaN(rowDate.getTime())) {
+                    console.warn("Skipping daily collection row due to invalid date:", rowDateStr);
+                    return false; // Skip rows with invalid dates
+                }
+                // Compare Year, Month, and Day to match the selected date
+                return rowDate.getFullYear() === selectedDate.getFullYear() &&
+                       rowDate.getMonth() === selectedDate.getMonth() &&
+                       rowDate.getDate() === selectedDate.getDate();
+            });
+            console.log("Filtered Daily Collections:", filteredData.dailyCollections);
+
+            // --- Filter Bank Transactions and Manual Balances for Balance Calculation ---
+            const bankTransactions = allData.bankTransactions || [];
+            // Filter transactions on or before the selected date
+            const relevantBankTransactions = bankTransactions.filter(row => {
+                const rowDate = parseDate(row[0]);
+                if (!rowDate || isNaN(rowDate.getTime())) {
+                    console.warn("Skipping bank transaction row due to invalid date:", row[0]);
+                    return false; 
+                }
+                return rowDate <= selectedDate;
+            });
+            
+            let latestBankBalance = 0;
+            let latestBankTxnDate = null;
+
+            // Find the latest balance from transactions
+            if (relevantBankTransactions.length > 0) {
+                // Sort by date descending to get the most recent transaction
+                relevantBankTransactions.sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
+                const latestTxn = relevantBankTransactions[0];
+                latestBankBalance = Number(latestTxn[4] || 0); // Balance is at index 4
+                latestBankTxnDate = parseDate(latestTxn[0]);
+                console.log("Latest Bank Transaction Date:", latestBankTxnDate, "Balance:", latestBankBalance);
+            } 
+            
+            // Find the latest manual bank balance entry
+            const bankBalances = allData.bankBalances || [];
+            const relevantBankBalances = bankBalances.filter(row => {
+                const rowDate = parseDate(row[0]);
+                 if (!rowDate || isNaN(rowDate.getTime())) return false;
+                return rowDate <= selectedDate;
+            });
+
+            // If manual balance is available and is more recent than the latest transaction balance
+            if (relevantBankBalances.length > 0) {
+                relevantBankBalances.sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
+                const latestManualBalance = relevantBankBalances[0];
+                const manualBalanceDate = parseDate(latestManualBalance[0]);
+
+                // If manual balance is the only data or is more recent than transaction data
+                if (!latestBankTxnDate || (manualBalanceDate && manualBalanceDate > latestBankTxnDate)) {
+                    latestBankBalance = Number(latestManualBalance[1] || 0);
+                    latestBankTxnDate = manualBalanceDate;
+                    console.log("Latest Manual Bank Balance Date:", latestBankTxnDate, "Balance:", latestBankBalance);
+                }
+            } else if (latestBankTxnDate === null) { // If no bank data at all
+                 console.log("No relevant bank transactions or manual balances found.");
+            }
+
+
+            // --- Calculate KPIs and Daily Summaries ---
+            let pigmyAmount = 0;
+            let rdAmount = 0;
+            let fdAmount = 0;
+            let totalCollections = 0; // Sum of all collections for the day
+            
+            // Iterate over the daily collections filtered for the current date
+            filteredData.dailyCollections.forEach(row => {
+                const amount = Number(row[5] || 0); // Amount is at index 5
+                const type = row[1]; // Collection type is at index 1
+                totalCollections += amount; // Add to total collections
+
+                // Add to specific product totals
+                if (type === 'Pigmy') pigmyAmount += amount;
+                else if (type === 'RD') rdAmount += amount;
+                else if (type === 'FD') fdAmount += amount;
+            });
+
+            // --- Filter Expenses for the selected date ---
+            const expenses = allData.expenses || [];
+            filteredData.expenses = expenses.filter(row => {
+                const rowDate = parseDate(row[0]);
+                if (!rowDate || isNaN(rowDate.getTime())) return false;
+                // Match year, month, and day
+                return rowDate.getFullYear() === selectedDate.getFullYear() &&
+                       rowDate.getMonth() === selectedDate.getMonth() &&
+                       rowDate.getDate() === selectedDate.getDate();
+            });
+            
+            let totalExpenses = 0;
+            // Sum up all expenses for the day
+            filteredData.expenses.forEach(row => {
+                totalExpenses += Number(row[2] || 0); // Expense amount is at index 2
+            });
+
+            // Calculate the effective System Balance (Collections - Expenses)
+            const effectiveSystemBalance = totalCollections - totalExpenses;
+
+            // --- Update KPIs on Dashboard ---
+            document.getElementById('kpi-pigmy-amount').innerText = formatMoney(pigmyAmount);
+            document.getElementById('kpi-rd-amount').innerText = formatMoney(rdAmount);
+            document.getElementById('kpi-fd-amount').innerText = formatMoney(fdAmount);
+            document.getElementById('kpi-system-balance').innerText = formatMoney(effectiveSystemBalance); // Display effective system balance
+            document.getElementById('kpi-bank-balance').innerText = formatMoney(latestBankBalance); // Display latest bank balance
+            
+            // --- Update Today's Summary Boxes ---
+            document.getElementById('today-pigmy-summary').innerText = formatMoney(pigmyAmount);
+            document.getElementById('today-rd-summary').innerText = formatMoney(rdAmount);
+            document.getElementById('today-fd-summary').innerText = formatMoney(fdAmount);
+            
+            console.log("Calculated KPIs:", {
+                pigmyAmount, rdAmount, fdAmount, 
+                totalCollections, totalExpenses, 
+                effectiveSystemBalance, latestBankBalance
+            });
+
+            // --- Determine and Display Match Status ---
+            const matchStatusEl = document.getElementById('kpi-match-status');
+            const matchIconEl = matchStatusEl.querySelector('.icon i');
+            const matchValueEl = matchStatusEl.querySelector('.value');
+            const matchLabelEl = matchStatusEl.querySelector('.label');
+            
+            let isMatch = false;
+            // Logic to determine if system balance matches bank balance
+            if (latestBankTxnDate && latestBankTxnDate <= selectedDate) {
+                 // Match if bank data exists and is on or before selected date, and balances are equal
+                 isMatch = effectiveSystemBalance === latestBankBalance;
+            } else if (latestBankTxnDate === null && effectiveSystemBalance === 0) { 
+                 // Match if no bank data exists and system balance is zero
+                 isMatch = true;
+            } else if (latestBankTxnDate === null && effectiveSystemBalance !== 0) { 
+                 // Mismatch if no bank data but system has a balance
+                 isMatch = false;
+            }
+            // If bank data exists but is from the future relative to selected date, or other complex cases not covered
+            else { 
+                 isMatch = false; 
+            }
+            
+            // Update UI based on match status
+            if (isMatch) {
+                matchStatusEl.style.color = 'var(--green)'; // Green for match
+                matchIconEl.className = 'fa-solid fa-check-circle'; // Checkmark icon
+                matchValueEl.innerText = 'होय';
+                matchLabelEl.innerText = 'बँक vs सिस्टम'; // Reset label
+            } else {
+                matchStatusEl.style.color = 'var(--red)'; // Red for mismatch
+                matchIconEl.className = 'fa-solid fa-xmark-circle'; // Cross icon
+                matchValueEl.innerText = 'नाही';
+                matchLabelEl.innerText = 'बँक vs सिस्टम'; // Reset label
+                 // Add difference information if there's a mismatch and bank data is relevant
+                 if(latestBankTxnDate && latestBankTxnDate <= selectedDate) {
+                     const difference = effectiveSystemBalance - latestBankBalance;
+                     matchLabelEl.innerText += ` (फरक: ${formatMoney(difference)})`;
+                 } else if (latestBankTxnDate === null && effectiveSystemBalance !== 0) {
+                     // Indicate system balance when there's no bank data
+                     matchLabelEl.innerText += ` (सिस्टम बॅलन्स: ${formatMoney(effectiveSystemBalance)})`;
+                 }
+            }
+            console.log("Match Status determined:", isMatch);
+
+            // --- Render Today's Collection Table ---
+            // Populate the table with filtered collection data for the current day
+            renderCollectionTable(filteredData.dailyCollections);
+            
+            console.log("--- Finished filterAndRenderData ---");
+        }
+
+        /**
+         * Renders rows in the collection table based on the provided data.
+         * @param {Array<Array<any>>} rows - An array of rows, where each row is an array of cell data.
+         */
+        function renderCollectionTable(rows) {
+            const tbody = document.getElementById('collection-table-body');
+            tbody.innerHTML = ''; // Clear existing rows before rendering new ones
+            
+            // Display a message if no data is available for the selected date
+            if (rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 font-bold">या तारखेसाठी कोणताही कलेक्शन डेटा उपलब्ध नाही.</td></tr>`;
+                return;
+            }
+
+            // Iterate over each row and create a table row element
+            rows.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition clickable-row"; // Apply styling and make row clickable
+                // Attach click event listener to open the modal with details of this row
+                tr.onclick = () => openDetailModal(row[1], row[0], row[2], row[3]); // Type, Date, Agent, AccountNumber
+
+                tr.innerHTML = `
+                    <td class="p-4 font-medium whitespace-nowrap">${formatDateForDisplay(parseDate(row[0]))}</td>
+                    <td class="p-4 font-bold text-slate-700">${row[1] || 'N/A'}</td>
+                    <td class="p-4 font-semibold text-slate-700">${row[2] || '-'}</td>
+                    <td class="p-4 font-medium">${row[3] || '-'}</td>
+                    <td class="p-4">${row[4] || '-'}</td>
+                    <td class="p-4 text-right font-bold text-green-600">${formatMoney(row[5])}</td>
+                `;
+                tbody.appendChild(tr); // Add the created row to the table body
+            });
+        }
+
+        /**
+         * Filters the collection table rows based on the search input.
+         * Searches in Agent Name (index 2) and Account Number (index 3).
+         */
+        function searchCollectionTable() {
+            let input = document.getElementById("searchInput").value.toUpperCase(); // Get input value and convert to uppercase
+            let table = document.getElementById("collectionTable");
+            let tr = table.getElementsByTagName("tr"); // Get all table rows
+            
+            // Loop through all table rows (starting from index 1 to skip the header)
+            for (let i = 1; i < tr.length; i++) { 
+                let tds = tr[i].getElementsByTagName("td"); // Get all data cells in the current row
+                let found = false; // Flag to check if input is found in any searchable cell
+                
+                // Check if input matches Agent Name (tds[2])
+                if (tds[2] && (tds[2].textContent || tds[2].innerText).toUpperCase().indexOf(input) > -1) {
+                    found = true;
+                }
+                // If not found in Agent Name, check Account Number (tds[3])
+                if (!found && tds[3] && (tds[3].textContent || tds[3].innerText).toUpperCase().indexOf(input) > -1) {
+                    found = true;
+                }
+                
+                // Show row if found, hide otherwise
+                if (found) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+
+        /**
+         * Resets the date filter to today's date and reloads data.
+         */
+        function resetFilter() {
+            document.getElementById('filter-date').value = ''; // Clear the input value
+            isFilterActive = false; // Reset filter flag
+            currentDate = new Date(); // Reset currentDate to today
+            document.getElementById('filter-date').value = formatDateForInput(currentDate); // Update input field to today's date
+            fetchData(false); // Reload data with today's date
+            console.log("Filter reset. Showing today's data.");
+        }
+
+        // --- Modal Handling ---
+
+        /**
+         * Opens the drill-down modal to display detailed information.
+         * Handles different types of calls (KPI click, table row click, agent details).
+         * @param {string} type - The type of data being displayed (e.g., 'Pigmy', 'BankBalance', 'AgentDetails').
+         * @param {string} [dateOrIdentifier] - Date string for KPI calls, or agent name for AgentDetails.
+         * @param {any} [restOfData] - Additional data like agentName, accountNumber for table row calls, or the dataRows array for AgentDetails.
+         */
+        function openDetailModal(type, dateOrIdentifier, ...restOfData) {
+            const modal = document.getElementById('detailsModal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalThead = document.getElementById('modal-thead');
+            const modalTbody = document.getElementById('modal-tbody');
+            const backBtn = document.getElementById('modal-back-btn'); // Not currently used
+
+            modalTitle.innerHTML = ''; // Clear previous content
+            modalThead.innerHTML = '';
+            modalTbody.innerHTML = '';
+            backBtn.style.display = 'none'; // Hide back button
+
+            let filteredRows = []; // Array to hold data for the modal table
+            let headerHTML = '';   // HTML for the modal table header
+            let modalType = '';    // To differentiate between various modal calls
+
+            const argsLength = arguments.length;
+
+            // Case 1: Called from KPI click (e.g., openDetailModal('Pigmy', 'today'))
+            if (argsLength === 2 && typeof arguments[1] === 'string' && arguments[1] === 'today') {
+                modalType = 'kpi';
+                const kpiType = type; // e.g., 'Pigmy', 'RD', 'FD', 'BankBalance', 'SystemBalance'
+                
+                if (kpiType === 'Pigmy' || kpiType === 'RD' || kpiType === 'FD') {
+                    // Filter daily collections for the current date and the selected KPI type
+                    filteredRows = (allData.dailyCollections || []).filter(row => row[1] === kpiType);
+                    
+                    modalTitle.innerHTML = `<i class="fa-solid fa-chart-pie mr-2 text-green-500"></i> ${kpiType} कलेक्शन तपशील (${formatDateForDisplay(currentDate)})`;
+                    headerHTML = `
+                        <tr>
+                            <th class="p-4 border-b">एजंटचे नाव</th>
+                            <th class="p-4 border-b">खाते क्र.</th>
+                            <th class="p-4 border-b">ग्राहकाचे नाव</th>
+                            <th class="p-4 border-b text-right">रक्कम (₹)</th>
+                        </tr>`;
+                     console.log(`Modal opened from KPI: Type=${kpiType}, Rows:`, filteredRows);
+
+                } else if (kpiType === 'BankBalance') {
+                    modalType = 'bankBalance';
+                    // Logic to find the latest bank balance (from transactions or manual entry)
+                    const relevantBankBalances = (allData.bankBalances || []).filter(row => { const rd = parseDate(row[0]); return rd && rd <= currentDate; }).sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
+                    let lbAmount = 0, lbDate = null;
+                    if (relevantBankBalances.length > 0) { lbAmount = Number(relevantBankBalances[0][1] || 0); lbDate = parseDate(relevantBankBalances[0][0]); }
+                    else { // If no manual balance, check transactions
+                        const rbtx = (allData.bankTransactions || []).filter(row => { const rd = parseDate(row[0]); return rd && rd <= currentDate; }).sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
+                        if (rbtx.length > 0) { lbAmount = Number(rbtx[0][4] || 0); lbDate = parseDate(rbtx[0][0]); }
+                    }
+                    // Store the found balance if any
+                    if (lbDate) filteredRows = [[formatDateForDisplay(lbDate), lbAmount]]; // Store formatted date and amount
+
+                    modalTitle.innerHTML = `<i class="fa-solid fa-building-columns mr-2 text-cyan-500"></i> बँक बॅलन्स तपशील (${formatDateForDisplay(currentDate)})`;
+                    headerHTML = `<tr><th class="p-4 border-b">तारीख</th><th class="p-4 border-b text-right">बॅलन्स (₹)</th></tr>`;
+                    console.log(`Modal opened from KPI: Type=BankBalance, Data:`, filteredRows);
+
+                } else if (kpiType === 'SystemBalance') {
+                     modalType = 'systemBalance';
+                     // Calculate system balance (Collections - Expenses) for the current date
+                     const todayCollections = (allData.dailyCollections || []).filter(row => { const rd = parseDate(row[0]); return rd && rd.getFullYear() === currentDate.getFullYear() && rd.getMonth() === currentDate.getMonth() && rd.getDate() === currentDate.getDate(); });
+                     const todayExpenses = (allData.expenses || []).filter(row => { const rd = parseDate(row[0]); return rd && rd.getFullYear() === currentDate.getFullYear() && rd.getMonth() === currentDate.getMonth() && rd.getDate() === currentDate.getDate(); });
+                     let totalColAmount = todayCollections.reduce((sum, row) => sum + Number(row[5] || 0), 0);
+                     let totalExpAmount = todayExpenses.reduce((sum, row) => sum + Number(row[2] || 0), 0);
+                     const finalSystemBalance = totalColAmount - totalExpAmount;
+                     // Store date and calculated balance
+                     filteredRows = [[formatDateForDisplay(currentDate), finalSystemBalance]];
+
+                     modalTitle.innerHTML = `<i class="fa-solid fa-calculator mr-2 text-orange-500"></i> सिस्टम बॅलन्स तपशील (${formatDateForDisplay(currentDate)})`;
+                     headerHTML = `<tr><th class="p-4 border-b">तारीख</th><th class="p-4 border-b text-right">बॅलन्स (₹)</th></tr>`;
+                     console.log(`Modal opened from KPI: Type=SystemBalance, Data:`, filteredRows);
+                }
+            
+            // Case 2: Called from Table Row click (arguments.length === 4)
+            } else if (argsLength === 4) {
+                modalType = 'tableRow';
+                // Filter for the specific row data from the already filteredData.dailyCollections (for today)
+                filteredRows = filteredData.dailyCollections.filter(row => 
+                    row[1] === type && // Collection Type
+                    formatDateForDisplay(parseDate(row[0])) === formatDateForDisplay(parseDate(dateOrIdentifier)) && // Date
+                    row[2] === dateOrIdentifier && // Agent Name (passed as dateOrIdentifier in this case)
+                    row[3] === restOfData[0] // Account Number (passed as first element in restOfData)
+                );
+                // Set title using the provided info
+                modalTitle.innerHTML = `<i class="fa-solid fa-info-circle mr-2 text-blue-500"></i> ${type} - ${dateOrIdentifier} (खाते: ${restOfData[0]})`;
+                 headerHTML = `
                     <tr>
-                        <th class="p-4 border-b">एजंटचे नाव</th>
+                        <th class="p-4 border-b">तारीख</th>
                         <th class="p-4 border-b">खाते क्र.</th>
                         <th class="p-4 border-b">ग्राहकाचे नाव</th>
                         <th class="p-4 border-b text-right">रक्कम (₹)</th>
                     </tr>`;
-                 console.log(`Modal opened from KPI: Type=${type}, Rows:`, filteredRows);
+                console.log(`Modal opened from Table Row: Type=${type}, Date=${dateOrIdentifier}, Agent=${dateOrIdentifier}, Account=${restOfData[0]}, Rows:`, filteredRows);
+            } 
+            // Case 3: Called for Agent Details from Reports section
+            else if (type === 'AgentDetails' && argsLength === 3) {
+                 modalType = 'agentDetails';
+                 // `dateOrIdentifier` here is the agentName, and `restOfData[0]` is the dataRows array
+                 const agentName = dateOrIdentifier;
+                 const agentDataRows = restOfData[0];
 
-            } else if (type === 'BankBalance') {
-                modalType = 'bankBalance';
-                // Get the latest bank balance for the current date
-                const relevantBankBalances = (allData.bankBalances || []).filter(row => {
-                    const rowDate = parseDate(row[0]);
-                    if (!rowDate || isNaN(rowDate.getTime())) return false;
-                    return rowDate <= currentDate;
-                }).sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
-
-                let latestBankBalanceAmount = 0;
-                let latestBankBalanceDate = null;
-
-                if (relevantBankBalances.length > 0) {
-                     latestBankBalanceAmount = Number(relevantBankBalances[0][1] || 0);
-                     latestBankBalanceDate = parseDate(relevantBankBalances[0][0]);
-                } else {
-                    // If no manual balance, try to get from transactions
-                    const relevantBankTransactions = (allData.bankTransactions || []).filter(row => {
-                        const rowDate = parseDate(row[0]);
-                        if (!rowDate || isNaN(rowDate.getTime())) return false;
-                        return rowDate <= currentDate;
-                    }).sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
-                    if (relevantBankTransactions.length > 0) {
-                        latestBankBalanceAmount = Number(relevantBankTransactions[0][4] || 0);
-                        latestBankBalanceDate = parseDate(relevantBankTransactions[0][0]);
-                    }
-                }
-                
-                if (latestBankBalanceDate) {
-                    filteredRows = [[
-                        formatDateForDisplay(latestBankBalanceDate), // Formatted Date
-                        latestBankBalanceAmount // Amount
-                     ]];
-                }
-
-                modalTitle.innerHTML = `<i class="fa-solid fa-building-columns mr-2 text-cyan-500"></i> बँक बॅलन्स तपशील (${formatDateForDisplay(currentDate)})`;
-                headerHTML = `
-                    <tr>
-                        <th class="p-4 border-b">तारीख</th>
-                        <th class="p-4 border-b text-right">बॅलन्स (₹)</th>
-                    </tr>`;
-                 console.log(`Modal opened from KPI: Type=BankBalance, Data:`, filteredRows);
-
-            } else if (type === 'SystemBalance') {
-                 modalType = 'systemBalance';
-                 // Filter daily collections for the current date and calculate total
-                 const todayCollections = (allData.dailyCollections || []).filter(row => {
-                     const rowDate = parseDate(row[0]);
-                     return rowDate && rowDate.getFullYear() === currentDate.getFullYear() &&
-                            rowDate.getMonth() === currentDate.getMonth() &&
-                            rowDate.getDate() === currentDate.getDate();
-                 });
-                 const todayExpenses = (allData.expenses || []).filter(row => {
-                     const rowDate = parseDate(row[0]);
-                     return rowDate && rowDate.getFullYear() === currentDate.getFullYear() &&
-                            rowDate.getMonth() === currentDate.getMonth() &&
-                            rowDate.getDate() === currentDate.getDate();
-                 });
-                 
-                 let totalColAmount = 0;
-                 todayCollections.forEach(row => totalColAmount += Number(row[5] || 0));
-                 let totalExpAmount = 0;
-                 todayExpenses.forEach(row => totalExpAmount += Number(row[2] || 0));
-                 const finalSystemBalance = totalColAmount - totalExpAmount;
-
-                 filteredRows = [[
-                     formatDateForDisplay(currentDate), // Formatted Date
-                     finalSystemBalance // Balance
-                 ]];
-
-                 modalTitle.innerHTML = `<i class="fa-solid fa-calculator mr-2 text-orange-500"></i> सिस्टम बॅलन्स तपशील (${formatDateForDisplay(currentDate)})`;
-                 headerHTML = `
-                    <tr>
-                        <th class="p-4 border-b">तारीख</th>
-                        <th class="p-4 border-b text-right">बॅलन्स (₹)</th>
-                    </tr>`;
-                 console.log(`Modal opened from KPI: Type=SystemBalance, Data:`, filteredRows);
-            }
-        
-        // Case 2: Called from Table Row click (arguments.length === 4)
-        } else if (arguments.length === 4) {
-            modalType = 'tableRow';
-            // Filter for the specific row data from the already filteredData.dailyCollections for the current day
-            filteredRows = filteredData.dailyCollections.filter(row => 
-                row[1] === collectionType && 
-                formatDateForDisplay(parseDate(row[0])) === formatDateForDisplay(parseDate(date)) && 
-                row[2] === agentName && 
-                row[3] === accountNumber
-            );
-            modalTitle.innerHTML = `<i class="fa-solid fa-info-circle mr-2 text-blue-500"></i> ${collectionType} - ${agentName} (खाते: ${accountNumber})`;
-             headerHTML = `
-                <tr>
-                    <th class="p-4 border-b">तारीख</th>
-                    <th class="p-4 border-b">खाते क्र.</th>
-                    <th class="p-4 border-b">ग्राहकाचे नाव</th>
-                    <th class="p-4 border-b text-right">रक्कम (₹)</th>
-                </tr>`;
-            console.log(`Modal opened from Table Row: Type=${collectionType}, Date=${date}, Agent=${agentName}, Account=${accountNumber}, Rows:`, filteredRows);
-        } else { 
-            console.error("Invalid arguments passed to openDetailModal. Args:", arguments);
-            modalTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2 text-orange-500"></i> अज्ञात तपशील`;
-            headerHTML = `<tr><th class="p-4 border-b">माहिती</th></tr>`;
-            modalTbody.innerHTML = `<tr><td class="p-4">मोडल उघडण्यात त्रुटी आली.</td></tr>`;
-        }
-        
-        // Render header
-        modalThead.innerHTML = headerHTML;
-
-        // Render body
-        if (filteredRows.length === 0) {
-            modalTbody.innerHTML = `<tr><td colspan="${modalThead.querySelector('tr').children.length}" class="p-4 text-center text-slate-500 font-bold">या तपशिलासाठी कोणताही डेटा उपलब्ध नाही.</td></tr>`;
-        } else {
-            filteredRows.forEach(row => {
-                const tr = document.createElement('tr');
-                if (modalType === 'kpi' && (collectionType === 'Pigmy' || collectionType === 'RD' || collectionType === 'FD')) { 
-                    tr.innerHTML = `
-                        <td class="p-4 border-b">${row[2] || '-'}</td>
-                        <td class="p-4 border-b">${row[3] || '-'}</td>
-                        <td class="p-4 border-b">${row[4] || '-'}</td>
-                        <td class="p-4 border-b text-right font-bold text-green-600">${formatMoney(row[5])}</td>
-                    `;
-                } else if (modalType === 'kpi' && collectionType === 'BankBalance') {
-                     tr.innerHTML = `
-                        <td class="p-4 border-b whitespace-nowrap">${row[0]}</td> <!-- Date is already formatted -->
-                        <td class="p-4 border-b text-right font-bold text-blue-600">${formatMoney(row[1])}</td>
-                    `;
-                } else if (modalType === 'kpi' && collectionType === 'SystemBalance') {
-                     tr.innerHTML = `
-                        <td class="p-4 border-b whitespace-nowrap">${row[0]}</td> <!-- Date is already formatted -->
-                        <td class="p-4 border-b font-bold text-slate-700">${row[1] || 'N/A'}</td>
-                        <td class="p-4 border-b text-right font-bold text-blue-600">${formatMoney(row[2])}</td> <!-- Displaying balance here -->
-                    `;
-                } else if (modalType === 'tableRow') { 
-                     tr.innerHTML = `
-                        <td class="p-4 border-b whitespace-nowrap">${formatDateForDisplay(parseDate(row[0]))}</td>
-                        <td class="p-4 border-b">${row[3] || '-'}</td>
-                        <td class="p-4 border-b">${row[4] || '-'}</td>
-                        <td class="p-4 border-b text-right font-bold text-green-600">${formatMoney(row[5])}</td>
-                    `;
-                }
-                modalTbody.appendChild(tr);
-            });
-        }
-
-        modal.style.display = 'flex';
-    }
-
-    // Submit New Collection Form
-    async function submitCollection(event) {
-        event.preventDefault();
-        
-        const form = event.target;
-        const dateInput = document.getElementById('coll-date');
-        const typeInput = document.getElementById('coll-type');
-        const agentInput = document.getElementById('coll-agent');
-        const accountInput = document.getElementById('coll-account');
-        const customerInput = document.getElementById('coll-customer');
-        const amountInput = document.getElementById('coll-amount');
-
-        // Basic validation
-        if (!dateInput.value || !typeInput.value || !agentInput.value || !amountInput.value) {
-            Swal.fire('त्रुटी!', 'कृपया सर्व आवश्यक फील्ड्स (तारीख, जमा प्रकार, एजंट, रक्कम) भरा.', 'warning');
-            return;
-        }
-
-        const payload = {
-            type: "daily_collection",
-            date: dateInput.value, // This will be in YYYY-MM-DD format
-            collectionType: typeInput.value,
-            agentName: agentInput.value,
-            accountNumber: accountInput.value,
-            customerName: customerInput.value,
-            amount: parseFloat(amountInput.value)
-        };
-        
-        console.log("Submitting payload:", payload);
-
-        // Show loading indicator
-        Swal.fire({
-            title: 'नोंदणी करत आहे...',
-            html: 'कृपया प्रतीक्षा करा',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors', // 'no-cors' is important for Google Apps Script Web Apps deployed as 'Anyone'
-                body: JSON.stringify(payload)
-            });
-
-            // With 'no-cors' mode, response status is not accessible. We assume success if no network error.
-            console.log("POST request sent for collection. Assuming success.");
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'यशस्वी!',
-                text: 'नवीन जमा नोंद यशस्वीरित्या सेव्ह झाली.',
-                confirmButtonColor: '#10b981'
-            }).then(() => {
-                form.reset(); // Clear the form
-                // Reset date to today's date for the form input
-                document.getElementById('coll-date').value = formatDateForInput(new Date());
-                fetchData(true); // Refresh data to show the new entry
-                showSection('dashboard'); // Navigate back to dashboard
-            });
-
-        } catch (error) {
-            console.error("Error submitting collection:", error);
-            Swal.fire('त्रुटी!', `जमा नोंद सेव्ह करण्यात समस्या आली: ${error.message}. कृपया पुन्हा प्रयत्न करा.`, 'error');
-        }
-    }
-
-    // Submit Bank Balance Form
-    async function submitBankBalance(event) {
-        event.preventDefault();
-        
-        const form = event.target;
-        const dateInput = document.getElementById('bank-bal-date');
-        const amountInput = document.getElementById('bank-bal-amount');
-
-        if (!dateInput.value || !amountInput.value) {
-            Swal.fire('त्रुटी!', 'कृपया तारीख आणि बँक बॅलन्स भरा.', 'warning');
-            return;
-        }
-
-        const payload = {
-            type: "bank_balance",
-            date: dateInput.value, 
-            amount: parseFloat(amountInput.value)
-        };
-        
-        console.log("Submitting bank balance payload:", payload);
-
-        Swal.fire({
-            title: 'बॅलन्स सेव्ह करत आहे...',
-            html: 'कृपया प्रतीक्षा करा',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors', 
-                body: JSON.stringify(payload)
-            });
-
-            console.log("POST request sent for bank balance. Assuming success.");
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'यशस्वी!',
-                text: 'बँक बॅलन्स यशस्वीरित्या सेव्ह झाला.',
-                confirmButtonColor: '#06b6d4' // Cyan color
-            }).then(() => {
-                form.reset(); 
-                // Set date to today for next entry
-                document.getElementById('bank-bal-date').value = formatDateForInput(new Date());
-                fetchData(true); // Refresh data to update dashboard KPIs
-            });
-
-        } catch (error) {
-            console.error("Error submitting bank balance:", error);
-            Swal.fire('त्रुटी!', `बँक बॅलन्स सेव्ह करण्यात समस्या आली: ${error.message}. कृपया पुन्हा प्रयत्न करा.`, 'error');
-        }
-    }
-
-
-    // --- Report Generation Logic ---
-    function generateReports() {
-        const startDateInput = document.getElementById('report-start-date');
-        const endDateInput = document.getElementById('report-end-date');
-
-        const startDate = parseDate(startDateInput.value);
-        const endDate = parseDate(endDateInput.value);
-
-        if (!startDate || !endDate) {
-            console.log("Report dates not set, skipping report generation.");
-            return; 
-        }
-
-        if (startDate > endDate) {
-            Swal.fire('त्रुटी!', 'सुरुवातीची तारीख अंतिम तारखेपेक्षा मोठी असू शकत नाही.', 'warning');
-            return;
-        }
-
-        console.log(`Generating reports from ${formatDateForDisplay(startDate)} to ${formatDateForDisplay(endDate)}`);
-
-        // Filter all data within the selected date range
-        const reportCollections = (allData.dailyCollections || []).filter(row => {
-            const rowDate = parseDate(row[0]);
-            return rowDate && rowDate >= startDate && rowDate <= endDate;
-        });
-
-        const reportExpenses = (allData.expenses || []).filter(row => {
-             const rowDate = parseDate(row[0]);
-            return rowDate && rowDate >= startDate && rowDate <= endDate;
-        });
-
-        const reportBankBalances = (allData.bankBalances || []).filter(row => {
-             const rowDate = parseDate(row[0]);
-            return rowDate && rowDate >= startDate && rowDate <= endDate;
-        });
-
-        // --- Agent Performance Report ---
-        const agentPerformance = {};
-        reportCollections.forEach(row => {
-            const agentName = row[2];
-            const amount = Number(row[5] || 0);
-            const type = row[1];
-
-            if (!agentPerformance[agentName]) {
-                agentPerformance[agentName] = { total: 0, pigmy: 0, rd: 0, fd: 0, accountCount: 0 };
-            }
-            agentPerformance[agentName].total += amount;
-            agentPerformance[agentName].accountCount++; // Count entries for now, unique account count would need more logic
-            if (type === 'Pigmy') agentPerformance[agentName].pigmy += amount;
-            else if (type === 'RD') agentPerformance[agentName].rd += amount;
-            else if (type === 'FD') agentPerformance[agentName].fd += amount;
-        });
-
-        renderAgentReportTable(agentPerformance);
-
-        // --- Product Wise Collection Report ---
-        const productWiseCollection = {};
-        reportCollections.forEach(row => {
-            const type = row[1];
-            const amount = Number(row[5] || 0);
-
-            if (!productWiseCollection[type]) {
-                productWiseCollection[type] = { total: 0, count: 0 };
-            }
-            productWiseCollection[type].total += amount;
-            productWiseCollection[type].count++;
-        });
-        renderProductReportTable(productWiseCollection);
-
-    }
-
-    function renderAgentReportTable(data) {
-        const tbody = document.getElementById('agent-report-body');
-        tbody.innerHTML = ''; // Clear existing rows
-        
-        const sortedAgents = Object.entries(data).sort(([, a], [, b]) => b.total - a.total); // Sort by total amount descending
-
-        if (sortedAgents.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 font-bold">निवडलेल्या कालावधीत कोणताही डेटा उपलब्ध नाही.</td></tr>`;
-            return;
-        }
-
-        sortedAgents.forEach(([agentName, values]) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="p-4 font-bold">${agentName}</td>
-                <td class="p-4 text-right">${formatMoney(values.total)}</td>
-                <td class="p-4 text-right">${formatMoney(values.pigmy)}</td>
-                <td class="p-4 text-right">${formatMoney(values.rd)}</td>
-                <td class="p-4 text-right">${formatMoney(values.fd)}</td>
-                <td class="p-4 text-center">
-                    <button class="bg-blue-500 text-white px-3 py-1 rounded-md font-medium hover:bg-blue-600 transition" onclick="viewAgentDetails('${agentName}')">पहा</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-    
-    function renderProductReportTable(data) {
-        const tbody = document.getElementById('product-report-body');
-        tbody.innerHTML = ''; 
-
-        const sortedProducts = Object.entries(data).sort(([, a], [, b]) => b.total - a.total);
-
-         if (sortedProducts.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500 font-bold">निवडलेल्या कालावधीत कोणताही डेटा उपलब्ध नाही.</td></tr>`;
-            return;
-        }
-
-        sortedProducts.forEach(([productType, values]) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="p-4 font-bold">${productType}</td>
-                <td class="p-4 text-right">${formatMoney(values.total)}</td>
-                <td class="p-4 text-center">${values.count}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    // New function to handle viewing agent-specific details in modal
-    function viewAgentDetails(agentName) {
-        const startDate = parseDate(document.getElementById('report-start-date').value);
-        const endDate = parseDate(document.getElementById('report-end-date').value);
-        
-        // Filter collections specifically for this agent and date range from allData
-        const agentSpecificCollections = (allData.dailyCollections || []).filter(row => {
-            const rowDate = parseDate(row[0]);
-            return row[2] === agentName && rowDate && rowDate >= startDate && rowDate <= endDate;
-        });
-
-        // Use modal to show details. Pass agentName as 'identifier' and the filtered rows as 'dataRows'.
-        openDetailModal('AgentDetails', agentName, agentSpecificCollections); 
-    }
-    
-    // Override openDetailModal for agent details view (and potentially others)
-    function openDetailModal(type, identifier, dataRows) {
-         console.log(`Opening modal for type: ${type}, identifier: ${identifier}, dataRows:`, dataRows);
-         const modal = document.getElementById('detailsModal');
-         const modalTitle = document.getElementById('modal-title');
-         const modalThead = document.getElementById('modal-thead');
-         const modalTbody = document.getElementById('modal-tbody');
-         const backBtn = document.getElementById('modal-back-btn');
-
-         modalTitle.innerHTML = '';
-         modalThead.innerHTML = '';
-         modalTbody.innerHTML = '';
-         backBtn.style.display = 'none';
-
-         if (type === 'AgentDetails') {
-             // Setting title for Agent Details modal
-             modalTitle.innerHTML = `<i class="fa-solid fa-user-tie mr-2 text-purple-500"></i> एजंट: ${identifier} (${formatDateForDisplay(parseDate(document.getElementById('report-start-date').value))} - ${formatDateForDisplay(parseDate(document.getElementById('report-end-date').value))})`;
-             // Setting headers for Agent Details modal
-             modalThead.innerHTML = `
-                 <tr>
-                     <th class="p-4 border-b">तारीख</th>
-                     <th class="p-4 border-b">प्रकार</th>
-                     <th class="p-4 border-b">खाते क्र.</th>
-                     <th class="p-4 border-b">ग्राहकाचे नाव</th>
-                     <th class="p-4 border-b text-right">रक्कम (₹)</th>
-                 </tr>`;
-             
-             if (dataRows.length === 0) {
-                  modalTbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 font-bold">या एजंटसाठी निवडलेल्या कालावधीत कोणताही डेटा उपलब्ध नाही.</td></tr>`;
-             } else {
-                 // Rendering rows for Agent Details
-                 dataRows.forEach(row => {
-                     const tr = document.createElement('tr');
-                     tr.innerHTML = `
-                         <td class="p-4 border-b whitespace-nowrap">${formatDateForDisplay(parseDate(row[0]))}</td>
-                         <td class="p-4 border-b font-bold text-slate-700">${row[1] || 'N/A'}</td>
-                         <td class="p-4 border-b">${row[3] || '-'}</td>
-                         <td class="p-4 border-b">${row[4] || '-'}</td>
-                         <td class="p-4 border-b text-right font-bold text-green-600">${formatMoney(row[5])}</td>
-                     `;
-                     modalTbody.appendChild(tr);
-                 });
-             }
-         } else {
-             // Fallback for other modal types, like those called from dashboard KPIs
-             // This part is based on the previous `openDetailModal` structure
-             // and might need adjustment if new KPI modal views are added.
-             let filteredRows = [];
-             let headerHTML = '';
-             let modalType = '';
-
-             if (type === 'Pigmy' || type === 'RD' || type === 'FD') {
-                 filteredRows = (allData.dailyCollections || []).filter(row => row[1] === type);
-                 modalTitle.innerHTML = `<i class="fa-solid fa-chart-pie mr-2 text-green-500"></i> ${type} कलेक्शन तपशील (${formatDateForDisplay(currentDate)})`;
+                 modalTitle.innerHTML = `<i class="fa-solid fa-user-tie mr-2 text-purple-500"></i> एजंट: ${agentName} (${formatDateForDisplay(parseDate(document.getElementById('report-start-date').value))} - ${formatDateForDisplay(parseDate(document.getElementById('report-end-date').value))})`;
                  headerHTML = `
                      <tr>
-                         <th class="p-4 border-b">एजंटचे नाव</th>
+                         <th class="p-4 border-b">तारीख</th>
+                         <th class="p-4 border-b">प्रकार</th>
                          <th class="p-4 border-b">खाते क्र.</th>
                          <th class="p-4 border-b">ग्राहकाचे नाव</th>
                          <th class="p-4 border-b text-right">रक्कम (₹)</th>
                      </tr>`;
-             } else if (type === 'BankBalance') {
-                 modalType = 'bankBalance';
-                 const relevantBankBalances = (allData.bankBalances || []).filter(row => { const rd = parseDate(row[0]); return rd && rd <= currentDate; }).sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
-                 let lbAmount = 0, lbDate = null;
-                 if (relevantBankBalances.length > 0) { lbAmount = Number(relevantBankBalances[0][1] || 0); lbDate = parseDate(relevantBankBalances[0][0]); }
-                 else {
-                     const rbtx = (allData.bankTransactions || []).filter(row => { const rd = parseDate(row[0]); return rd && rd <= currentDate; }).sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
-                     if (rbtx.length > 0) { lbAmount = Number(rbtx[0][4] || 0); lbDate = parseDate(rbtx[0][0]); }
-                 }
-                 if (lbDate) filteredRows = [[formatDateForDisplay(lbDate), lbAmount]];
-                 modalTitle.innerHTML = `<i class="fa-solid fa-building-columns mr-2 text-cyan-500"></i> बँक बॅलन्स तपशील (${formatDateForDisplay(currentDate)})`;
-                 headerHTML = `<tr><th class="p-4 border-b">तारीख</th><th class="p-4 border-b text-right">बॅलन्स (₹)</th></tr>`;
-             } else if (type === 'SystemBalance') {
-                 modalType = 'systemBalance';
-                 const todayCollections = (allData.dailyCollections || []).filter(row => { const rd = parseDate(row[0]); return rd && rd.getFullYear() === currentDate.getFullYear() && rd.getMonth() === currentDate.getMonth() && rd.getDate() === currentDate.getDate(); });
-                 const todayExpenses = (allData.expenses || []).filter(row => { const rd = parseDate(row[0]); return rd && rd.getFullYear() === currentDate.getFullYear() && rd.getMonth() === currentDate.getMonth() && rd.getDate() === currentDate.getDate(); });
-                 let totalColAmount = todayCollections.reduce((sum, row) => sum + Number(row[5] || 0), 0);
-                 let totalExpAmount = todayExpenses.reduce((sum, row) => sum + Number(row[2] || 0), 0);
-                 const finalSystemBalance = totalColAmount - totalExpAmount;
-                 filteredRows = [[formatDateForDisplay(currentDate), finalSystemBalance]];
-                 modalTitle.innerHTML = `<i class="fa-solid fa-calculator mr-2 text-orange-500"></i> सिस्टम बॅलन्स तपशील (${formatDateForDisplay(currentDate)})`;
-                 headerHTML = `<tr><th class="p-4 border-b">तारीख</th><th class="p-4 border-b text-right">बॅलन्स (₹)</th></tr>`;
-             } else {
-                 console.warn("openDetailModal called with unknown type:", type);
-                 modalTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2 text-orange-500"></i> अज्ञात तपशील`;
-                 headerHTML = `<tr><th class="p-4 border-b">माहिती</th></tr>`;
-             }
-             
-             modalThead.innerHTML = headerHTML;
-             if (filteredRows.length === 0) {
-                 modalTbody.innerHTML = `<tr><td colspan="${modalThead.querySelector('tr').children.length}" class="p-4 text-center text-slate-500 font-bold">या तपशिलासाठी कोणताही डेटा उपलब्ध नाही.</td></tr>`;
-             } else {
-                 filteredRows.forEach(row => {
-                     const tr = document.createElement('tr');
-                     if (modalType === 'kpi' && (type === 'Pigmy' || type === 'RD' || type === 'FD')) { 
-                         tr.innerHTML = `<td class="p-4 border-b">${row[0] || '-'}</td><td class="p-4 border-b">${row[1] || '-'}</td><td class="p-4 border-b">${row[2] || '-'}</td><td class="p-4 border-b text-right font-bold text-green-600">${formatMoney(row[3])}</td>`;
-                     } else if (modalType === 'bankBalance' || modalType === 'systemBalance') {
-                         tr.innerHTML = `<td class="p-4 border-b whitespace-nowrap">${row[0]}</td><td class="p-4 border-b text-right font-bold ${modalType === 'bankBalance' ? 'text-blue-600' : 'text-orange-600'}">${formatMoney(row[1])}</td>`;
-                     }
-                     modalTbody.appendChild(tr);
-                 });
-             }
-         }
-         modal.style.display = 'flex';
-    }
+                 filteredRows = agentDataRows; // Use the pre-filtered rows passed as dataRows
+                 console.log(`Modal opened for Agent Details: Agent=${agentName}, Rows:`, filteredRows);
+            }
+            // Fallback for unknown call types
+            else { 
+                console.error("Invalid arguments passed to openDetailModal. Args:", arguments);
+                modalTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2 text-orange-500"></i> अज्ञात तपशील`;
+                headerHTML = `<tr><th class="p-4 border-b">माहिती</th></tr>`;
+                modalTbody.innerHTML = `<tr><td class="p-4">मोडल उघडण्यात त्रुटी आली.</td></tr>`;
+            }
+            
+            // Render the modal table header
+            modalThead.innerHTML = headerHTML;
 
-    function closeModal() { document.getElementById('detailsModal').style.display = 'none'; }
-    
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('detailsModal')) {
-            closeModal();
+            // Render the modal table body
+            if (filteredRows.length === 0) {
+                // Show message if no data is found
+                modalTbody.innerHTML = `<tr><td colspan="${modalThead.querySelector('tr').children.length}" class="p-4 text-center text-slate-500 font-bold">या तपशिलासाठी कोणताही डेटा उपलब्ध नाही.</td></tr>`;
+            } else {
+                // Create table rows for each data entry
+                filteredRows.forEach(row => {
+                    const tr = document.createElement('tr');
+                    // Render row content based on the modal type
+                    if (modalType === 'kpi' && (type === 'Pigmy' || type === 'RD' || type === 'FD')) { 
+                        // Data structure for Pigmy/RD/FD KPI drill-down
+                        tr.innerHTML = `
+                            <td class="p-4 border-b">${row[2] || '-'}</td> <!-- Agent Name -->
+                            <td class="p-4 border-b">${row[3] || '-'}</td> <!-- Account Number -->
+                            <td class="p-4 border-b">${row[4] || '-'}</td> <!-- Customer Name -->
+                            <td class="p-4 border-b text-right font-bold text-green-600">${formatMoney(row[5])}</td> <!-- Amount -->
+                        `;
+                    } else if (modalType === 'bankBalance' || modalType === 'systemBalance') {
+                        // Data structure for Bank/System Balance drill-down
+                         tr.innerHTML = `
+                            <td class="p-4 border-b whitespace-nowrap">${row[0]}</td> <!-- Date (already formatted) -->
+                            <td class="p-4 border-b text-right font-bold ${modalType === 'bankBalance' ? 'text-blue-600' : 'text-orange-600'}">${formatMoney(row[1])}</td> <!-- Balance -->
+                        `;
+                    } else if (modalType === 'tableRow') { 
+                        // Data structure for table row click drill-down
+                         tr.innerHTML = `
+                            <td class="p-4 border-b whitespace-nowrap">${formatDateForDisplay(parseDate(row[0]))}</td>
+                            <td class="p-4 border-b">${row[3] || '-'}</td>
+                            <td class="p-4 border-b">${row[4] || '-'}</td>
+                            <td class="p-4 border-b text-right font-bold text-green-600">${formatMoney(row[5])}</td>
+                        `;
+                    } else if (modalType === 'agentDetails') {
+                         // Data structure for Agent Details drill-down
+                         tr.innerHTML = `
+                            <td class="p-4 border-b whitespace-nowrap">${formatDateForDisplay(parseDate(row[0]))}</td>
+                            <td class="p-4 border-b font-bold text-slate-700">${row[1] || 'N/A'}</td>
+                            <td class="p-4 border-b">${row[3] || '-'}</td>
+                            <td class="p-4 border-b">${row[4] || '-'}</td>
+                            <td class="p-4 border-b text-right font-bold text-green-600">${formatMoney(row[5])}</td>
+                        `;
+                    }
+                    modalTbody.appendChild(tr); // Add the row to the table body
+                });
+            }
+
+            modal.style.display = 'flex'; // Show the modal
         }
-    }
 
-    // Reset Date Filter
-    function resetFilter() {
-        document.getElementById('filter-date').value = ''; 
-        isFilterActive = false; 
-        currentDate = new Date(); 
-        document.getElementById('filter-date').value = formatDateForInput(currentDate); 
-        fetchData(false); // Reload data with today's date
-        console.log("Filter reset. Showing today's data.");
-    }
-
-    // Reset Report Filter
-    function resetReportFilter() {
-        document.getElementById('report-start-date').value = '';
-        document.getElementById('report-end-date').value = '';
-        // Clear report tables by calling generateReports without dates or providing default message
-        document.getElementById('agent-report-body').innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 font-bold">अहवाल तयार करण्यासाठी कृपया कालावधी निवडा.</td></tr>`;
-        document.getElementById('product-report-body').innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500 font-bold">अहवाल तयार करण्यासाठी कृपया कालावधी निवडा.</td></tr>`;
-    }
-
-    // --- Export Functionality ---
-    function exportTableToCSV(tableId, filename) {
-        const table = document.getElementById(tableId);
-        if (!table) {
-            console.error("Table with ID '" + tableId + "' not found.");
-            return;
+        /**
+         * Closes the detail modal.
+         */
+        function closeModal() { 
+            document.getElementById('detailsModal').style.display = 'none'; 
         }
         
-        const rows = table.querySelectorAll('tr');
-        let csvContent = [];
+        // Close modal if the user clicks outside of the modal content
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('detailsModal')) {
+                closeModal();
+            }
+        }
 
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('th, td');
-            const rowData = [];
-            cells.forEach(cell => {
-                let cellText = cell.innerText.trim();
-                // For amounts, remove currency symbols and commas for cleaner CSV
-                if (cell.textContent.includes('₹')) {
-                    cellText = cellText.replace(/[₹,]/g, '');
+        // --- Form Submission Functions ---
+
+        /**
+         * Handles the submission of the 'Add Collection' form.
+         * Sends data to the API and shows a success/error message.
+         * @param {Event} event - The form submission event.
+         */
+        async function submitCollection(event) {
+            event.preventDefault(); // Prevent default form submission
+            
+            const form = event.target;
+            // Get form field values
+            const dateInput = document.getElementById('coll-date');
+            const typeInput = document.getElementById('coll-type');
+            const agentInput = document.getElementById('coll-agent');
+            const accountInput = document.getElementById('coll-account');
+            const customerInput = document.getElementById('coll-customer');
+            const amountInput = document.getElementById('coll-amount');
+
+            // Basic validation for required fields
+            if (!dateInput.value || !typeInput.value || !agentInput.value || !amountInput.value) {
+                Swal.fire('त्रुटी!', 'कृपया सर्व आवश्यक फील्ड्स (तारीख, जमा प्रकार, एजंट, रक्कम) भरा.', 'warning');
+                return; // Stop submission if validation fails
+            }
+
+            // Prepare payload for API
+            const payload = {
+                type: "daily_collection", // Type identifier for the API
+                date: dateInput.value,    // Date in YYYY-MM-DD format
+                collectionType: typeInput.value,
+                agentName: agentInput.value,
+                accountNumber: accountInput.value,
+                customerName: customerInput.value,
+                amount: parseFloat(amountInput.value) // Convert amount to number
+            };
+            
+            console.log("Submitting collection payload:", payload);
+
+            // Show a loading indicator during submission
+            Swal.fire({
+                title: 'नोंदणी करत आहे...',
+                html: 'कृपया प्रतीक्षा करा',
+                allowOutsideClick: false, // Prevent closing modal by clicking outside
+                didOpen: () => {
+                    Swal.showLoading(); // Show the loading spinner
                 }
-                // Escape double quotes in data
-                cellText = cellText.replace(/"/g, '""');
-                rowData.push(`"${cellText}"`);
             });
-            csvContent.push(rowData.join(','));
+
+            try {
+                // Send data to API using POST request with 'no-cors' mode
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Important for Google Apps Script Web Apps
+                    body: JSON.stringify(payload) // Send payload as JSON string
+                });
+
+                // With 'no-cors', response status is not accessible. Assuming success if no network error.
+                console.log("POST request sent for collection. Assuming success.");
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'यशस्वी!',
+                    text: 'नवीन जमा नोंद यशस्वीरित्या सेव्ह झाली.',
+                    confirmButtonColor: '#10b981' // Green color for confirmation button
+                }).then(() => {
+                    form.reset(); // Clear the form fields
+                    // Reset date field to today's date for the next entry
+                    document.getElementById('coll-date').value = formatDateForInput(new Date());
+                    fetchData(true); // Refresh data to include the new entry
+                    showSection('dashboard'); // Navigate back to the dashboard
+                });
+
+            } catch (error) {
+                // Handle submission errors
+                console.error("Error submitting collection:", error);
+                Swal.fire('त्रुटी!', `जमा नोंद सेव्ह करण्यात समस्या आली: ${error.message}. कृपया पुन्हा प्रयत्न करा.`, 'error');
+            }
+        }
+
+        /**
+         * Handles the submission of the 'Bank Balance' form.
+         * Sends data to the API and shows a success/error message.
+         * @param {Event} event - The form submission event.
+         */
+        async function submitBankBalance(event) {
+            event.preventDefault(); // Prevent default form submission
+            
+            const form = event.target;
+            // Get form field values
+            const dateInput = document.getElementById('bank-bal-date');
+            const amountInput = document.getElementById('bank-bal-amount');
+
+            // Basic validation for required fields
+            if (!dateInput.value || !amountInput.value) {
+                Swal.fire('त्रुटी!', 'कृपया तारीख आणि बँक बॅलन्स भरा.', 'warning');
+                return; // Stop submission if validation fails
+            }
+
+            // Prepare payload for API
+            const payload = {
+                type: "bank_balance", // Type identifier for the API
+                date: dateInput.value, // Date in YYYY-MM-DD format
+                amount: parseFloat(amountInput.value) // Convert amount to number
+            };
+            
+            console.log("Submitting bank balance payload:", payload);
+
+            // Show a loading indicator during submission
+            Swal.fire({
+                title: 'बॅलन्स सेव्ह करत आहे...',
+                html: 'कृपया प्रतीक्षा करा',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                // Send data to API
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    body: JSON.stringify(payload)
+                });
+
+                console.log("POST request sent for bank balance. Assuming success.");
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'यशस्वी!',
+                    text: 'बँक बॅलन्स यशस्वीरित्या सेव्ह झाला.',
+                    confirmButtonColor: '#06b6d4' // Cyan color for confirmation button
+                }).then(() => {
+                    form.reset(); // Clear the form
+                    // Reset date to today for the next entry
+                    document.getElementById('bank-bal-date').value = formatDateForInput(new Date());
+                    fetchData(true); // Refresh data to update dashboard KPIs
+                });
+
+            } catch (error) {
+                // Handle submission errors
+                console.error("Error submitting bank balance:", error);
+                Swal.fire('त्रुटी!', `बँक बॅलन्स सेव्ह करण्यात समस्या आली: ${error.message}. कृपया पुन्हा प्रयत्न करा.`, 'error');
+            }
+        }
+
+
+        // --- Report Generation Logic ---
+
+        /**
+         * Generates and renders the Agent Performance and Product Collection reports
+         * based on the selected date range.
+         */
+        function generateReports() {
+            const startDateInput = document.getElementById('report-start-date');
+            const endDateInput = document.getElementById('report-end-date');
+
+            const startDate = parseDate(startDateInput.value);
+            const endDate = parseDate(endDateInput.value);
+
+            // Check if dates are selected
+            if (!startDate || !endDate) {
+                console.log("Report dates not set, skipping report generation.");
+                // Optionally show a message to the user if dates are required
+                // Swal.fire('माहिती!', 'कृपया अहवाल तयार करण्यासाठी सुरुवातीची आणि अंतिम तारीख निवडा.', 'info');
+                return; 
+            }
+
+            // Validate date range
+            if (startDate > endDate) {
+                Swal.fire('त्रुटी!', 'सुरुवातीची तारीख अंतिम तारखेपेक्षा मोठी असू शकत नाही.', 'warning');
+                return;
+            }
+
+            console.log(`Generating reports from ${formatDateForDisplay(startDate)} to ${formatDateForDisplay(endDate)}`);
+
+            // Filter all data (collections, expenses, bank balances) within the selected date range
+            const reportCollections = (allData.dailyCollections || []).filter(row => {
+                const rowDate = parseDate(row[0]);
+                return rowDate && rowDate >= startDate && rowDate <= endDate;
+            });
+
+            const reportExpenses = (allData.expenses || []).filter(row => {
+                 const rowDate = parseDate(row[0]);
+                return rowDate && rowDate >= startDate && rowDate <= endDate;
+            });
+
+            const reportBankBalances = (allData.bankBalances || []).filter(row => {
+                 const rowDate = parseDate(row[0]);
+                return rowDate && rowDate >= startDate && rowDate <= endDate;
+            });
+
+            // --- Agent Performance Report Calculation ---
+            const agentPerformance = {}; // Object to store aggregated data per agent
+            reportCollections.forEach(row => {
+                const agentName = row[2];
+                const amount = Number(row[5] || 0);
+                const type = row[1];
+
+                // Initialize agent entry if it doesn't exist
+                if (!agentPerformance[agentName]) {
+                    agentPerformance[agentName] = { total: 0, pigmy: 0, rd: 0, fd: 0, accountCount: 0 };
+                }
+                // Aggregate data
+                agentPerformance[agentName].total += amount;
+                agentPerformance[agentName].accountCount++; // Count entries (can be refined for unique accounts if needed)
+                if (type === 'Pigmy') agentPerformance[agentName].pigmy += amount;
+                else if (type === 'RD') agentPerformance[agentName].rd += amount;
+                else if (type === 'FD') agentPerformance[agentName].fd += amount;
+            });
+
+            renderAgentReportTable(agentPerformance); // Render the agent performance table
+
+            // --- Product Wise Collection Report Calculation ---
+            const productWiseCollection = {}; // Object to store aggregated data per product type
+            reportCollections.forEach(row => {
+                const type = row[1]; // Product type (Pigmy, RD, FD, etc.)
+                const amount = Number(row[5] || 0); // Amount
+
+                // Initialize product entry if it doesn't exist
+                if (!productWiseCollection[type]) {
+                    productWiseCollection[type] = { total: 0, count: 0 };
+                }
+                // Aggregate data
+                productWiseCollection[type].total += amount;
+                productWiseCollection[type].count++;
+            });
+            renderProductReportTable(productWiseCollection); // Render the product collection table
+        }
+
+        /**
+         * Renders the Agent Performance report table.
+         * @param {object} data - An object where keys are agent names and values are performance metrics.
+         */
+        function renderAgentReportTable(data) {
+            const tbody = document.getElementById('agent-report-body');
+            tbody.innerHTML = ''; // Clear existing rows
+            
+            // Sort agents by total collection amount in descending order
+            const sortedAgents = Object.entries(data).sort(([, a], [, b]) => b.total - a.total);
+
+            // Display message if no data is found for the period
+            if (sortedAgents.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 font-bold">निवडलेल्या कालावधीत कोणताही डेटा उपलब्ध नाही.</td></tr>`;
+                return;
+            }
+
+            // Create table rows for each agent
+            sortedAgents.forEach(([agentName, values]) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-4 font-bold">${agentName}</td>
+                    <td class="p-4 text-right">${formatMoney(values.total)}</td>
+                    <td class="p-4 text-right">${formatMoney(values.pigmy)}</td>
+                    <td class="p-4 text-right">${formatMoney(values.rd)}</td>
+                    <td class="p-4 text-right">${formatMoney(values.fd)}</td>
+                    <td class="p-4 text-center">
+                        <!-- Button to view agent's detailed collection history -->
+                        <button class="bg-blue-500 text-white px-3 py-1 rounded-md font-medium hover:bg-blue-600 transition" onclick="viewAgentDetails('${agentName}')">पहा</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        /**
+         * Renders the Product Wise Collection report table.
+         * @param {object} data - An object where keys are product types and values are collection metrics.
+         */
+        function renderProductReportTable(data) {
+            const tbody = document.getElementById('product-report-body');
+            tbody.innerHTML = ''; // Clear existing rows
+
+            // Sort products by total collection amount in descending order
+            const sortedProducts = Object.entries(data).sort(([, a], [, b]) => b.total - a.total);
+
+             // Display message if no data is found for the period
+             if (sortedProducts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500 font-bold">निवडलेल्या कालावधीत कोणताही डेटा उपलब्ध नाही.</td></tr>`;
+                return;
+            }
+
+            // Create table rows for each product type
+            sortedProducts.forEach(([productType, values]) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-4 font-bold">${productType}</td>
+                    <td class="p-4 text-right">${formatMoney(values.total)}</td>
+                    <td class="p-4 text-center">${values.count}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        /**
+         * Triggers the modal to show detailed collection history for a specific agent.
+         * @param {string} agentName - The name of the agent.
+         */
+        function viewAgentDetails(agentName) {
+            const startDate = parseDate(document.getElementById('report-start-date').value);
+            const endDate = parseDate(document.getElementById('report-end-date').value);
+            
+            // Filter daily collections specifically for this agent and the selected date range
+            const agentSpecificCollections = (allData.dailyCollections || []).filter(row => {
+                const rowDate = parseDate(row[0]);
+                // Check if agent name matches, and date falls within the report's date range
+                return row[2] === agentName && rowDate && rowDate >= startDate && rowDate <= endDate;
+            });
+
+            // Open the modal to display the agent's detailed data
+            // Type 'AgentDetails', agentName as identifier, and the filtered rows as dataRows
+            openDetailModal('AgentDetails', agentName, agentSpecificCollections); 
+        }
+        
+        /**
+         * Overrides the default `openDetailModal` for specific scenarios like Agent Details,
+         * handling different data structures and modal layouts.
+         * @param {string} type - The type of modal content ('AgentDetails', 'Pigmy', etc.).
+         * @param {string} identifier - Used for agent name or date depending on the type.
+         * @param {Array<any>} [dataRows] - Array of data rows to display.
+         */
+        function openDetailModal(type, identifier, ...dataRows) {
+             console.log(`Opening modal for type: ${type}, identifier: ${identifier}, dataRows:`, dataRows);
+             const modal = document.getElementById('detailsModal');
+             const modalTitle = document.getElementById('modal-title');
+             const modalThead = document.getElementById('modal-thead');
+             const modalTbody = document.getElementById('modal-tbody');
+             const backBtn = document.getElementById('modal-back-btn'); // Back button (currently unused)
+
+             modalTitle.innerHTML = ''; // Clear previous modal content
+             modalThead.innerHTML = '';
+             modalTbody.innerHTML = '';
+             backBtn.style.display = 'none';
+
+             // --- Handle different modal content types ---
+
+             // Case: Agent Details from Reports section
+             if (type === 'AgentDetails' && arguments.length === 3) { // Expecting type, agentName, dataRows
+                 const agentName = identifier; // Identifier is agentName here
+                 const agentDataRows = dataRows[0]; // The actual data rows are the first element in restOfData
+
+                 modalTitle.innerHTML = `<i class="fa-solid fa-user-tie mr-2 text-purple-500"></i> एजंट: ${agentName} (${formatDateForDisplay(parseDate(document.getElementById('report-start-date').value))} - ${formatDateForDisplay(parseDate(document.getElementById('report-end-date').value))})`;
+                 modalThead.innerHTML = `
+                     <tr>
+                         <th class="p-4 border-b">तारीख</th>
+                         <th class="p-4 border-b">प्रकार</th>
+                         <th class="p-4 border-b">खाते क्र.</th>
+                         <th class="p-4 border-b">ग्राहकाचे नाव</th>
+                         <th class="p-4 border-b text-right">रक्कम (₹)</th>
+                     </tr>`;
+                 
+                 // Render rows if data exists
+                 if (agentDataRows.length === 0) {
+                      modalTbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 font-bold">या एजंटसाठी निवडलेल्या कालावधीत कोणताही डेटा उपलब्ध नाही.</td></tr>`;
+                 } else {
+                     agentDataRows.forEach(row => { // row structure: [date, type, agent, accNo, customer, amount]
+                         const tr = document.createElement('tr');
+                         tr.innerHTML = `
+                             <td class="p-4 border-b whitespace-nowrap">${formatDateForDisplay(parseDate(row[0]))}</td>
+                             <td class="p-4 border-b font-bold text-slate-700">${row[1] || 'N/A'}</td>
+                             <td class="p-4 border-b">${row[3] || '-'}</td>
+                             <td class="p-4 border-b">${row[4] || '-'}</td>
+                             <td class="p-4 border-b text-right font-bold text-green-600">${formatMoney(row[5])}</td>
+                         `;
+                         modalTbody.appendChild(tr);
+                     });
+                 }
+             } 
+             // Default handling for other modal types (KPIs, table rows)
+             else { 
+                 // This part reuses logic from the previous version for other modal calls.
+                 // It's important to ensure `type` and `identifier` and `dataRows` are correctly passed.
+                 let filteredRows = [];
+                 let headerHTML = '';
+                 let modalType = ''; // To differentiate internal logic
+
+                 // Case: Called from Dashboard KPIs ('Pigmy', 'RD', 'FD', 'BankBalance', 'SystemBalance')
+                 if (arguments.length === 2 && typeof arguments[1] === 'string' && arguments[1] === 'today') {
+                     const kpiType = type; // e.g., 'Pigmy'
+                     
+                     if (kpiType === 'Pigmy' || kpiType === 'RD' || kpiType === 'FD') {
+                         filteredRows = (allData.dailyCollections || []).filter(row => row[1] === kpiType);
+                         modalTitle.innerHTML = `<i class="fa-solid fa-chart-pie mr-2 text-green-500"></i> ${kpiType} कलेक्शन तपशील (${formatDateForDisplay(currentDate)})`;
+                         headerHTML = `<tr><th class="p-4 border-b">एजंटचे नाव</th><th class="p-4 border-b">खाते क्र.</th><th class="p-4 border-b">ग्राहकाचे नाव</th><th class="p-4 border-b text-right">रक्कम (₹)</th></tr>`;
+                     } else if (kpiType === 'BankBalance') {
+                         modalType = 'bankBalance'; // Specific type for bank balance rendering
+                         const relevantBankBalances = (allData.bankBalances || []).filter(row => { const rd = parseDate(row[0]); return rd && rd <= currentDate; }).sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
+                         let lbAmount = 0, lbDate = null;
+                         if (relevantBankBalances.length > 0) { lbAmount = Number(relevantBankBalances[0][1] || 0); lbDate = parseDate(relevantBankBalances[0][0]); }
+                         else { // Check transactions if manual balance is not recent
+                             const rbtx = (allData.bankTransactions || []).filter(row => { const rd = parseDate(row[0]); return rd && rd <= currentDate; }).sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
+                             if (rbtx.length > 0) { lbAmount = Number(rbtx[0][4] || 0); lbDate = parseDate(rbtx[0][0]); }
+                         }
+                         if (lbDate) filteredRows = [[formatDateForDisplay(lbDate), lbAmount]];
+                         modalTitle.innerHTML = `<i class="fa-solid fa-building-columns mr-2 text-cyan-500"></i> बँक बॅलन्स तपशील (${formatDateForDisplay(currentDate)})`;
+                         headerHTML = `<tr><th class="p-4 border-b">तारीख</th><th class="p-4 border-b text-right">बॅलन्स (₹)</th></tr>`;
+                     } else if (kpiType === 'SystemBalance') {
+                         modalType = 'systemBalance'; // Specific type for system balance rendering
+                         const todayCollections = (allData.dailyCollections || []).filter(row => { const rd = parseDate(row[0]); return rd && rd.getFullYear() === currentDate.getFullYear() && rd.getMonth() === currentDate.getMonth() && rd.getDate() === currentDate.getDate(); });
+                         const todayExpenses = (allData.expenses || []).filter(row => { const rd = parseDate(row[0]); return rd && rd.getFullYear() === currentDate.getFullYear() && rd.getMonth() === currentDate.getMonth() && rd.getDate() === currentDate.getDate(); });
+                         let totalColAmount = todayCollections.reduce((sum, row) => sum + Number(row[5] || 0), 0);
+                         let totalExpAmount = todayExpenses.reduce((sum, row) => sum + Number(row[2] || 0), 0);
+                         const finalSystemBalance = totalColAmount - totalExpAmount;
+                         filteredRows = [[formatDateForDisplay(currentDate), finalSystemBalance]];
+                         modalTitle.innerHTML = `<i class="fa-solid fa-calculator mr-2 text-orange-500"></i> सिस्टम बॅलन्स तपशील (${formatDateForDisplay(currentDate)})`;
+                         headerHTML = `<tr><th class="p-4 border-b">तारीख</th><th class="p-4 border-b text-right">बॅलन्स (₹)</th></tr>`;
+                     } else { // Fallback for unknown KPI types
+                         console.warn("openDetailModal called with unknown KPI type:", kpiType);
+                         modalTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2 text-orange-500"></i> अज्ञात तपशील`;
+                         headerHTML = `<tr><th class="p-4 border-b">माहिती</th></tr>`;
+                     }
+                 } 
+                 // Case: Called from table row click (arguments.length === 4)
+                 else if (arguments.length === 4) {
+                     modalType = 'tableRow';
+                     // Filter for the specific row from the daily collections of the current day
+                     filteredRows = filteredData.dailyCollections.filter(row => 
+                         row[1] === type && // Collection Type
+                         formatDateForDisplay(parseDate(row[0])) === formatDateForDisplay(parseDate(dateOrIdentifier)) && // Date
+                         row[2] === dateOrIdentifier && // Agent Name (passed as dateOrIdentifier)
+                         row[3] === dataRows[0] // Account Number (passed as first in restOfData)
+                     );
+                     modalTitle.innerHTML = `<i class="fa-solid fa-info-circle mr-2 text-blue-500"></i> ${type} - ${dateOrIdentifier} (खाते: ${dataRows[0]})`;
+                      headerHTML = `
+                         <tr>
+                             <th class="p-4 border-b">तारीख</th>
+                             <th class="p-4 border-b">खाते क्र.</th>
+                             <th class="p-4 border-b">ग्राहकाचे नाव</th>
+                             <th class="p-4 border-b text-right">रक्कम (₹)</th>
+                         </tr>`;
+                     console.log(`Modal opened from Table Row: Type=${type}, Date=${dateOrIdentifier}, Agent=${dateOrIdentifier}, Account=${dataRows[0]}, Rows:`, filteredRows);
+                 } else { 
+                     console.error("openDetailModal called with unknown arguments. Args:", arguments);
+                     modalTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2 text-orange-500"></i> अज्ञात तपशील`;
+                     headerHTML = `<tr><th class="p-4 border-b">माहिती</th></tr>`;
+                 }
+                 
+                 // Render modal header
+                 modalThead.innerHTML = headerHTML;
+
+                 // Render modal body
+                 if (filteredRows.length === 0) {
+                     modalTbody.innerHTML = `<tr><td colspan="${modalThead.querySelector('tr').children.length}" class="p-4 text-center text-slate-500 font-bold">या तपशिलासाठी कोणताही डेटा उपलब्ध नाही.</td></tr>`;
+                 } else {
+                     // Create table rows for each data entry
+                     filteredRows.forEach(row => {
+                         const tr = document.createElement('tr');
+                         // Render row content based on the modal type and its expected structure
+                         if (modalType === 'kpi' && (type === 'Pigmy' || type === 'RD' || type === 'FD')) { 
+                             tr.innerHTML = `<td class="p-4 border-b">${row[2] || '-'}</td><td class="p-4 border-b">${row[3] || '-'}</td><td class="p-4 border-b">${row[4] || '-'}</td><td class="p-4 border-b text-right font-bold text-green-600">${formatMoney(row[5])}</td>`;
+                         } else if (modalType === 'bankBalance' || modalType === 'systemBalance') {
+                             tr.innerHTML = `<td class="p-4 border-b whitespace-nowrap">${row[0]}</td><td class="p-4 border-b text-right font-bold ${modalType === 'bankBalance' ? 'text-blue-600' : 'text-orange-600'}">${formatMoney(row[1])}</td>`;
+                         } else if (modalType === 'tableRow') { 
+                              tr.innerHTML = `<td class="p-4 border-b whitespace-nowrap">${formatDateForDisplay(parseDate(row[0]))}</td><td class="p-4 border-b">${row[3] || '-'}</td><td class="p-4 border-b">${row[4] || '-'}</td><td class="p-4 border-b text-right font-bold text-green-600">${formatMoney(row[5])}</td>`;
+                         }
+                         modalTbody.appendChild(tr); // Add row to table body
+                     });
+                 }
+             }
+             modal.style.display = 'flex'; // Show the modal
+        }
+
+        /**
+         * Resets the report filters (start and end dates) and clears the report tables.
+         */
+        function resetReportFilter() {
+            document.getElementById('report-start-date').value = '';
+            document.getElementById('report-end-date').value = '';
+            // Clear report tables by providing default message indicating dates need to be selected
+            document.getElementById('agent-report-body').innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 font-bold">अहवाल तयार करण्यासाठी कृपया कालावधी निवडा.</td></tr>`;
+            document.getElementById('product-report-body').innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500 font-bold">अहवाल तयार करण्यासाठी कृपया कालावधी निवडा.</td></tr>`;
+        }
+
+        // --- Export Functionality ---
+
+        /**
+         * Exports the content of an HTML table to a CSV file.
+         * @param {string} tableId - The ID of the table to export.
+         * @param {string} filename - The desired name for the CSV file.
+         */
+        function exportTableToCSV(tableId, filename) {
+            const table = document.getElementById(tableId);
+            if (!table) {
+                console.error("Table with ID '" + tableId + "' not found.");
+                return;
+            }
+            
+            const rows = table.querySelectorAll('tr'); // Get all table rows
+            let csvContent = []; // Array to hold CSV content lines
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('th, td'); // Get all header and data cells
+                const rowData = [];
+                cells.forEach(cell => {
+                    let cellText = cell.innerText.trim(); // Get cell text and trim whitespace
+                    // Clean up amount strings by removing currency symbols and commas
+                    if (cell.textContent.includes('₹')) {
+                        cellText = cellText.replace(/[₹,]/g, '');
+                    }
+                    // Escape double quotes within the cell text to avoid CSV parsing issues
+                    cellText = cellText.replace(/"/g, '""');
+                    rowData.push(`"${cellText}"`); // Enclose cell data in double quotes
+                });
+                csvContent.push(rowData.join(',')); // Join cells with comma to form a CSV line
+            });
+
+            const csvString = csvContent.join('\n'); // Join all lines with newline characters
+            // Create a Blob object for the CSV data
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            
+            // Create a temporary link element to trigger the download
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob); // Create a URL for the blob
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename); // Set the download filename
+            link.style.visibility = 'hidden'; // Hide the link element
+            document.body.appendChild(link); // Append link to body to allow click
+            link.click(); // Programmatically click the link to trigger download
+            document.body.removeChild(link); // Clean up by removing the link element
+        }
+
+        // Add event listeners for the export buttons in the reports section
+        document.getElementById('export-agent-report').addEventListener('click', () => {
+            exportTableToCSV('agentReportTable', 'Agent_Performance_Report.csv');
+        });
+        document.getElementById('export-product-report').addEventListener('click', () => {
+            exportTableToCSV('productReportTable', 'Product_Collection_Report.csv');
         });
 
-        const csvString = csvContent.join('\n');
-        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
 
-    // Add event listeners for export buttons
-    document.getElementById('export-agent-report').addEventListener('click', () => {
-        exportTableToCSV('agentReportTable', 'Agent_Performance_Report.csv');
-    });
-    document.getElementById('export-product-report').addEventListener('click', () => {
-        exportTableToCSV('productReportTable', 'Product_Collection_Report.csv');
-    });
+        // --- Initial Load ---
 
+        /**
+         * Event listener for when the DOM is fully loaded.
+         * Initializes default values and triggers the initial data fetch.
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM fully loaded.");
 
-    // --- Initial Load ---
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log("DOM fully loaded.");
+            const today = new Date();
+            // Set default dates for all date inputs to today when the page loads
+            document.getElementById('filter-date').value = formatDateForInput(today);
+            document.getElementById('coll-date').value = formatDateForInput(today);
+            document.getElementById('report-start-date').value = formatDateForInput(today);
+            document.getElementById('report-end-date').value = formatDateForInput(today);
+            document.getElementById('bank-bal-date').value = formatDateForInput(today);
+            
+            currentDate = today; // Set initial currentDate
+            isFilterActive = true; // Mark filter as active as today's data is shown by default
 
-        const today = new Date();
-        // Set default dates for all date inputs to today
-        document.getElementById('filter-date').value = formatDateForInput(today);
-        document.getElementById('coll-date').value = formatDateForInput(today);
-        document.getElementById('report-start-date').value = formatDateForInput(today);
-        document.getElementById('report-end-date').value = formatDateForInput(today);
-        document.getElementById('bank-bal-date').value = formatDateForInput(today);
-        
-        currentDate = today; 
-        isFilterActive = true; // Set to true as we are showing today's data by default
+            fetchData(); // Load initial data from API
+            showSection('dashboard'); // Set the initial active section to 'dashboard'
+        });
 
-        fetchData(); // Load initial data for today and populate reports
-        showSection('dashboard'); // Set initial section to dashboard
-    });
+        /**
+         * Event listener for when the entire window (including assets like images) has finished loading.
+         * Useful for final adjustments, though most logic is handled by DOMContentLoaded.
+         */
+        window.onload = () => {
+            console.log("Window loaded.");
+        };
 
-    window.onload = () => {
-        console.log("Window loaded.");
-    };
-
-</script>
+    </script>
+</body>
+</html>

@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>लोकपर्याय पतसंस्था - दैनंदिन डेटा एंट्री (एकत्रित)</title>
+  <!-- तुमचा लोगोचा URL येथे टाका. tumcha_github_username बदला. -->
+  <link rel="icon" href="https://raw.githubusercontent.com/tumcha_github_username/lokparyay-patpedhi-dashboard/main/logo.png" type="image/png">
+  
+  <style>
+    body {
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f2f5;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .container {
+        max-width: 900px; /* रुंदी वाढवली */
+        margin: 30px auto;
+        padding: 30px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+        text-align: center;
+        color: #0056b3;
+        margin-bottom: 30px;
+        font-size: 28px;
+    }
+
+    .message {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 15px;
+        border-radius: 5px;
+        font-size: 16px;
+        display: none; /* Hidden by default */
+    }
+
+    .message.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .message.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .form-main-section { /* नवीन विभाग */
+        margin-bottom: 30px;
+        padding: 25px;
+        border: 1px solid #d0d0d0;
+        border-radius: 8px;
+        background-color: #fcfcfc;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    
+    .form-main-section h2 {
+        color: #0056b3;
+        margin-top: 0;
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        font-size: 22px;
+    }
+
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 15px;
+        align-items: flex-end; /* फील्ड्स खाली संरेखित करण्यासाठी */
+    }
+
+    .form-field {
+        flex: 1; /* फील्ड्स समान रुंदी घेतील */
+        min-width: 150px; /* किमान रुंदी */
+    }
+    .form-field.full-width {
+        flex: 1 1 100%; /* पूर्ण रुंदी घेईल */
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+        font-size: 14px;
+    }
+
+    input[type="date"],
+    input[type="time"],
+    input[type="text"],
+    input[type="number"],
+    select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+        font-size: 15px;
+    }
+    input[type="number"] {
+        -moz-appearance: textfield; /* Firefox मध्ये नंबर इनपुटवरील बाण काढण्यासाठी */
+    }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none; /* Chrome, Safari मध्ये नंबर इनपुटवरील बाण काढण्यासाठी */
+        margin: 0;
+    }
+
+    .agent-section {
+        border: 1px dashed #a0a0a0;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 6px;
+        background-color: #fefefe;
+    }
+    .agent-section h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 18px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+
+    button.submit-button {
+        background-color: #28a745; /* Green submit button */
+        color: white;
+        padding: 15px 25px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 18px;
+        width: 100%;
+        margin-top: 30px;
+        transition: background-color 0.3s ease;
+    }
+
+    button.submit-button:hover {
+        background-color: #218838; /* Darker green on hover */
+    }
+
+    .add-remove-agent {
+        text-align: right;
+        margin-top: 10px;
+    }
+    .add-remove-agent button {
+        background-color: #007bff;
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        width: auto;
+        margin-left: 10px;
+    }
+    .add-remove-agent button:hover {
+        background-color: #0056b3;
+    }
+    .add-remove-agent button.remove {
+        background-color: #dc3545;
+    }
+    .add-remove-agent button.remove:hover {
+        background-color: #c82333;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .container {
+            margin: 15px;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 24px;
+        }
+        .form-main-section h2 {
+            font-size: 20px;
+        }
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+        .form-field {
+            min-width: 100%;
+        }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>लोकपर्याय पतसंस्था - दैनंदिन डेटा एंट्री (सर्व एजंट एकत्रित)</h1>
+    <div id="message" class="message"></div>
+
+    <div class="form-main-section">
+        <h2>आजचे कलेक्शन आणि बँक बॅलन्स अपडेट</h2>
+        <div class="form-row">
+            <div class="form-field">
+                <label for="entryDate">दिनांक:</label>
+                <input type="date" id="entryDate" required>
+            </div>
+            <div class="form-field">
+                <label for="entryTime">वेळ:</label>
+                <input type="time" id="entryTime" required>
+            </div>
+        </div>
+
+        <div id="agentEntrySections">
+            <!-- एजंट एंट्री सेक्शन्स येथे JavaScript द्वारे लोड केले जातील -->
+        </div>
+
+        <div class="add-remove-agent">
+            <button type="button" onclick="addAgentSection()">एजंट सेक्शन जोडा</button>
+            <button type="button" onclick="removeLastAgentSection()" class="remove">शेवटचा एजंट काढा</button>
+        </div>
+
+        <hr style="margin: 30px 0; border-top: 1px solid #eee;">
+
+        <h3>बँक बॅलन्स अपडेट</h3>
+        <div class="form-row">
+            <div class="form-field">
+                <label for="systemBalance">सिस्टिम बॅलन्स:</label>
+                <input type="number" id="systemBalance" min="0" value="0" required>
+            </div>
+            <div class="form-field">
+                <label for="bankBalance">बँक बॅलन्स (प्रत्यक्ष):</label>
+                <input type="number" id="bankBalance" min="0" value="0" required>
+            </div>
+            <div class="form-field">
+                <label for="matchStatus">जुळणी स्थिती:</label>
+                <select id="matchStatus" required>
+                    <option value="जुळले आहे">जुळले आहे</option>
+                    <option value="जुळले नाही">जुळले नाही</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-field full-width">
+                <label for="remarks">शेरा (पर्यायी):</label>
+                <input type="text" id="remarks">
+            </div>
+        </div>
+
+        <hr style="margin: 30px 0; border-top: 1px solid #eee;">
+
+        <h3>नवीन एजंट जोडा</h3>
+        <div class="form-row">
+            <div class="form-field">
+                <label for="newAgentName">एजंटचे नाव:</label>
+                <input type="text" id="newAgentName">
+            </div>
+            <div class="form-field">
+                <label for="newAgentCode">एजंट कोड:</label>
+                <input type="text" id="newAgentCode">
+            </div>
+            <div class="form-field">
+                <label for="newContactNumber">संपर्क क्रमांक:</label>
+                <input type="text" id="newContactNumber">
+            </div>
+        </div>
+        <button type="button" onclick="addNewAgent()" style="background-color: #17a2b8;">नवीन एजंट जोडा</button>
+        
+        <button type="button" onclick="submitAllDailyData()" class="submit-button">सर्व दैनंदिन डेटा सबमिट करा</button>
+    </div>
+  </div>
+
+  <script>
+    // तुमचा DataEntry_API URL येथे टाका
+    const DATA_ENTRY_API_URL = 'https://script.google.com/macros/s/AKfycby6YqRCrrQfxoVDTG3RM4j2Pty642zVSZ-BwFs5wNnKo171wt5tngSDZHWqYU2EblU/exec'; 
+    // एजंटची यादी मिळवण्यासाठी Dashboard_API URL येथे टाका (तुम्ही जी डीप्लॉय केली आहे ती)
+    const DASHBOARD_API_URL = 'तुमचा_DASHBOARD_API_URL_येथे_टाका'; // उदा. 'https://script.google.com/macros/s/AKfycbz_XXXXX_YYYYY/exec'
+
+    let allAgents = []; // सर्व एजंट्सची यादी ग्लोबल स्कोपमध्ये
+
+    // एजंटची यादी लोड करा
+    async function fetchAgents() {
+        const url = `${DASHBOARD_API_URL}?sheet=agents`;
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data && !data.error) {
+                allAgents = data;
+            } else {
+                console.warn("एजंटची यादी रिकामी आहे किंवा लोड झाली नाही:", data.error);
+                allAgents = [];
+            }
+        } catch (error) {
+            console.error("एजंटची यादी लोड करण्यात एरर:", error);
+            allAgents = [];
+        }
+    }
+
+    // पेज लोड झाल्यावर एजंटची यादी लोड करा आणि एक एजंट सेक्शन जोडा
+    window.onload = async function() {
+        await fetchAgents(); // एजंट्सची यादी आधी लोड करा
+        addAgentSection(); // डीफॉल्टनुसार एक एजंट सेक्शन जोडा
+        // आजची तारीख आणि वेळ डीफॉल्ट म्हणून सेट करा
+        const now = new Date();
+        document.getElementById('entryDate').value = now.toISOString().slice(0, 10);
+        document.getElementById('entryTime').value = now.toTimeString().slice(0, 5);
+    };
+
+    function showMessage(msg, type) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.textContent = msg;
+      messageDiv.className = `message ${type}`;
+      messageDiv.style.display = 'block';
+      setTimeout(() => {
+        messageDiv.style.display = 'none';
+      }, 7000); // 7 सेकंदांनंतर मेसेज लपवा
+    }
+
+    let agentSectionCount = 0;
+
+    function addAgentSection() {
+        agentSectionCount++;
+        const agentEntrySections = document.getElementById('agentEntrySections');
+        const newSection = document.createElement('div');
+        newSection.className = 'agent-section';
+        newSection.id = `agentSection_${agentSectionCount}`;
+        newSection.innerHTML = `
+            <h3>एजंट #${agentSectionCount}</h3>
+            <div class="form-row">
+                <div class="form-field full-width">
+                    <label for="agentName_${agentSectionCount}">एजंटचे नाव:</label>
+                    <select id="agentName_${agentSectionCount}" required>
+                        <option value="">एजंट निवडा</option>
+                        ${allAgents.map(agent => `<option value="${agent.एजंटचे_नाव}">${agent.एजंटचे_नाव}</option>`).join('')}
+                    </select>
+                </div>
+            </div>
+
+            <h4>पिग्मी कलेक्शन</h4>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="pigmyCount_${agentSectionCount}">खात्यांची संख्या:</label>
+                    <input type="number" id="pigmyCount_${agentSectionCount}" min="0" value="0">
+                </div>
+                <div class="form-field">
+                    <label for="pigmyAmount_${agentSectionCount}">एकूण रक्कम:</label>
+                    <input type="number" id="pigmyAmount_${agentSectionCount}" min="0" value="0">
+                </div>
+            </div>
+
+            <h4>आरडी कलेक्शन</h4>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="rdCount_${agentSectionCount}">खात्यांची संख्या:</label>
+                    <input type="number" id="rdCount_${agentSectionCount}" min="0" value="0">
+                </div>
+                <div class="form-field">
+                    <label for="rdAmount_${agentSectionCount}">एकूण रक्कम:</label>
+                    <input type="number" id="rdAmount_${agentSectionCount}" min="0" value="0">
+                </div>
+                <div class="form-field">
+                    <label for="rdNewAccounts_${agentSectionCount}">नवीन खाती आज:</label>
+                    <input type="number" id="rdNewAccounts_${agentSectionCount}" min="0" value="0">
+                </div>
+            </div>
+
+            <h4>एफडी कलेक्शन</h4>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="fdCount_${agentSectionCount}">खात्यांची संख्या:</label>
+                    <input type="number" id="fdCount_${agentSectionCount}" min="0" value="0">
+                </div>
+                <div class="form-field">
+                    <label for="fdAmount_${agentSectionCount}">एकूण रक्कम:</label>
+                    <input type="number" id="fdAmount_${agentSectionCount}" min="0" value="0">
+                </div>
+                <div class="form-field">
+                    <label for="fdNewAccounts_${agentSectionCount}">नवीन खाती आज:</label>
+                    <input type="number" id="fdNewAccounts_${agentSectionCount}" min="0" value="0">
+                </div>
+            </div>
+        `;
+        agentEntrySections.appendChild(newSection);
+    }
+
+    function removeLastAgentSection() {
+        if (agentSectionCount > 1) { // किमान एक सेक्शन ठेवा
+            const agentEntrySections = document.getElementById('agentEntrySections');
+            const lastSection = document.getElementById(`agentSection_${agentSectionCount}`);
+            agentEntrySections.removeChild(lastSection);
+            agentSectionCount--;
+        } else {
+            showMessage('किमान एक एजंट सेक्शन असणे आवश्यक आहे.', 'error');
+        }
+    }
+
+
+    async function submitAllDailyData() {
+        const entryDate = document.getElementById('entryDate').value;
+        const entryTime = document.getElementById('entryTime').value;
+
+        if (!entryDate || !entryTime) {
+            showMessage('कृपया दिनांक आणि वेळ निवडा.', 'error');
+            return;
+        }
+
+        let allSubmissionsSuccessful = true;
+        showMessage('डेटा सबमिट करत आहे, कृपया थांबा...', 'success');
+
+        // 1. एजंट कलेक्शन डेटा सबमिट करा
+        for (let i = 1; i <= agentSectionCount; i++) {
+            const agentName = document.getElementById(`agentName_${i}`).value;
+            if (!agentName) {
+                showMessage(`एजंट #${i} साठी एजंटचे नाव निवडले नाही.`, 'error');
+                allSubmissionsSuccessful = false;
+                continue;
+            }
+
+            // पिग्मी
+            const pigmyPayload = {
+                formType: 'pigmy',
+                agentName: agentName,
+                accountCount: document.getElementById(`pigmyCount_${i}`).value || 0,
+                totalAmount: document.getElementById(`pigmyAmount_${i}`).value || 0
+            };
+            if (parseFloat(pigmyPayload.totalAmount) > 0 || parseInt(pigmyPayload.accountCount) > 0) {
+                const pigmyResult = await sendData(pigmyPayload);
+                if (!pigmyResult.success) {
+                    showMessage(`एजंट ${agentName} साठी पिग्मी डेटा सबमिट करताना एरर: ${pigmyResult.message}`, 'error');
+                    allSubmissionsSuccessful = false;
+                }
+            }
+
+            // आरडी
+            const rdPayload = {
+                formType: 'rd',
+                agentName: agentName,
+                accountCount: document.getElementById(`rdCount_${i}`).value || 0,
+                totalAmount: document.getElementById(`rdAmount_${i}`).value || 0,
+                newAccountsToday: document.getElementById(`rdNewAccounts_${i}`).value || 0
+            };
+             if (parseFloat(rdPayload.totalAmount) > 0 || parseInt(rdPayload.accountCount) > 0 || parseInt(rdPayload.newAccountsToday) > 0) {
+                const rdResult = await sendData(rdPayload);
+                if (!rdResult.success) {
+                    showMessage(`एजंट ${agentName} साठी आरडी डेटा सबमिट करताना एरर: ${rdResult.message}`, 'error');
+                    allSubmissionsSuccessful = false;
+                }
+            }
+
+            // एफडी
+            const fdPayload = {
+                formType: 'fd',
+                agentName: agentName,
+                accountCount: document.getElementById(`fdCount_${i}`).value || 0,
+                totalAmount: document.getElementById(`fdAmount_${i}`).value || 0,
+                newAccountsToday: document.getElementById(`fdNewAccounts_${i}`).value || 0
+            };
+             if (parseFloat(fdPayload.totalAmount) > 0 || parseInt(fdPayload.accountCount) > 0 || parseInt(fdPayload.newAccountsToday) > 0) {
+                const fdResult = await sendData(fdPayload);
+                if (!fdResult.success) {
+                    showMessage(`एजंट ${agentName} साठी एफडी डेटा सबमिट करताना एरर: ${fdResult.message}`, 'error');
+                    allSubmissionsSuccessful = false;
+                }
+            }
+        }
+
+        // 2. बँक बॅलन्स डेटा सबमिट करा
+        const systemBalance = document.getElementById('systemBalance').value;
+        const bankBalance = document.getElementById('bankBalance').value;
+        const matchStatus = document.getElementById('matchStatus').value;
+        const remarks = document.getElementById('remarks').value;
+
+        if (!systemBalance || !bankBalance || !matchStatus) {
+            showMessage('बँक बॅलन्स अपडेटसाठी सिस्टिम बॅलन्स, बँक बॅलन्स आणि जुळणी स्थिती आवश्यक आहे.', 'error');
+            allSubmissionsSuccessful = false;
+        } else {
+            const bankPayload = {
+                formType: 'bank_balance',
+                systemBalance: systemBalance,
+                bankBalance: bankBalance,
+                matchStatus: matchStatus,
+                remarks: remarks
+            };
+            const bankResult = await sendData(bankPayload);
+            if (!bankResult.success) {
+                showMessage('बँक बॅलन्स अपडेट करताना एरर: ' + bankResult.message, 'error');
+                allSubmissionsSuccessful = false;
+            }
+        }
+        
+        if (allSubmissionsSuccessful) {
+            showMessage('सर्व दैनंदिन डेटा यशस्वीरित्या सबमिट केला!', 'success');
+            // फॉर्म फील्ड्स रीसेट करा (नवीन एजंट वगळता)
+            resetFormFields();
+        } else {
+            showMessage('काही डेटा सबमिट करताना एरर आली. कृपया तपशील तपासा.', 'error');
+        }
+    }
+
+    async function sendData(payload) {
+        try {
+            const response = await fetch(DATA_ENTRY_API_URL, {
+                method: 'POST',
+                body: new URLSearchParams(payload)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Data submission network error:', error);
+            return { success: false, message: 'नेटवर्क एरर किंवा API प्रतिसाद नाही.' };
+        }
+    }
+
+    async function addNewAgent() {
+        const newAgentName = document.getElementById('newAgentName').value;
+        const newAgentCode = document.getElementById('newAgentCode').value;
+        const newContactNumber = document.getElementById('newContactNumber').value;
+
+        if (!newAgentName || !newAgentCode || !newContactNumber) {
+            showMessage('कृपया नवीन एजंटचे नाव, कोड आणि संपर्क क्रमांक भरा.', 'error');
+            return;
+        }
+
+        const payload = {
+            formType: 'agent_add',
+            agentName: newAgentName,
+            agentCode: newAgentCode,
+            contactNumber: newContactNumber
+        };
+
+        const result = await sendData(payload);
+
+        if (result.success) {
+            showMessage('नवीन एजंट यशस्वीरित्या जोडला!', 'success');
+            // फील्ड्स रीसेट करा आणि एजंट यादी रीलोड करा
+            document.getElementById('newAgentName').value = '';
+            document.getElementById('newAgentCode').value = '';
+            document.getElementById('newContactNumber').value = '';
+            await fetchAgents(); // एजंटची यादी अपडेट करा
+            // सर्व विद्यमान एजंट सिलेक्शन ड्रॉपडाउन अपडेट करा
+            updateAllAgentDropdowns();
+        } else {
+            showMessage('नवीन एजंट जोडताना एरर: ' + result.message, 'error');
+        }
+    }
+
+    function updateAllAgentDropdowns() {
+        for (let i = 1; i <= agentSectionCount; i++) {
+            const selectElement = document.getElementById(`agentName_${i}`);
+            const currentSelection = selectElement.value; // सध्या निवडलेले एजंट जसे आहे तसे ठेवण्यासाठी
+            selectElement.innerHTML = '<option value="">एजंट निवडा</option>';
+            allAgents.forEach(agent => {
+                const option = document.createElement('option');
+                option.value = agent.एजंटचे_नाव;
+                option.textContent = agent.एजंटचे_नाव;
+                selectElement.appendChild(option);
+            });
+            selectElement.value = currentSelection; // जुनी निवड पुन्हा सेट करा
+        }
+    }
+
+    function resetFormFields() {
+        // एजंट कलेक्शन फील्ड्स रीसेट करा
+        for (let i = 1; i <= agentSectionCount; i++) {
+            document.getElementById(`pigmyCount_${i}`).value = 0;
+            document.getElementById(`pigmyAmount_${i}`).value = 0;
+            document.getElementById(`rdCount_${i}`).value = 0;
+            document.getElementById(`rdAmount_${i}`).value = 0;
+            document.getElementById(`rdNewAccounts_${i}`).value = 0;
+            document.getElementById(`fdCount_${i}`).value = 0;
+            document.getElementById(`fdAmount_${i}`).value = 0;
+            document.getElementById(`fdNewAccounts_${i}`).value = 0;
+            // एजंटचे नाव निवडलेलेच राहू द्या किंवा डीफॉल्ट करा
+            // document.getElementById(`agentName_${i}`).value = ''; 
+        }
+        // बँक बॅलन्स फील्ड्स रीसेट करा
+        document.getElementById('systemBalance').value = 0;
+        document.getElementById('bankBalance').value = 0;
+        document.getElementById('remarks').value = '';
+        document.getElementById('matchStatus').value = 'जुळले आहे';
+        
+        // तारीख आणि वेळ आजचेच राहू द्या
+        const now = new Date();
+        document.getElementById('entryDate').value = now.toISOString().slice(0, 10);
+        document.getElementById('entryTime').value = now.toTimeString().slice(0, 5);
+
+        // नवीन एजंट फील्ड्स रीसेट करू नका कारण ते स्वतंत्र आहेत
+    }
+  </script>
+</body>
+</html>

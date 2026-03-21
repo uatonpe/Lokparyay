@@ -1,100 +1,3 @@
---- START OF FILE Paste March 21, 2026 - 8:03PM ---
-<!DOCTYPE html>
-<html lang="mr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>पतसंस्था डॅशबोर्ड</title>
-code
-Code
-<!-- External Libraries -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- चार्ट्ससाठी (गरज पडल्यास) -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- पॉपअप मेसेजसाठी -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Mukta:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
-    
-    :root {
-        --bg-color: #f0f4f8;
-        --card-bg: #ffffff;
-        --primary-text: #1e293b;
-        --primary-color: #3b82f6;
-        --dark-blue: #0f172a;
-        --green: #10b981;
-        --red: #ef4444;
-        --orange: #f59e0b;
-        --teal: #14b8a6;
-        --shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
-        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    body { font-family: 'Mukta', 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--primary-text); margin: 0; }
-    
-    /* Smooth Scrollbar */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-    .hidden-section { display: none !important; }
-
-    /* KPI Cards Styling */
-    .kpi-card {
-        background: var(--card-bg); padding: 1.25rem; border-radius: 16px; box-shadow: var(--shadow);
-        display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: var(--transition);
-        border: 1px solid rgba(0,0,0,0.02); position: relative; overflow: hidden;
-    }
-    .kpi-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
-    .kpi-card::before { content: ''; position: absolute; left: 0; top: 0; width: 5px; height: 100%; background: currentColor; opacity: 0.9; }
-    .kpi-card .icon { font-size: 1.8rem; min-width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: #f8fafc; transition: var(--transition); }
-    .kpi-card:hover .icon { transform: scale(1.1); }
-    .kpi-card .value { font-size: 1.6rem; font-weight: 700; line-height: 1.2; margin-bottom: 2px; font-family: 'Poppins', sans-serif; letter-spacing: -0.5px; }
-    .kpi-card .label { font-size: 0.9rem; color: #64748b; font-weight: 600; line-height: 1.1; }
-
-    /* KPI Colors */
-    .kpi-blue { color: var(--primary-color); } .kpi-green { color: var(--green); }
-    .kpi-red { color: var(--red); } .kpi-orange { color: var(--orange); }
-    .kpi-dark { color: var(--dark-blue); } .kpi-teal { color: var(--teal); }
-
-    /* Modal Custom CSS */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 1rem; backdrop-filter: blur(5px); }
-    .modal-content { background: white; border-radius: 20px; padding: 1.5rem 2rem; width: 100%; max-width: 700px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; }
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    
-    /* Table row hover effects in modal */
-    .clickable-row { cursor: pointer; transition: background 0.2s; }
-    .clickable-row:hover { background-color: #f1f5f9; }
-
-    /* Loader */
-    .loader-wrapper { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(5px); }
-    .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    /* Custom input styles for forms */
-    .form-input {
-        @apply w-full p-3 border-2 border-slate-200 rounded-xl focus:outline-none text-lg bg-slate-50 font-medium transition;
-    }
-    .form-input-amount {
-        @apply w-full p-4 border-2 rounded-xl focus:outline-none font-bold text-3xl text-center tracking-wider transition;
-    }
-    .form-input-amount.income {
-        @apply border-green-300 bg-green-50 focus:border-green-600 text-green-700;
-    }
-    .form-input-amount.expense {
-        @apply border-red-300 bg-red-50 focus:border-red-600 text-red-700;
-    }
-    .form-input-amount.bank {
-         @apply border-blue-300 bg-blue-50 focus:border-blue-600 text-blue-700;
-    }
-    .form-select {
-         @apply w-full p-3 border-2 border-slate-200 rounded-xl focus:outline-none text-lg bg-slate-50 font-medium transition appearance-none;
-    }
-</style>
-</head>
-<body class="text-slate-800">
-code
-Code
 <!-- Global Loader -->
 <div id="loader" class="loader-wrapper">
     <div class="loader mb-4"></div>
@@ -410,7 +313,17 @@ Code
     // ⚠️⚠️⚠️ येथे तुमची Google Apps Script Web App URL टाका ⚠️⚠️⚠️
     const API_URL = "https://script.google.com/macros/s/AKfycbxkeQE2twplupxvjykSF9b0B7ziNIR0xXOD5PST_Kx7BMQTpId19lNtvamMeQXk1Tw/exec"; 
 
-    let allData = { dailyCollections: [], bankTransactions: [], settings: { collectionTypes: [], agentNames: [] }, expenses: [], bankBalances: [] };
+    // Initialize allData with default empty arrays to prevent "Cannot read properties of undefined" errors
+    let allData = { 
+        dailyCollections: [], 
+        bankTransactions: [], 
+        expenses: [], 
+        bankBalances: [],
+        settings: { 
+            collectionTypes: [], 
+            agentNames: [] 
+        } 
+    };
     let filteredData = { dailyCollections: [], bankTransactions: [], expenses: [], bankBalances: [] };
     let currentDate = new Date(); // Dashboard load करताना आजची तारीख
     let isFilterActive = false;
@@ -420,21 +333,25 @@ Code
         return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num || 0);
     }
     
+    // Improved date parsing with better error handling
     function parseDate(dateString) {
         if (!dateString) return null;
         if (dateString instanceof Date) return dateString;
         
         try {
+            // Ensure the input is a string before Date constructor
             const parsed = new Date(String(dateString));
+            
+            // Check if the parsed date is valid (getTime() returns NaN for invalid dates)
             if (!isNaN(parsed.getTime())) {
                 return parsed;
             } else {
                 console.error("Invalid date string after parsing:", dateString);
-                return null; 
+                return null; // Return null for invalid date strings
             }
         } catch (e) {
             console.error("Error parsing date string:", dateString, e);
-            return null; 
+            return null; // Return null if there's an error during parsing
         }
     }
 
@@ -448,6 +365,7 @@ Code
     function formatDateForDisplay(date) {
          if (!date || !(date instanceof Date) || isNaN(date.getTime())) return 'N/A';
          try {
+            // Format: DD-MM-YYYY
             const day = date.getDate().toString().padStart(2, '0');
             const month = (date.getMonth() + 1).toString().padStart(2, '0');
             return `${day}-${month}-${date.getFullYear()}`;
@@ -481,12 +399,23 @@ Code
             console.log("Fetching data from API:", API_URL);
             const response = await fetch(API_URL);
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                // More specific error handling for HTTP status codes
+                throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
             }
             const data = await response.json();
             console.log("API Response Data:", data);
             
-            allData = data;
+            // Assign data to allData, ensuring all expected properties exist as arrays
+            allData = {
+                dailyCollections: data.dailyCollections || [],
+                bankTransactions: data.bankTransactions || [],
+                expenses: data.expenses || [],
+                bankBalances: data.bankBalances || [],
+                settings: {
+                    collectionTypes: data.settings?.collectionTypes || [],
+                    agentNames: data.settings?.agentNames || []
+                }
+            };
             
             populateSelect('coll-type', allData.settings.collectionTypes);
             populateSelect('coll-agent', allData.settings.agentNames);
@@ -496,26 +425,27 @@ Code
             const reportEndDateInput = document.getElementById('report-end-date');
             const bankBalDateInput = document.getElementById('bank-bal-date');
 
+            // Set and validate the main filter date (for dashboard)
             if (!isFilterCall || !filterDateInput.value) {
-                currentDate = new Date(); 
+                currentDate = new Date(); // Default to today
                 filterDateInput.value = formatDateForInput(currentDate);
             } else {
                 currentDate = parseDate(filterDateInput.value);
-                if (!currentDate || isNaN(currentDate.getTime())) {
-                    console.error("Invalid date selected in filter. Resetting to today.");
+                if (!currentDate || isNaN(currentDate.getTime())) { // Handle invalid date from filter input
+                    console.warn("Invalid date selected in filter. Resetting to today.");
                     currentDate = new Date();
-                    filterDateInput.value = formatDateForInput(currentDate);
+                    filterDateInput.value = formatDateForInput(currentDate); // Update input field
                 }
             }
-            isFilterActive = true; 
+            isFilterActive = true; // Mark filter as active once date is set
 
-            // Set report and bank balance dates as well
-            const todayForReports = new Date();
-            reportStartDateInput.value = formatDateForInput(todayForReports);
-            reportEndDateInput.value = formatDateForInput(todayForReports);
-            bankBalDateInput.value = formatDateForInput(todayForReports);
+            // Set report and bank balance dates to today by default, or keep if already set
+            const todayForInput = new Date();
+            if (!reportStartDateInput.value) reportStartDateInput.value = formatDateForInput(todayForInput);
+            if (!reportEndDateInput.value) reportEndDateInput.value = formatDateForInput(todayForInput);
+            if (!bankBalDateInput.value) bankBalDateInput.value = formatDateForInput(todayForInput);
             
-            filterAndRenderData(); 
+            filterAndRenderData(); // Process and display data based on current date/filter
             generateReports(); // Generate reports on initial load as well
 
             hideLoader();
@@ -529,11 +459,13 @@ Code
     function populateSelect(elementId, optionsArr) {
         const select = document.getElementById(elementId);
         select.innerHTML = '<option value="">निवडा...</option>'; // Reset
-        optionsArr.forEach(opt => {
-            let option = document.createElement('option');
-            option.value = opt; option.text = opt;
-            select.appendChild(option);
-        });
+        if (optionsArr && optionsArr.length > 0) {
+            optionsArr.forEach(opt => {
+                let option = document.createElement('option');
+                option.value = opt; option.text = opt;
+                select.appendChild(option);
+            });
+        }
     }
 
     // Filter Data and Render Dashboard Components
@@ -546,23 +478,27 @@ Code
             selectedDate = parseDate(selectedDateInput);
         }
         
+        // If filter input is invalid or empty, default to today
         if (!selectedDate || isNaN(selectedDate.getTime())) {
             console.warn("Invalid or no date selected in filter. Defaulting to today.");
             selectedDate = new Date();
-            document.getElementById('filter-date').value = formatDateForInput(selectedDate); 
+            document.getElementById('filter-date').value = formatDateForInput(selectedDate); // Update input field
         }
-        currentDate = selectedDate; 
+        currentDate = selectedDate; // Update global currentDate
 
         console.log("Selected Date for filtering:", formatDateForInput(selectedDate));
 
         // --- Filter Daily Collections ---
-        filteredData.dailyCollections = allData.dailyCollections.filter(row => {
+        // Use || [] to ensure it's always an array, even if API fails partially
+        const dailyCollections = allData.dailyCollections || [];
+        filteredData.dailyCollections = dailyCollections.filter(row => {
             const rowDateStr = row[0];
             const rowDate = parseDate(rowDateStr);
             if (!rowDate || isNaN(rowDate.getTime())) {
                 console.warn("Skipping daily collection row due to invalid date:", rowDateStr);
-                return false; 
+                return false; // Skip if date is invalid
             }
+            // Compare Year, Month, and Day
             return rowDate.getFullYear() === selectedDate.getFullYear() &&
                    rowDate.getMonth() === selectedDate.getMonth() &&
                    rowDate.getDate() === selectedDate.getDate();
@@ -570,52 +506,61 @@ Code
         console.log("Filtered Daily Collections:", filteredData.dailyCollections);
 
         // --- Filter Bank Transactions (for balance on the selected date) ---
-        const relevantBankTransactions = allData.bankTransactions.filter(row => {
+        const bankTransactions = allData.bankTransactions || [];
+        const relevantBankTransactions = bankTransactions.filter(row => {
             const rowDateStr = row[0];
             const rowDate = parseDate(rowDateStr);
             if (!rowDate || isNaN(rowDate.getTime())) {
                 console.warn("Skipping bank transaction row due to invalid date:", rowDateStr);
-                return false; 
+                return false; // Skip if date is invalid
             }
+            // Return true if the transaction date is on or before the selected date
             return rowDate <= selectedDate;
         });
         
         let latestBankBalance = 0;
         let latestBankTxnDate = null;
         if (relevantBankTransactions.length > 0) {
+            // Sort by date descending to get the latest transaction
             relevantBankTransactions.sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
             const latestTxn = relevantBankTransactions[0];
-            latestBankBalance = Number(latestTxn[4] || 0); 
+            latestBankBalance = Number(latestTxn[4] || 0); // BankBalance is at index 4
             latestBankTxnDate = parseDate(latestTxn[0]);
             console.log("Latest Bank Transaction Date:", latestBankTxnDate, "Balance:", latestBankBalance);
-        } else {
-            // If no bank transactions on or before selected date, check for manually entered bank balances
-            const relevantBankBalances = allData.bankBalances.filter(row => {
-                const rowDate = parseDate(row[0]);
-                 if (!rowDate || isNaN(rowDate.getTime())) return false;
-                return rowDate <= selectedDate;
-            });
-            if (relevantBankBalances.length > 0) {
-                relevantBankBalances.sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
-                latestBankBalance = Number(relevantBankBalances[0][1] || 0);
-                latestBankTxnDate = parseDate(relevantBankBalances[0][0]);
-                 console.log("Latest Manual Bank Balance Date:", latestBankTxnDate, "Balance:", latestBankBalance);
-            } else {
-                console.log("No relevant bank transactions or manual balances found.");
+        } 
+        
+        // If no bank transactions found, check for manually entered bank balances
+        const bankBalances = allData.bankBalances || [];
+        const relevantBankBalances = bankBalances.filter(row => {
+            const rowDate = parseDate(row[0]);
+             if (!rowDate || isNaN(rowDate.getTime())) return false;
+            return rowDate <= selectedDate;
+        });
+
+        if (relevantBankBalances.length > 0) {
+            relevantBankBalances.sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
+            const latestManualBalance = relevantBankBalances[0];
+            // If manual balance is more recent or the only one available
+            if (!latestBankTxnDate || parseDate(latestManualBalance[0]) > latestBankTxnDate) {
+                latestBankBalance = Number(latestManualBalance[1] || 0);
+                latestBankTxnDate = parseDate(latestManualBalance[0]);
+                console.log("Latest Manual Bank Balance Date:", latestBankTxnDate, "Balance:", latestBankBalance);
             }
+        } else if (latestBankTxnDate === null) { // If neither found
+             console.log("No relevant bank transactions or manual balances found.");
         }
+
 
         // --- Calculate KPIs & Summaries ---
         let pigmyAmount = 0;
         let rdAmount = 0;
         let fdAmount = 0;
-        let systemBalance = 0;
-        let totalExpenses = 0;
+        let totalCollections = 0; // Total for system balance
         
         filteredData.dailyCollections.forEach(row => {
             const amount = Number(row[5] || 0);
             const type = row[1];
-            systemBalance += amount;
+            totalCollections += amount;
 
             if (type === 'Pigmy') pigmyAmount += amount;
             else if (type === 'RD') rdAmount += amount;
@@ -623,31 +568,35 @@ Code
         });
 
         // Filter expenses for the selected date
-        filteredData.expenses = allData.expenses.filter(row => {
-            const rowDateStr = row[0];
-            const rowDate = parseDate(rowDateStr);
+        const expenses = allData.expenses || [];
+        filteredData.expenses = expenses.filter(row => {
+            const rowDate = parseDate(row[0]);
             if (!rowDate || isNaN(rowDate.getTime())) return false;
             return rowDate.getFullYear() === selectedDate.getFullYear() &&
                    rowDate.getMonth() === selectedDate.getMonth() &&
                    rowDate.getDate() === selectedDate.getDate();
         });
         
+        let totalExpenses = 0;
         filteredData.expenses.forEach(row => {
             totalExpenses += Number(row[2] || 0);
         });
+
+        // Calculate effective System Balance
+        const effectiveSystemBalance = totalCollections - totalExpenses;
 
         // --- Update KPIs and Summaries on Dashboard ---
         document.getElementById('kpi-pigmy-amount').innerText = formatMoney(pigmyAmount);
         document.getElementById('kpi-rd-amount').innerText = formatMoney(rdAmount);
         document.getElementById('kpi-fd-amount').innerText = formatMoney(fdAmount);
-        document.getElementById('kpi-system-balance').innerText = formatMoney(systemBalance);
+        document.getElementById('kpi-system-balance').innerText = formatMoney(effectiveSystemBalance); // Updated to effective balance
         document.getElementById('kpi-bank-balance').innerText = formatMoney(latestBankBalance);
         
         document.getElementById('today-pigmy-summary').innerText = formatMoney(pigmyAmount);
         document.getElementById('today-rd-summary').innerText = formatMoney(rdAmount);
         document.getElementById('today-fd-summary').innerText = formatMoney(fdAmount);
         
-        console.log("Calculated KPIs: Pigmy=", pigmyAmount, "RD=", rdAmount, "FD=", fdAmount, "System Balance=", systemBalance, "Bank Balance=", latestBankBalance, "Expenses=", totalExpenses);
+        console.log("Calculated KPIs: Pigmy=", pigmyAmount, "RD=", rdAmount, "FD=", fdAmount, "Total Collections=", totalCollections, "Expenses=", totalExpenses, "Effective System Balance=", effectiveSystemBalance, "Bank Balance=", latestBankBalance);
 
         // --- Match Status ---
         const matchStatusEl = document.getElementById('kpi-match-status');
@@ -655,34 +604,36 @@ Code
         const matchValueEl = matchStatusEl.querySelector('.value');
         const matchLabelEl = matchStatusEl.querySelector('.label');
         
-        // Determine match status considering bank balance and expenses
-        const effectiveSystemBalance = systemBalance - totalExpenses; // System balance minus expenses
         let isMatch = false;
-
+        // Compare effective system balance with bank balance
         if (latestBankTxnDate && latestBankTxnDate <= selectedDate) {
              isMatch = effectiveSystemBalance === latestBankBalance;
-        } else if (latestBankTxnDate === null && effectiveSystemBalance === 0) {
+        } else if (latestBankTxnDate === null && effectiveSystemBalance === 0) { // No bank data and system balance is zero
              isMatch = true;
-        } else if (latestBankTxnDate === null && effectiveSystemBalance !== 0) {
+        } else if (latestBankTxnDate === null && effectiveSystemBalance !== 0) { // No bank data but system has balance
              isMatch = false;
-        } else {
-             isMatch = false; // Default if dates don't align or other complex scenarios
+        }
+        // If latestBankTxnDate is before selectedDate but effectiveSystemBalance doesn't match latestBankBalance
+        else if (latestBankTxnDate && latestBankTxnDate <= selectedDate && effectiveSystemBalance !== latestBankBalance) {
+            isMatch = false;
         }
         
         if (isMatch) {
-            matchStatusEl.style.color = 'var(--green)'; 
-            matchIconEl.className = 'fa-solid fa-check-circle'; 
+            matchStatusEl.style.color = 'var(--green)'; // Use green color for match
+            matchIconEl.className = 'fa-solid fa-check-circle'; // Checkmark icon
             matchValueEl.innerText = 'होय';
             matchLabelEl.innerText = 'बँक vs सिस्टम';
         } else {
-            matchStatusEl.style.color = 'var(--red)'; 
-            matchIconEl.className = 'fa-solid fa-xmark-circle'; 
+            matchStatusEl.style.color = 'var(--red)'; // Use red color for mismatch
+            matchIconEl.className = 'fa-solid fa-xmark-circle'; // Cross icon
             matchValueEl.innerText = 'नाही';
             matchLabelEl.innerText = 'बँक vs सिस्टम';
-             // Show difference if mismatch
+             // Show difference if mismatch and bank data is relevant
              if(latestBankTxnDate && latestBankTxnDate <= selectedDate) {
                  const difference = effectiveSystemBalance - latestBankBalance;
                  matchLabelEl.innerText += ` (फरक: ${formatMoney(difference)})`;
+             } else if (latestBankTxnDate === null && effectiveSystemBalance !== 0) {
+                 matchLabelEl.innerText += ` (सिस्टम बॅलन्स: ${formatMoney(effectiveSystemBalance)})`;
              }
         }
         console.log("Match Status determined:", isMatch);
@@ -695,7 +646,7 @@ Code
 
     function renderCollectionTable(rows) {
         const tbody = document.getElementById('collection-table-body');
-        tbody.innerHTML = ''; 
+        tbody.innerHTML = ''; // Clear existing rows
         
         if (rows.length === 0) {
             tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 font-bold">या तारखेसाठी कोणताही कलेक्शन डेटा उपलब्ध नाही.</td></tr>`;
@@ -705,6 +656,8 @@ Code
         rows.forEach((row, index) => {
             const tr = document.createElement('tr');
             tr.className = "hover:bg-slate-50 transition clickable-row"; // Added clickable-row class
+            // Add click listener to open modal for detailed view
+            // Pass relevant data for drill-down
             tr.onclick = () => openDetailModal(row[1], row[0], row[2], row[3]); // Type, Date, Agent, AccountNumber
 
             tr.innerHTML = `
@@ -719,15 +672,17 @@ Code
         });
     }
 
+    // Search functionality for the collection table
     function searchCollectionTable() {
         let input = document.getElementById("searchInput").value.toUpperCase();
         let table = document.getElementById("collectionTable");
         let tr = table.getElementsByTagName("tr");
         
-        for (let i = 1; i < tr.length; i++) { 
+        for (let i = 1; i < tr.length; i++) { // Start from 1 to skip the header row
             let tds = tr[i].getElementsByTagName("td");
             let found = false;
             
+            // Check Agent Name (index 2) and Account Number (index 3)
             if (tds[2] && (tds[2].textContent || tds[2].innerText).toUpperCase().indexOf(input) > -1) {
                 found = true;
             }
@@ -743,39 +698,43 @@ Code
         }
     }
 
+    // Reset Date Filter
     function resetFilter() {
-        document.getElementById('filter-date').value = ''; 
-        isFilterActive = false; 
-        currentDate = new Date(); 
-        document.getElementById('filter-date').value = formatDateForInput(currentDate); 
-        fetchData(false); 
+        document.getElementById('filter-date').value = ''; // Clear the input value
+        isFilterActive = false; // Reset filter flag
+        currentDate = new Date(); // Reset currentDate to today
+        document.getElementById('filter-date').value = formatDateForInput(currentDate); // Update input field to today's date
+        fetchData(false); // Reload data with today's date
         console.log("Filter reset. Showing today's data.");
     }
 
+    // Open Modal for detailed view (KPI Click or Table Row Click)
+    // Modified to handle different modal types and data structures
     function openDetailModal(collectionType, date, agentName, accountNumber) {
-        console.log(`Opening modal with: Type=${collectionType}, Date=${date}, Agent=${agentName}, Account=${accountNumber}`);
         const modal = document.getElementById('detailsModal');
         const modalTitle = document.getElementById('modal-title');
         const modalThead = document.getElementById('modal-thead');
         const modalTbody = document.getElementById('modal-tbody');
-        const backBtn = document.getElementById('modal-back-btn');
+        const backBtn = document.getElementById('modal-back-btn'); // Not currently used, but kept for potential future use
 
-        modalTitle.innerHTML = `<i class="fa-solid fa-table-list mr-2 text-blue-500"></i> सविस्तर नोंदी`;
-        modalThead.innerHTML = '';
-        modalTbody.innerHTML = '';
-        backBtn.style.display = 'none'; 
+        modalTitle.innerHTML = ''; // Clear previous title
+        modalThead.innerHTML = ''; // Clear previous headers
+        modalTbody.innerHTML = ''; // Clear previous body
+        backBtn.style.display = 'none'; // Hide back button by default
 
         let filteredRows = [];
         let headerHTML = '';
         let modalType = ''; // To distinguish calls
 
-        // Case 1: Called from KPI click 
+        // Case 1: Called from KPI click (arguments.length === 2)
         if (arguments.length === 2 && typeof arguments[1] === 'string' && arguments[1] === 'today') {
             modalType = 'kpi';
             const type = collectionType; // 'Pigmy', 'RD', 'FD', 'BankBalance', 'SystemBalance'
             
             if (type === 'Pigmy' || type === 'RD' || type === 'FD') {
-                filteredRows = filteredData.dailyCollections.filter(row => row[1] === type);
+                // Filter daily collections for the current date and selected type
+                filteredRows = (allData.dailyCollections || []).filter(row => row[1] === type);
+                
                 modalTitle.innerHTML = `<i class="fa-solid fa-chart-pie mr-2 text-green-500"></i> ${type} कलेक्शन तपशील (${formatDateForDisplay(currentDate)})`;
                 headerHTML = `
                     <tr>
@@ -789,30 +748,36 @@ Code
             } else if (type === 'BankBalance') {
                 modalType = 'bankBalance';
                 // Get the latest bank balance for the current date
-                const relevantBankBalances = allData.bankBalances.filter(row => {
+                const relevantBankBalances = (allData.bankBalances || []).filter(row => {
                     const rowDate = parseDate(row[0]);
                     if (!rowDate || isNaN(rowDate.getTime())) return false;
                     return rowDate <= currentDate;
                 }).sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
 
+                let latestBankBalanceAmount = 0;
+                let latestBankBalanceDate = null;
+
                 if (relevantBankBalances.length > 0) {
-                     filteredRows = [[
-                        relevantBankBalances[0][0], // Date
-                        relevantBankBalances[0][1]  // Amount
-                     ]];
+                     latestBankBalanceAmount = Number(relevantBankBalances[0][1] || 0);
+                     latestBankBalanceDate = parseDate(relevantBankBalances[0][0]);
                 } else {
                     // If no manual balance, try to get from transactions
-                    const relevantBankTransactions = allData.bankTransactions.filter(row => {
+                    const relevantBankTransactions = (allData.bankTransactions || []).filter(row => {
                         const rowDate = parseDate(row[0]);
                         if (!rowDate || isNaN(rowDate.getTime())) return false;
                         return rowDate <= currentDate;
                     }).sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
                     if (relevantBankTransactions.length > 0) {
-                         filteredRows = [[
-                            relevantBankTransactions[0][0], // Date
-                            relevantBankTransactions[0][4]  // Balance
-                         ]];
+                        latestBankBalanceAmount = Number(relevantBankTransactions[0][4] || 0);
+                        latestBankBalanceDate = parseDate(relevantBankTransactions[0][0]);
                     }
+                }
+                
+                if (latestBankBalanceDate) {
+                    filteredRows = [[
+                        formatDateForDisplay(latestBankBalanceDate), // Formatted Date
+                        latestBankBalanceAmount // Amount
+                     ]];
                 }
 
                 modalTitle.innerHTML = `<i class="fa-solid fa-building-columns mr-2 text-cyan-500"></i> बँक बॅलन्स तपशील (${formatDateForDisplay(currentDate)})`;
@@ -825,23 +790,44 @@ Code
 
             } else if (type === 'SystemBalance') {
                  modalType = 'systemBalance';
-                 filteredRows = filteredData.dailyCollections; // Use filtered collections for today
+                 // Filter daily collections for the current date and calculate total
+                 const todayCollections = (allData.dailyCollections || []).filter(row => {
+                     const rowDate = parseDate(row[0]);
+                     return rowDate && rowDate.getFullYear() === currentDate.getFullYear() &&
+                            rowDate.getMonth() === currentDate.getMonth() &&
+                            rowDate.getDate() === currentDate.getDate();
+                 });
+                 const todayExpenses = (allData.expenses || []).filter(row => {
+                     const rowDate = parseDate(row[0]);
+                     return rowDate && rowDate.getFullYear() === currentDate.getFullYear() &&
+                            rowDate.getMonth() === currentDate.getMonth() &&
+                            rowDate.getDate() === currentDate.getDate();
+                 });
+                 
+                 let totalColAmount = 0;
+                 todayCollections.forEach(row => totalColAmount += Number(row[5] || 0));
+                 let totalExpAmount = 0;
+                 todayExpenses.forEach(row => totalExpAmount += Number(row[2] || 0));
+                 const finalSystemBalance = totalColAmount - totalExpAmount;
+
+                 filteredRows = [[
+                     formatDateForDisplay(currentDate), // Formatted Date
+                     finalSystemBalance // Balance
+                 ]];
+
                  modalTitle.innerHTML = `<i class="fa-solid fa-calculator mr-2 text-orange-500"></i> सिस्टम बॅलन्स तपशील (${formatDateForDisplay(currentDate)})`;
                  headerHTML = `
                     <tr>
                         <th class="p-4 border-b">तारीख</th>
-                        <th class="p-4 border-b">प्रकार</th>
-                        <th class="p-4 border-b">एजंटचे नाव</th>
-                        <th class="p-4 border-b">खाते क्र.</th>
-                        <th class="p-4 border-b">ग्राहकाचे नाव</th>
-                        <th class="p-4 border-b text-right">रक्कम (₹)</th>
+                        <th class="p-4 border-b text-right">बॅलन्स (₹)</th>
                     </tr>`;
-                 console.log(`Modal opened from KPI: Type=SystemBalance, Rows:`, filteredRows);
+                 console.log(`Modal opened from KPI: Type=SystemBalance, Data:`, filteredRows);
             }
         
-        // Case 2: Called from Table Row click 
+        // Case 2: Called from Table Row click (arguments.length === 4)
         } else if (arguments.length === 4) {
             modalType = 'tableRow';
+            // Filter for the specific row data from the already filteredData.dailyCollections for the current day
             filteredRows = filteredData.dailyCollections.filter(row => 
                 row[1] === collectionType && 
                 formatDateForDisplay(parseDate(row[0])) === formatDateForDisplay(parseDate(date)) && 
@@ -858,20 +844,22 @@ Code
                 </tr>`;
             console.log(`Modal opened from Table Row: Type=${collectionType}, Date=${date}, Agent=${agentName}, Account=${accountNumber}, Rows:`, filteredRows);
         } else { 
-            console.error("Invalid arguments passed to openDetailModal");
+            console.error("Invalid arguments passed to openDetailModal. Args:", arguments);
             modalTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2 text-orange-500"></i> अज्ञात तपशील`;
             headerHTML = `<tr><th class="p-4 border-b">माहिती</th></tr>`;
             modalTbody.innerHTML = `<tr><td class="p-4">मोडल उघडण्यात त्रुटी आली.</td></tr>`;
         }
         
+        // Render header
         modalThead.innerHTML = headerHTML;
 
+        // Render body
         if (filteredRows.length === 0) {
             modalTbody.innerHTML = `<tr><td colspan="${modalThead.querySelector('tr').children.length}" class="p-4 text-center text-slate-500 font-bold">या तपशिलासाठी कोणताही डेटा उपलब्ध नाही.</td></tr>`;
         } else {
             filteredRows.forEach(row => {
                 const tr = document.createElement('tr');
-                if (modalType === 'kpi' && collectionType === 'Pigmy' || collectionType === 'RD' || collectionType === 'FD') { 
+                if (modalType === 'kpi' && (collectionType === 'Pigmy' || collectionType === 'RD' || collectionType === 'FD')) { 
                     tr.innerHTML = `
                         <td class="p-4 border-b">${row[2] || '-'}</td>
                         <td class="p-4 border-b">${row[3] || '-'}</td>
@@ -880,17 +868,14 @@ Code
                     `;
                 } else if (modalType === 'kpi' && collectionType === 'BankBalance') {
                      tr.innerHTML = `
-                        <td class="p-4 border-b whitespace-nowrap">${formatDateForDisplay(parseDate(row[0]))}</td>
+                        <td class="p-4 border-b whitespace-nowrap">${row[0]}</td> <!-- Date is already formatted -->
                         <td class="p-4 border-b text-right font-bold text-blue-600">${formatMoney(row[1])}</td>
                     `;
                 } else if (modalType === 'kpi' && collectionType === 'SystemBalance') {
                      tr.innerHTML = `
-                        <td class="p-4 border-b whitespace-nowrap">${formatDateForDisplay(parseDate(row[0]))}</td>
+                        <td class="p-4 border-b whitespace-nowrap">${row[0]}</td> <!-- Date is already formatted -->
                         <td class="p-4 border-b font-bold text-slate-700">${row[1] || 'N/A'}</td>
-                        <td class="p-4 border-b font-semibold text-slate-700">${row[2] || '-'}</td>
-                        <td class="p-4 border-b font-medium">${row[3] || '-'}</td>
-                        <td class="p-4 border-b">${row[4] || '-'}</td>
-                        <td class="p-4 border-b text-right font-bold text-green-600">${formatMoney(row[5])}</td>
+                        <td class="p-4 border-b text-right font-bold text-blue-600">${formatMoney(row[2])}</td> <!-- Displaying balance here -->
                     `;
                 } else if (modalType === 'tableRow') { 
                      tr.innerHTML = `
@@ -907,14 +892,7 @@ Code
         modal.style.display = 'flex';
     }
 
-    function closeModal() { document.getElementById('detailsModal').style.display = 'none'; }
-    
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('detailsModal')) {
-            closeModal();
-        }
-    }
-
+    // Submit New Collection Form
     async function submitCollection(event) {
         event.preventDefault();
         
@@ -926,6 +904,7 @@ Code
         const customerInput = document.getElementById('coll-customer');
         const amountInput = document.getElementById('coll-amount');
 
+        // Basic validation
         if (!dateInput.value || !typeInput.value || !agentInput.value || !amountInput.value) {
             Swal.fire('त्रुटी!', 'कृपया सर्व आवश्यक फील्ड्स (तारीख, जमा प्रकार, एजंट, रक्कम) भरा.', 'warning');
             return;
@@ -933,7 +912,7 @@ Code
 
         const payload = {
             type: "daily_collection",
-            date: dateInput.value, 
+            date: dateInput.value, // This will be in YYYY-MM-DD format
             collectionType: typeInput.value,
             agentName: agentInput.value,
             accountNumber: accountInput.value,
@@ -943,6 +922,7 @@ Code
         
         console.log("Submitting payload:", payload);
 
+        // Show loading indicator
         Swal.fire({
             title: 'नोंदणी करत आहे...',
             html: 'कृपया प्रतीक्षा करा',
@@ -955,11 +935,12 @@ Code
         try {
             const response = await fetch(API_URL, {
                 method: 'POST',
-                mode: 'no-cors', 
+                mode: 'no-cors', // 'no-cors' is important for Google Apps Script Web Apps deployed as 'Anyone'
                 body: JSON.stringify(payload)
             });
 
-            console.log("POST request sent. Assuming success.");
+            // With 'no-cors' mode, response status is not accessible. We assume success if no network error.
+            console.log("POST request sent for collection. Assuming success.");
             
             Swal.fire({
                 icon: 'success',
@@ -967,10 +948,11 @@ Code
                 text: 'नवीन जमा नोंद यशस्वीरित्या सेव्ह झाली.',
                 confirmButtonColor: '#10b981'
             }).then(() => {
-                form.reset(); 
+                form.reset(); // Clear the form
+                // Reset date to today's date for the form input
                 document.getElementById('coll-date').value = formatDateForInput(new Date());
-                fetchData(true); 
-                showSection('dashboard'); 
+                fetchData(true); // Refresh data to show the new entry
+                showSection('dashboard'); // Navigate back to dashboard
             });
 
         } catch (error) {
@@ -1046,7 +1028,6 @@ Code
         const endDate = parseDate(endDateInput.value);
 
         if (!startDate || !endDate) {
-            // If dates are not set, don't generate reports yet or show a message
             console.log("Report dates not set, skipping report generation.");
             return; 
         }
@@ -1059,17 +1040,17 @@ Code
         console.log(`Generating reports from ${formatDateForDisplay(startDate)} to ${formatDateForDisplay(endDate)}`);
 
         // Filter all data within the selected date range
-        const reportCollections = allData.dailyCollections.filter(row => {
+        const reportCollections = (allData.dailyCollections || []).filter(row => {
             const rowDate = parseDate(row[0]);
             return rowDate && rowDate >= startDate && rowDate <= endDate;
         });
 
-        const reportExpenses = allData.expenses.filter(row => {
+        const reportExpenses = (allData.expenses || []).filter(row => {
              const rowDate = parseDate(row[0]);
             return rowDate && rowDate >= startDate && rowDate <= endDate;
         });
 
-        const reportBankBalances = allData.bankBalances.filter(row => {
+        const reportBankBalances = (allData.bankBalances || []).filter(row => {
              const rowDate = parseDate(row[0]);
             return rowDate && rowDate >= startDate && rowDate <= endDate;
         });
@@ -1085,7 +1066,7 @@ Code
                 agentPerformance[agentName] = { total: 0, pigmy: 0, rd: 0, fd: 0, accountCount: 0 };
             }
             agentPerformance[agentName].total += amount;
-            agentPerformance[agentName].accountCount++; // Count unique accounts if needed, here counting entries
+            agentPerformance[agentName].accountCount++; // Count entries for now, unique account count would need more logic
             if (type === 'Pigmy') agentPerformance[agentName].pigmy += amount;
             else if (type === 'RD') agentPerformance[agentName].rd += amount;
             else if (type === 'FD') agentPerformance[agentName].fd += amount;
@@ -1158,21 +1139,22 @@ Code
         });
     }
 
+    // New function to handle viewing agent-specific details in modal
     function viewAgentDetails(agentName) {
         const startDate = parseDate(document.getElementById('report-start-date').value);
         const endDate = parseDate(document.getElementById('report-end-date').value);
         
-        // Filter collections specifically for this agent and date range
-        const agentSpecificCollections = allData.dailyCollections.filter(row => {
+        // Filter collections specifically for this agent and date range from allData
+        const agentSpecificCollections = (allData.dailyCollections || []).filter(row => {
             const rowDate = parseDate(row[0]);
             return row[2] === agentName && rowDate && rowDate >= startDate && rowDate <= endDate;
         });
 
-        // Use modal to show details
-        openDetailModal('AgentDetails', agentName, agentSpecificCollections); // Pass agent name and filtered rows
+        // Use modal to show details. Pass agentName as 'identifier' and the filtered rows as 'dataRows'.
+        openDetailModal('AgentDetails', agentName, agentSpecificCollections); 
     }
     
-    // Override openDetailModal for agent details view
+    // Override openDetailModal for agent details view (and potentially others)
     function openDetailModal(type, identifier, dataRows) {
          console.log(`Opening modal for type: ${type}, identifier: ${identifier}, dataRows:`, dataRows);
          const modal = document.getElementById('detailsModal');
@@ -1187,7 +1169,9 @@ Code
          backBtn.style.display = 'none';
 
          if (type === 'AgentDetails') {
+             // Setting title for Agent Details modal
              modalTitle.innerHTML = `<i class="fa-solid fa-user-tie mr-2 text-purple-500"></i> एजंट: ${identifier} (${formatDateForDisplay(parseDate(document.getElementById('report-start-date').value))} - ${formatDateForDisplay(parseDate(document.getElementById('report-end-date').value))})`;
+             // Setting headers for Agent Details modal
              modalThead.innerHTML = `
                  <tr>
                      <th class="p-4 border-b">तारीख</th>
@@ -1200,6 +1184,7 @@ Code
              if (dataRows.length === 0) {
                   modalTbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 font-bold">या एजंटसाठी निवडलेल्या कालावधीत कोणताही डेटा उपलब्ध नाही.</td></tr>`;
              } else {
+                 // Rendering rows for Agent Details
                  dataRows.forEach(row => {
                      const tr = document.createElement('tr');
                      tr.innerHTML = `
@@ -1213,21 +1198,92 @@ Code
                  });
              }
          } else {
-             // Default handler for other modal calls (like from dashboard KPIs)
-             // This part might need to be re-integrated if other modal triggers are used here
-             console.warn("openDetailModal called with unknown type:", type);
-             modalTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2 text-orange-500"></i> अज्ञात तपशील`;
-             modalThead.innerHTML = `<tr><th class="p-4 border-b">माहिती</th></tr>`;
-             modalTbody.innerHTML = `<tr><td class="p-4">मोडल उघडण्यात त्रुटी आली.</td></tr>`;
-         }
+             // Fallback for other modal types, like those called from dashboard KPIs
+             // This part is based on the previous `openDetailModal` structure
+             // and might need adjustment if new KPI modal views are added.
+             let filteredRows = [];
+             let headerHTML = '';
+             let modalType = '';
 
+             if (type === 'Pigmy' || type === 'RD' || type === 'FD') {
+                 filteredRows = (allData.dailyCollections || []).filter(row => row[1] === type);
+                 modalTitle.innerHTML = `<i class="fa-solid fa-chart-pie mr-2 text-green-500"></i> ${type} कलेक्शन तपशील (${formatDateForDisplay(currentDate)})`;
+                 headerHTML = `
+                     <tr>
+                         <th class="p-4 border-b">एजंटचे नाव</th>
+                         <th class="p-4 border-b">खाते क्र.</th>
+                         <th class="p-4 border-b">ग्राहकाचे नाव</th>
+                         <th class="p-4 border-b text-right">रक्कम (₹)</th>
+                     </tr>`;
+             } else if (type === 'BankBalance') {
+                 modalType = 'bankBalance';
+                 const relevantBankBalances = (allData.bankBalances || []).filter(row => { const rd = parseDate(row[0]); return rd && rd <= currentDate; }).sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
+                 let lbAmount = 0, lbDate = null;
+                 if (relevantBankBalances.length > 0) { lbAmount = Number(relevantBankBalances[0][1] || 0); lbDate = parseDate(relevantBankBalances[0][0]); }
+                 else {
+                     const rbtx = (allData.bankTransactions || []).filter(row => { const rd = parseDate(row[0]); return rd && rd <= currentDate; }).sort((a, b) => parseDate(b[0]) - parseDate(a[0]));
+                     if (rbtx.length > 0) { lbAmount = Number(rbtx[0][4] || 0); lbDate = parseDate(rbtx[0][0]); }
+                 }
+                 if (lbDate) filteredRows = [[formatDateForDisplay(lbDate), lbAmount]];
+                 modalTitle.innerHTML = `<i class="fa-solid fa-building-columns mr-2 text-cyan-500"></i> बँक बॅलन्स तपशील (${formatDateForDisplay(currentDate)})`;
+                 headerHTML = `<tr><th class="p-4 border-b">तारीख</th><th class="p-4 border-b text-right">बॅलन्स (₹)</th></tr>`;
+             } else if (type === 'SystemBalance') {
+                 modalType = 'systemBalance';
+                 const todayCollections = (allData.dailyCollections || []).filter(row => { const rd = parseDate(row[0]); return rd && rd.getFullYear() === currentDate.getFullYear() && rd.getMonth() === currentDate.getMonth() && rd.getDate() === currentDate.getDate(); });
+                 const todayExpenses = (allData.expenses || []).filter(row => { const rd = parseDate(row[0]); return rd && rd.getFullYear() === currentDate.getFullYear() && rd.getMonth() === currentDate.getMonth() && rd.getDate() === currentDate.getDate(); });
+                 let totalColAmount = todayCollections.reduce((sum, row) => sum + Number(row[5] || 0), 0);
+                 let totalExpAmount = todayExpenses.reduce((sum, row) => sum + Number(row[2] || 0), 0);
+                 const finalSystemBalance = totalColAmount - totalExpAmount;
+                 filteredRows = [[formatDateForDisplay(currentDate), finalSystemBalance]];
+                 modalTitle.innerHTML = `<i class="fa-solid fa-calculator mr-2 text-orange-500"></i> सिस्टम बॅलन्स तपशील (${formatDateForDisplay(currentDate)})`;
+                 headerHTML = `<tr><th class="p-4 border-b">तारीख</th><th class="p-4 border-b text-right">बॅलन्स (₹)</th></tr>`;
+             } else {
+                 console.warn("openDetailModal called with unknown type:", type);
+                 modalTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2 text-orange-500"></i> अज्ञात तपशील`;
+                 headerHTML = `<tr><th class="p-4 border-b">माहिती</th></tr>`;
+             }
+             
+             modalThead.innerHTML = headerHTML;
+             if (filteredRows.length === 0) {
+                 modalTbody.innerHTML = `<tr><td colspan="${modalThead.querySelector('tr').children.length}" class="p-4 text-center text-slate-500 font-bold">या तपशिलासाठी कोणताही डेटा उपलब्ध नाही.</td></tr>`;
+             } else {
+                 filteredRows.forEach(row => {
+                     const tr = document.createElement('tr');
+                     if (modalType === 'kpi' && (type === 'Pigmy' || type === 'RD' || type === 'FD')) { 
+                         tr.innerHTML = `<td class="p-4 border-b">${row[0] || '-'}</td><td class="p-4 border-b">${row[1] || '-'}</td><td class="p-4 border-b">${row[2] || '-'}</td><td class="p-4 border-b text-right font-bold text-green-600">${formatMoney(row[3])}</td>`;
+                     } else if (modalType === 'bankBalance' || modalType === 'systemBalance') {
+                         tr.innerHTML = `<td class="p-4 border-b whitespace-nowrap">${row[0]}</td><td class="p-4 border-b text-right font-bold ${modalType === 'bankBalance' ? 'text-blue-600' : 'text-orange-600'}">${formatMoney(row[1])}</td>`;
+                     }
+                     modalTbody.appendChild(tr);
+                 });
+             }
+         }
          modal.style.display = 'flex';
     }
 
+    function closeModal() { document.getElementById('detailsModal').style.display = 'none'; }
+    
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('detailsModal')) {
+            closeModal();
+        }
+    }
 
+    // Reset Date Filter
+    function resetFilter() {
+        document.getElementById('filter-date').value = ''; 
+        isFilterActive = false; 
+        currentDate = new Date(); 
+        document.getElementById('filter-date').value = formatDateForInput(currentDate); 
+        fetchData(false); // Reload data with today's date
+        console.log("Filter reset. Showing today's data.");
+    }
+
+    // Reset Report Filter
     function resetReportFilter() {
         document.getElementById('report-start-date').value = '';
         document.getElementById('report-end-date').value = '';
+        // Clear report tables by calling generateReports without dates or providing default message
         document.getElementById('agent-report-body').innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 font-bold">अहवाल तयार करण्यासाठी कृपया कालावधी निवडा.</td></tr>`;
         document.getElementById('product-report-body').innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500 font-bold">अहवाल तयार करण्यासाठी कृपया कालावधी निवडा.</td></tr>`;
     }
@@ -1285,6 +1341,7 @@ Code
         console.log("DOM fully loaded.");
 
         const today = new Date();
+        // Set default dates for all date inputs to today
         document.getElementById('filter-date').value = formatDateForInput(today);
         document.getElementById('coll-date').value = formatDateForInput(today);
         document.getElementById('report-start-date').value = formatDateForInput(today);
@@ -1292,10 +1349,10 @@ Code
         document.getElementById('bank-bal-date').value = formatDateForInput(today);
         
         currentDate = today; 
-        isFilterActive = true; 
+        isFilterActive = true; // Set to true as we are showing today's data by default
 
         fetchData(); // Load initial data for today and populate reports
-        showSection('dashboard'); 
+        showSection('dashboard'); // Set initial section to dashboard
     });
 
     window.onload = () => {
@@ -1303,6 +1360,3 @@ Code
     };
 
 </script>
-</body>
-</html>
---- END OF FILE ---

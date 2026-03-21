@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>स्मार्ट पतसंस्था मॅनेजमेंट सिस्टम</title>
+    <title>Enterprise | स्मार्ट पतसंस्था मॅनेजमेंट</title>
     
-    <!-- External Libraries -->
+    <!-- External Resources -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
     <style>
@@ -16,386 +17,511 @@
         
         :root {
             --primary: #2563eb;
+            --primary-light: #dbeafe;
             --secondary: #64748b;
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
-            --info: #06b6d4;
             --dark: #0f172a;
-            --bg: #f8fafc;
+            --sidebar-width: 280px;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
-        body { 
-            font-family: 'Mukta', 'Poppins', sans-serif; 
-            background-color: var(--bg); 
-            color: #1e293b;
-            scroll-behavior: smooth;
-        }
+        body { font-family: 'Mukta', sans-serif; background-color: #f1f5f9; overflow-x: hidden; }
 
-        /* Glassmorphism & Animations */
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        /* Custom Sidebar Styles */
+        .sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; left: 0; top: 0; background: var(--dark); color: white; transition: 0.3s; z-index: 100; }
+        .main-content { margin-left: var(--sidebar-width); transition: 0.3s; min-height: 100vh; }
         
+        @media (max-width: 1024px) {
+            .sidebar { left: -280px; }
+            .main-content { margin-left: 0; }
+            .sidebar.active { left: 0; }
+        }
+
+        .nav-link { display: flex; align-items: center; padding: 1rem 1.5rem; transition: 0.3s; border-left: 4px solid transparent; }
+        .nav-link:hover, .nav-link.active { background: #1e293b; border-left-color: var(--primary); color: var(--primary); }
+        .nav-link i { width: 30px; font-size: 1.25rem; }
+
+        /* Loader */
         .loader-wrapper { position: fixed; inset: 0; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
-        .spinner { border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
+        .spinner { border: 6px solid #f3f3f3; border-top: 6px solid var(--primary); border-radius: 50%; width: 70px; height: 70px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* KPI Card Styles */
-        .kpi-card { position: relative; overflow: hidden; border-radius: 1.5rem; padding: 1.5rem; border: 1px solid rgba(0,0,0,0.05); }
-        .kpi-card::after { content: ''; position: absolute; right: -20px; bottom: -20px; font-family: "Font Awesome 6 Free"; font-weight: 900; font-size: 5rem; opacity: 0.05; }
-        .kpi-pigmy::after { content: '\f51e'; color: var(--success); }
-        .kpi-rd::after { content: '\f466'; color: var(--info); }
-        .kpi-fd::after { content: '\f19c'; color: var(--primary); }
-        .kpi-balance::after { content: '\f53d'; color: var(--warning); }
+        /* KPI Cards */
+        .kpi-card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: var(--card-shadow); transition: 0.3s; border-bottom: 5px solid transparent; }
+        .kpi-card:hover { transform: translateY(-8px); }
+        .kpi-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem; }
 
+        /* Table Styling */
+        .data-table-container { background: white; border-radius: 1.5rem; overflow: hidden; box-shadow: var(--card-shadow); }
+        .custom-table th { background: #f8fafc; padding: 1rem; color: #64748b; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; }
+        .custom-table td { padding: 1rem; border-bottom: 1px solid #f1f5f9; font-weight: 600; }
+
+        .form-section { background: white; padding: 2.5rem; border-radius: 2rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .agent-entry-box { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 1rem; padding: 1.5rem; margin-bottom: 1rem; position: relative; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); }
+        .modal-body { background: white; width: 95%; max-width: 1000px; border-radius: 2rem; max-height: 85vh; overflow-y: auto; padding: 2rem; }
+
+        .btn-premium { background: linear-gradient(135deg, #2563eb, #1e40af); color: white; font-weight: 700; transition: 0.3s; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4); }
+        .btn-premium:hover { transform: scale(1.02); box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.4); }
+
+        /* Utilities */
+        .text-inr::before { content: '₹ '; }
         .section-hidden { display: none !important; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        .agent-entry-row { animation: slideIn 0.4s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-
-        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-        .modal-content { background: white; width: 95%; max-width: 900px; border-radius: 2rem; max-height: 90vh; overflow-y: auto; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
-    <!-- Global Loader -->
+    <!-- 1. Loader Section -->
     <div id="loader" class="loader-wrapper">
-        <div class="spinner mb-4"></div>
-        <h2 class="text-2xl font-bold text-slate-800">माहिती लोड होत आहे...</h2>
-        <p class="text-slate-500 font-medium">पतसंस्था डॅशबोर्ड तयार होत आहे, कृपया प्रतीक्षा करा.</p>
+        <div class="spinner"></div>
+        <h2 class="mt-6 text-2xl font-black text-slate-800">पतसंस्था डेटा लोड होत आहे...</h2>
+        <p class="text-slate-500 font-bold">कृपया स्क्रीन बंद करू नका.</p>
     </div>
 
-    <!-- Top Navigation -->
-    <nav class="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-2xl">
-        <div class="max-w-[1600px] mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4 cursor-pointer" onclick="showSection('dashboard')">
-                <div class="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-500/50">
-                    <i class="fa-solid fa-piggy-bank text-2xl"></i>
-                </div>
-                <h1 class="text-2xl font-extrabold tracking-tight hidden sm:block">स्मार्ट पतसंस्था <span class="text-blue-400 font-light">DASHBOARD</span></h1>
-            </div>
-
-            <div class="hidden lg:flex items-center gap-6 font-bold">
-                <button onclick="showSection('dashboard')" class="hover:text-blue-400 transition-all flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-800">
-                    <i class="fa-solid fa-gauge-high"></i> डॅशबोर्ड
-                </button>
-                <button onclick="showSection('add-collection')" class="bg-green-600 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-green-700 transition shadow-lg shadow-green-500/30">
-                    <i class="fa-solid fa-plus-circle"></i> नवीन नोंद करा
-                </button>
-                <button onclick="showSection('reports')" class="hover:text-teal-400 transition-all flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-800">
-                    <i class="fa-solid fa-chart-line"></i> रिपोर्ट्स व चार्ट्स
-                </button>
-                <button onclick="showSection('settings')" class="hover:text-slate-400 transition-all text-xl"><i class="fa-solid fa-gear"></i></button>
-            </div>
-
-            <!-- Mobile Menu Trigger -->
-            <button class="lg:hidden text-2xl" onclick="toggleMobileMenu()"><i class="fa-solid fa-bars-staggered"></i></button>
+    <!-- 2. Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="p-6 flex items-center gap-3 border-b border-slate-700">
+            <div class="bg-primary p-2 rounded-lg"><i class="fa-solid fa-piggy-bank text-xl"></i></div>
+            <span class="text-xl font-black tracking-tighter">SMART SAKHA</span>
         </div>
-    </nav>
-
-    <!-- Mobile Navigation Drawer -->
-    <div id="mobile-menu" class="fixed inset-0 bg-slate-900/95 z-[60] hidden flex-col items-center justify-center gap-8 text-white text-2xl font-bold">
-        <button onclick="toggleMobileMenu()" class="absolute top-8 right-8 text-4xl">&times;</button>
-        <button onclick="showSection('dashboard'); toggleMobileMenu();">डॅशबोर्ड</button>
-        <button onclick="showSection('add-collection'); toggleMobileMenu();">नवीन नोंद +</button>
-        <button onclick="showSection('reports'); toggleMobileMenu();">रिपोर्ट्स</button>
-    </div>
-
-    <div class="max-w-[1600px] mx-auto p-4 md:p-8">
-
-        <!-- ================= 1. DASHBOARD SECTION ================= -->
-        <div id="dashboard" class="section">
-            
-            <!-- Welcome & Date Filter -->
-            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
-                <div>
-                    <h2 class="text-3xl font-extrabold text-slate-800">नमस्ते, एडमिन!</h2>
-                    <p class="text-slate-500 font-medium text-lg">आजचा पतसंस्थेचा ताळेबंद खालीलप्रमाणे आहे.</p>
-                </div>
-                <div class="bg-white p-3 rounded-2xl shadow-sm border flex items-center gap-3 w-full lg:w-auto">
-                    <i class="fa-solid fa-calendar-day text-blue-600 text-xl ml-2"></i>
-                    <input type="date" id="filter-date" class="outline-none font-bold text-lg bg-transparent border-none focus:ring-0">
-                    <button onclick="fetchData(true)" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition">पहा</button>
-                </div>
-            </div>
-
-            <!-- KPI Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-10">
-                <div class="kpi-card kpi-pigmy bg-white card-hover border-l-success" onclick="openDetailModal('PIGMY')">
-                    <div class="text-slate-500 font-bold text-sm">आजची पिग्मी जमा</div>
-                    <div class="text-2xl font-black text-green-600 mt-1" id="kpi-pigmy-val">₹ 0</div>
-                </div>
-                <div class="kpi-card kpi-rd bg-white card-hover border-l-blue-500" onclick="openDetailModal('RD')">
-                    <div class="text-slate-500 font-bold text-sm">आजची आरडी जमा</div>
-                    <div class="text-2xl font-black text-blue-600 mt-1" id="kpi-rd-val">₹ 0</div>
-                </div>
-                <div class="kpi-card kpi-fd bg-white card-hover border-l-indigo-500" onclick="openDetailModal('FD')">
-                    <div class="text-slate-500 font-bold text-sm">आजची एफडी जमा</div>
-                    <div class="text-2xl font-black text-indigo-600 mt-1" id="kpi-fd-val">₹ 0</div>
-                </div>
-                <div class="kpi-card kpi-balance bg-white card-hover border-l-orange-500">
-                    <div class="text-slate-500 font-bold text-sm">सिस्टम बॅलन्स (एकूण)</div>
-                    <div class="text-2xl font-black text-orange-600 mt-1" id="kpi-system-val">₹ 0</div>
-                </div>
-                <div class="kpi-card kpi-balance bg-white card-hover border-l-slate-800">
-                    <div class="text-slate-500 font-bold text-sm">बँक बॅलन्स (स्टेटमेंट)</div>
-                    <div class="text-2xl font-black text-slate-900 mt-1" id="kpi-bank-val">₹ 0</div>
-                </div>
-                <div class="kpi-card card-hover flex items-center justify-center flex-col text-center border-l-red-500" id="match-status-card">
-                    <div class="text-slate-500 font-bold text-xs uppercase mb-1">स्टेटस (Tally)</div>
-                    <div id="match-text" class="text-xl font-black">लोडिंग...</div>
-                </div>
-            </div>
-
-            <!-- Main Data Table -->
-            <div class="bg-white rounded-3xl shadow-xl border overflow-hidden">
-                <div class="p-6 border-b flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50">
-                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-table-list text-blue-600"></i> आजचे सविस्तर कलेक्शन तपशील
-                    </h3>
-                    <div class="relative w-full md:w-80">
-                        <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="search-input" onkeyup="searchTable()" placeholder="एजंट किंवा खाते शोधा..." class="w-full pl-12 pr-4 py-2.5 rounded-xl border-2 border-slate-100 outline-none focus:border-blue-500 transition">
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse" id="main-table">
-                        <thead class="bg-slate-100 text-slate-600 text-sm font-bold uppercase tracking-wider">
-                            <tr>
-                                <th class="p-5">तारीख</th>
-                                <th class="p-5">प्रकार</th>
-                                <th class="p-5">एजंट नाव</th>
-                                <th class="p-5">खाती</th>
-                                <th class="p-5 text-right">रक्कम (₹)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="main-table-body" class="divide-y divide-slate-100 font-medium">
-                            <!-- Rows via JS -->
-                        </tbody>
-                    </table>
-                </div>
-                <div id="empty-state" class="p-20 text-center hidden">
-                    <img src="https://illustrations.popsy.co/slate/shaking-hands.svg" class="w-48 mx-auto mb-4 opacity-50">
-                    <p class="text-slate-400 font-bold text-xl">या तारखेसाठी कोणतीही माहिती उपलब्ध नाही.</p>
-                </div>
-            </div>
+        <nav class="mt-6">
+            <a href="javascript:void(0)" onclick="switchTab('dashboard', this)" class="nav-link active">
+                <i class="fa-solid fa-chart-pie"></i> डॅशबोर्ड
+            </a>
+            <a href="javascript:void(0)" onclick="switchTab('add-entry', this)" class="nav-link">
+                <i class="fa-solid fa-circle-plus"></i> नवीन जमा नोंद
+            </a>
+            <a href="javascript:void(0)" onclick="switchTab('history', this)" class="nav-link">
+                <i class="fa-solid fa-clock-rotate-left"></i> व्यवहार इतिहास
+            </a>
+            <a href="javascript:void(0)" onclick="switchTab('reports', this)" class="nav-link">
+                <i class="fa-solid fa-file-invoice-dollar"></i> प्रगत रिपोर्ट्स
+            </a>
+            <a href="javascript:void(0)" onclick="switchTab('agents', this)" class="nav-link">
+                <i class="fa-solid fa-users-gear"></i> एजंट मॅनेजमेंट
+            </a>
+            <a href="javascript:void(0)" onclick="switchTab('settings', this)" class="nav-link">
+                <i class="fa-solid fa-sliders"></i> सिस्टम सेटिंग्स
+            </a>
+        </nav>
+        <div class="absolute bottom-0 w-full p-6 bg-slate-800/50">
+            <p class="text-xs font-bold text-slate-500">VERSION 5.0.1 (ENTERPRISE)</p>
         </div>
+    </aside>
 
-        <!-- ================= 2. ADD COLLECTION SECTION ================= -->
-        <div id="add-collection" class="section section-hidden max-w-5xl mx-auto">
-            <div class="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl border-t-[10px] border-green-500">
-                <div class="text-center mb-10">
-                    <h2 class="text-4xl font-black text-slate-900 mb-2">नवीन नोंदणी फॉर्म</h2>
-                    <p class="text-slate-500 text-lg">दैनंदिन पिग्मी, आरडी आणि खर्चाची अचूक नोंद करा.</p>
+    <!-- 3. Main Content Area -->
+    <main class="main-content">
+        <!-- Top Header Bar -->
+        <header class="bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-50">
+            <button class="lg:hidden text-2xl p-2" onclick="toggleSidebar()"><i class="fa-solid fa-bars-staggered"></i></button>
+            <div class="flex items-center gap-4">
+                <h2 id="page-title" class="text-2xl font-black text-slate-800">मुख्य डॅशबोर्ड</h2>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="hidden md:block text-right">
+                    <p id="clock" class="font-black text-slate-800 text-lg">00:00:00</p>
+                    <p id="date-display" class="text-xs font-bold text-slate-400 uppercase">--/--/----</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold border-2 border-primary">AD</div>
+            </div>
+        </header>
+
+        <div class="p-6 lg:p-10">
+
+            <!-- ================= TAB 1: DASHBOARD ================= -->
+            <div id="tab-dashboard" class="tab-content">
+                
+                <!-- Date Filter Top Row -->
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
+                    <div>
+                        <h3 class="text-3xl font-black text-slate-800">ताळेबंद सारांश</h3>
+                        <p class="text-slate-500 font-bold mt-1">आजच्या व्यवहारांची सद्यस्थिती खालीलप्रमाणे आहे.</p>
+                    </div>
+                    <div class="flex gap-3 bg-white p-2 rounded-2xl shadow-sm border">
+                        <input type="date" id="dash-date-filter" class="p-2 outline-none font-bold bg-transparent">
+                        <button onclick="refreshData(true)" class="bg-primary text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition">फिल्टर करा</button>
+                    </div>
                 </div>
 
-                <form id="entry-form" onsubmit="handleFormSubmit(event)" class="space-y-10">
-                    <!-- Date Selection -->
-                    <div class="bg-slate-50 p-6 rounded-2xl flex flex-col md:flex-row items-center gap-6 border-2 border-dashed border-slate-200">
-                        <div class="w-full md:w-1/2">
-                            <label class="block font-black text-slate-700 mb-2 text-lg">नोंदणी दिनांक निवडा *</label>
-                            <input type="date" id="form-date" class="w-full p-4 rounded-xl border-2 focus:border-green-500 outline-none font-bold text-xl" required>
+                <!-- KPI Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                    <!-- Pigmy KPI -->
+                    <div class="kpi-card" style="border-bottom-color: var(--success);" onclick="showTypeDetails('PIGMY')">
+                        <div class="kpi-icon bg-green-100 text-green-600"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+                        <p class="text-slate-400 font-bold text-sm uppercase">पिग्मी जमा</p>
+                        <h4 id="kpi-pigmy" class="text-3xl font-black text-slate-800 mt-1">₹ 0</h4>
+                        <div class="mt-4 flex items-center text-xs font-bold text-green-500 bg-green-50 w-fit px-2 py-1 rounded">
+                            <i class="fa-solid fa-caret-up mr-1"></i> आजची वाढ
                         </div>
-                        <p class="text-slate-400 font-medium">टीप: मागील तारखेची नोंद करण्यासाठी योग्य दिनांक निवडा.</p>
                     </div>
+                    <!-- RD KPI -->
+                    <div class="kpi-card" style="border-bottom-color: var(--primary);" onclick="showTypeDetails('RD')">
+                        <div class="kpi-icon bg-blue-100 text-blue-600"><i class="fa-solid fa-calendar-check"></i></div>
+                        <p class="text-slate-400 font-bold text-sm uppercase">आरडी (RD) जमा</p>
+                        <h4 id="kpi-rd" class="text-3xl font-black text-slate-800 mt-1">₹ 0</h4>
+                        <div class="mt-4 flex items-center text-xs font-bold text-blue-500 bg-blue-50 w-fit px-2 py-1 rounded">
+                            <i class="fa-solid fa-check mr-1"></i> नियमित
+                        </div>
+                    </div>
+                    <!-- FD KPI -->
+                    <div class="kpi-card" style="border-bottom-color: #6366f1;" onclick="showTypeDetails('FD')">
+                        <div class="kpi-icon bg-indigo-100 text-indigo-600"><i class="fa-solid fa-building-columns"></i></div>
+                        <p class="text-slate-400 font-bold text-sm uppercase">एफडी (FD) जमा</p>
+                        <h4 id="kpi-fd" class="text-3xl font-black text-slate-800 mt-1">₹ 0</h4>
+                        <div class="mt-4 flex items-center text-xs font-bold text-indigo-500 bg-indigo-50 w-fit px-2 py-1 rounded">
+                            <i class="fa-solid fa-shield-halved mr-1"></i> सुरक्षित
+                        </div>
+                    </div>
+                    <!-- System Total KPI -->
+                    <div class="kpi-card" style="border-bottom-color: var(--warning);">
+                        <div class="kpi-icon bg-orange-100 text-orange-600"><i class="fa-solid fa-calculator"></i></div>
+                        <p class="text-slate-400 font-bold text-sm uppercase">एकूण जमा (System)</p>
+                        <h4 id="kpi-system" class="text-3xl font-black text-slate-800 mt-1 text-inr">0</h4>
+                        <div id="match-tag" class="mt-4 text-xs font-bold px-2 py-1 rounded w-fit">तपासत आहे...</div>
+                    </div>
+                </div>
 
-                    <!-- Pigmy Section -->
-                    <div class="bg-green-50/50 p-8 rounded-3xl border border-green-100">
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+                    <div class="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border h-[450px]">
                         <div class="flex justify-between items-center mb-6">
-                            <h4 class="text-2xl font-black text-green-700 flex items-center gap-3">
-                                <i class="fa-solid fa-money-bill-trend-up"></i> पिग्मी (Pigmy) कलेक्शन
-                            </h4>
-                            <button type="button" onclick="addAgentRow('pigmy-container', 'PIGMY')" class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition flex items-center gap-2">
-                                <i class="fa-solid fa-plus"></i> एजंट जोडा
-                            </button>
+                            <h4 class="text-xl font-black text-slate-800">कलेक्शन ट्रेंड (मागील ७ दिवस)</h4>
+                            <select id="trend-type" class="p-2 border rounded-xl font-bold text-sm outline-none">
+                                <option value="total">सर्व एकत्रित</option>
+                                <option value="pigmy">फक्त पिग्मी</option>
+                            </select>
                         </div>
-                        <div id="pigmy-container" class="space-y-4"></div>
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border h-[450px]">
+                        <h4 class="text-xl font-black text-slate-800 mb-6 text-center">उत्पादन निहाय विभागणी</h4>
+                        <canvas id="distributionChart"></canvas>
+                        <div id="chart-legend" class="mt-6 flex flex-wrap justify-center gap-4"></div>
+                    </div>
+                </div>
+
+                <!-- Today's Transactions Table -->
+                <div class="data-table-container">
+                    <div class="p-6 border-b flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50">
+                        <h4 class="text-xl font-black text-slate-800">आजचे सविस्तर व्यवहार</h4>
+                        <div class="relative w-full md:w-80">
+                            <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="dash-search" onkeyup="filterDashTable()" placeholder="एजंट किंवा प्रकार शोधा..." class="w-full pl-12 pr-4 py-2 border rounded-xl outline-none focus:border-primary">
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full custom-table" id="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>वेळ</th>
+                                    <th>प्रकार</th>
+                                    <th>एजंट नाव</th>
+                                    <th>खाती संख्या</th>
+                                    <th class="text-right">रक्कम (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-table-body">
+                                <!-- Data injected via script -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="dash-empty" class="p-20 text-center hidden">
+                        <img src="https://illustrations.popsy.co/blue/shaking-hands.svg" class="w-48 mx-auto opacity-40 mb-4">
+                        <p class="text-slate-400 font-black text-xl">या तारखेला कोणतेही व्यवहार झाले नाहीत.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= TAB 2: ADD ENTRY (MULTI AGENT) ================= -->
+            <div id="tab-add-entry" class="tab-content section-hidden max-w-5xl mx-auto">
+                <div class="form-section">
+                    <div class="mb-10 text-center">
+                        <span class="bg-blue-100 text-blue-700 px-4 py-1 rounded-full text-xs font-black tracking-widest uppercase">Entry Portal</span>
+                        <h3 class="text-4xl font-black text-slate-900 mt-4">दैनंदिन जमा नोंदणी</h3>
+                        <p class="text-slate-500 font-bold mt-2">पिग्मी, आरडी आणि खर्चाची अचूक माहिती भरा.</p>
                     </div>
 
-                    <!-- RD Section -->
-                    <div class="bg-blue-50/50 p-8 rounded-3xl border border-blue-100">
-                        <div class="flex justify-between items-center mb-6">
-                            <h4 class="text-2xl font-black text-blue-700 flex items-center gap-3">
-                                <i class="fa-solid fa-boxes-stacked"></i> आरडी (RD) कलेक्शन
-                            </h4>
-                            <button type="button" onclick="addAgentRow('rd-container', 'RD')" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition flex items-center gap-2">
-                                <i class="fa-solid fa-plus"></i> एजंट जोडा
-                            </button>
+                    <form id="master-entry-form" onsubmit="handleFinalSubmit(event)">
+                        <!-- Date Row -->
+                        <div class="mb-10 bg-slate-50 p-6 rounded-2xl border-2 border-dashed flex flex-col md:flex-row items-center gap-6">
+                            <div class="w-full md:w-1/3">
+                                <label class="block font-black text-slate-700 mb-2">नोंदणी दिनांक निवडा *</label>
+                                <input type="date" id="form-date" class="w-full p-4 rounded-xl border-2 focus:border-primary outline-none font-bold text-xl" required>
+                            </div>
+                            <div class="text-slate-400 font-bold italic">टीप: मागील तारखेची नोंद करण्यासाठी योग्य तारीख निवडा.</div>
                         </div>
-                        <div id="rd-container" class="space-y-4"></div>
-                    </div>
 
-                    <!-- FD Section -->
-                    <div class="bg-indigo-50/50 p-8 rounded-3xl border border-indigo-100">
-                        <div class="flex justify-between items-center mb-6">
-                            <h4 class="text-2xl font-black text-indigo-700 flex items-center gap-3">
-                                <i class="fa-solid fa-building-columns"></i> एफडी (FD) कलेक्शन
-                            </h4>
-                            <button type="button" onclick="addAgentRow('fd-container', 'FD')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 transition flex items-center gap-2">
-                                <i class="fa-solid fa-plus"></i> एजंट जोडा
-                            </button>
-                        </div>
-                        <div id="fd-container" class="space-y-4"></div>
-                    </div>
-
-                    <!-- Other Details Grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- Expenses -->
-                        <div class="p-8 bg-red-50 rounded-3xl border border-red-100">
-                            <h4 class="text-xl font-black text-red-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-file-invoice-dollar"></i> आजचे इतर खर्च</h4>
-                            <div class="space-y-4">
-                                <input type="text" id="expense-type" placeholder="खर्चाचा तपशील (उदा. चहा, स्टेशनरी)" class="w-full p-4 rounded-xl border focus:border-red-500 outline-none">
-                                <input type="number" id="expense-amount" placeholder="एकूण खर्च रक्कम ₹" class="w-full p-4 rounded-xl border focus:border-red-500 outline-none font-bold text-xl">
+                        <!-- Pigmy Section -->
+                        <div class="mb-10">
+                            <div class="flex justify-between items-center mb-6">
+                                <h5 class="text-2xl font-black text-green-600 flex items-center gap-3">
+                                    <i class="fa-solid fa-money-bill-1-wave"></i> पिग्मी कलेक्शन
+                                </h5>
+                                <button type="button" onclick="addNewAgentRow('pigmy-form-container', 'PIGMY')" class="bg-green-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg shadow-green-200">+ एजंट जोडा</button>
+                            </div>
+                            <div id="pigmy-form-container" class="space-y-4">
+                                <!-- Agent Rows -->
                             </div>
                         </div>
 
-                        <!-- Bank Balance Statement -->
-                        <div class="p-8 bg-slate-100 rounded-3xl border border-slate-200">
-                            <h4 class="text-xl font-black text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-university"></i> बँक बॅलन्स अपडेट</h4>
-                            <div class="space-y-4">
-                                <label class="text-sm font-bold text-slate-500">स्टेटमेंटनुसार बँक बॅलन्स नोंदवा:</label>
-                                <input type="number" id="bank-closing" placeholder="अंतिम शिल्लक ₹" class="w-full p-4 rounded-xl border focus:border-slate-800 outline-none font-bold text-xl">
-                                <p class="text-xs text-slate-400 font-medium">* सिस्टम आपोआप फरकाचे कारण विचारेल.</p>
+                        <!-- RD Section -->
+                        <div class="mb-10">
+                            <div class="flex justify-between items-center mb-6">
+                                <h5 class="text-2xl font-black text-blue-600 flex items-center gap-3">
+                                    <i class="fa-solid fa-boxes-stacked"></i> आरडी (RD) कलेक्शन
+                                </h5>
+                                <button type="button" onclick="addNewAgentRow('rd-form-container', 'RD')" class="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg shadow-blue-200">+ एजंट जोडा</button>
+                            </div>
+                            <div id="rd-form-container" class="space-y-4">
+                                <!-- Agent Rows -->
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Submit Button -->
-                    <div class="pt-6">
-                        <button type="submit" class="w-full bg-slate-900 text-white text-3xl font-black py-6 rounded-[2rem] hover:bg-black transition-all shadow-2xl hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-4">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> आजची माहिती जतन करा
+                        <!-- FD Section -->
+                        <div class="mb-10">
+                            <div class="flex justify-between items-center mb-6">
+                                <h5 class="text-2xl font-black text-indigo-600 flex items-center gap-3">
+                                    <i class="fa-solid fa-vault"></i> एफडी (FD) कलेक्शन
+                                </h5>
+                                <button type="button" onclick="addNewAgentRow('fd-form-container', 'FD')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg shadow-indigo-200">+ एजंट जोडा</button>
+                            </div>
+                            <div id="fd-form-container" class="space-y-4">
+                                <!-- Agent Rows -->
+                            </div>
+                        </div>
+
+                        <!-- Expenses & Bank Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
+                            <div class="p-8 bg-red-50 rounded-3xl border border-red-100">
+                                <h5 class="text-xl font-black text-red-700 mb-6 flex items-center gap-2">
+                                    <i class="fa-solid fa-receipt"></i> आजचे खर्च (Expenses)
+                                </h5>
+                                <div class="space-y-4">
+                                    <input type="text" id="expense-type" placeholder="खर्चाचा तपशील (उदा. चहा, प्रवास)" class="w-full p-4 rounded-xl border focus:border-red-500 outline-none font-bold">
+                                    <input type="number" id="expense-amount" placeholder="खर्च रक्कम ₹" class="w-full p-4 rounded-xl border focus:border-red-500 outline-none font-black text-xl text-red-600">
+                                </div>
+                            </div>
+                            <div class="p-8 bg-slate-900 rounded-3xl text-white">
+                                <h5 class="text-xl font-black mb-6 flex items-center gap-2">
+                                    <i class="fa-solid fa-building-columns"></i> बँक क्लोजिंग बॅलन्स
+                                </h5>
+                                <div class="space-y-4">
+                                    <label class="text-slate-400 text-sm font-bold">स्टेटमेंट नुसार बॅलन्स नोंदवा:</label>
+                                    <input type="number" id="bank-closing" placeholder="रक्कम ₹" class="w-full p-4 rounded-xl border border-slate-700 bg-slate-800 text-white font-black text-2xl focus:border-primary outline-none">
+                                    <p class="text-xs text-slate-500 italic">* सिस्टीम आपोआप फरकाचे कारण विचारेल.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Final Action -->
+                        <div class="pt-6">
+                            <button type="submit" class="w-full btn-premium py-6 rounded-3xl text-3xl font-black flex items-center justify-center gap-4">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> आजची सर्व माहिती सेव्ह करा
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ================= TAB 3: HISTORY ================= -->
+            <div id="tab-history" class="tab-content section-hidden">
+                <div class="bg-white p-8 rounded-3xl shadow-sm border mb-8 flex flex-wrap justify-between items-center gap-6">
+                    <div>
+                        <h3 class="text-2xl font-black text-slate-800">सर्व व्यवहारांचा इतिहास</h3>
+                        <p class="text-slate-500 font-bold">मागील सर्व नोंदी येथे सर्च करा.</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button onclick="exportToExcel()" class="bg-green-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-green-700 flex items-center gap-2">
+                            <i class="fa-solid fa-file-excel"></i> Excel मध्ये काढा
+                        </button>
+                        <button onclick="window.print()" class="bg-slate-800 text-white px-6 py-2 rounded-xl font-bold flex items-center gap-2">
+                            <i class="fa-solid fa-print"></i> प्रिंट काढा
                         </button>
                     </div>
-                </form>
+                </div>
+
+                <div class="data-table-container">
+                    <div class="overflow-x-auto">
+                        <table class="w-full custom-table" id="history-table">
+                            <thead>
+                                <tr>
+                                    <th>तारीख</th>
+                                    <th>प्रकार</th>
+                                    <th>एजंट</th>
+                                    <th>खाती</th>
+                                    <th>रक्कम (₹)</th>
+                                    <th class="text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <!-- Data -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= TAB 4: REPORTS ================= -->
+            <div id="tab-reports" class="tab-content section-hidden">
+                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                     <!-- Filter Sidebar -->
+                     <div class="lg:col-span-1 bg-white p-8 rounded-3xl shadow-sm border h-fit">
+                         <h4 class="text-xl font-black text-slate-800 mb-6 border-b pb-4">फिल्टर निवडा</h4>
+                         <div class="space-y-6">
+                             <div>
+                                 <label class="block text-sm font-bold text-slate-500 mb-2">सुरुवात दिनांक:</label>
+                                 <input type="date" id="rep-start" class="w-full p-3 border rounded-xl font-bold">
+                             </div>
+                             <div>
+                                 <label class="block text-sm font-bold text-slate-500 mb-2">शेवट दिनांक:</label>
+                                 <input type="date" id="rep-end" class="w-full p-3 border rounded-xl font-bold">
+                             </div>
+                             <div>
+                                 <label class="block text-sm font-bold text-slate-500 mb-2">एजंट निवडा:</label>
+                                 <select id="rep-agent" class="w-full p-3 border rounded-xl font-bold">
+                                     <option value="all">सर्व एजंट्स</option>
+                                 </select>
+                             </div>
+                             <button onclick="runAdvancedReport()" class="w-full bg-primary text-white py-4 rounded-2xl font-black text-lg hover:bg-blue-700 transition">रिपोर्ट तयार करा</button>
+                         </div>
+                     </div>
+                     <!-- Results Area -->
+                     <div class="lg:col-span-3 space-y-8">
+                         <!-- Summary Cards -->
+                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                             <div class="bg-white p-6 rounded-2xl border-t-4 border-green-500 shadow-sm">
+                                 <p class="text-slate-400 font-bold text-xs uppercase">निवडलेल्या काळातील पिग्मी</p>
+                                 <h5 id="rep-total-pigmy" class="text-2xl font-black text-slate-800 mt-1">₹ 0</h5>
+                             </div>
+                             <div class="bg-white p-6 rounded-2xl border-t-4 border-blue-500 shadow-sm">
+                                 <p class="text-slate-400 font-bold text-xs uppercase">निवडलेल्या काळातील RD</p>
+                                 <h5 id="rep-total-rd" class="text-2xl font-black text-slate-800 mt-1">₹ 0</h5>
+                             </div>
+                             <div class="bg-white p-6 rounded-2xl border-t-4 border-slate-800 shadow-sm">
+                                 <p class="text-slate-400 font-bold text-xs uppercase">एकूण कलेक्शन</p>
+                                 <h5 id="rep-total-collection" class="text-2xl font-black text-slate-800 mt-1">₹ 0</h5>
+                             </div>
+                         </div>
+                         <!-- Detailed Report Table -->
+                         <div class="data-table-container">
+                             <table class="w-full custom-table">
+                                 <thead>
+                                     <tr>
+                                         <th>एजंट नाव</th>
+                                         <th>पिग्मी (₹)</th>
+                                         <th>आरडी (₹)</th>
+                                         <th>एफडी (₹)</th>
+                                         <th class="text-right">एकूण (₹)</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody id="rep-table-body">
+                                     <!-- Report Rows -->
+                                 </tbody>
+                             </table>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- ================= TAB 5: AGENTS ================= -->
+            <div id="tab-agents" class="tab-content section-hidden">
+                <div class="max-w-4xl mx-auto bg-white p-10 rounded-3xl shadow-sm border">
+                    <div class="flex justify-between items-center mb-10">
+                        <h3 class="text-3xl font-black text-slate-800">एजंट मॅनेजमेंट</h3>
+                        <button onclick="openAddAgentModal()" class="bg-primary text-white px-6 py-2 rounded-xl font-bold">+ नवीन एजंट</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="agents-list">
+                        <!-- Agent Cards -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= TAB 6: SETTINGS ================= -->
+            <div id="tab-settings" class="tab-content section-hidden">
+                <div class="max-w-4xl mx-auto space-y-8">
+                    <!-- Society Info -->
+                    <div class="bg-white p-10 rounded-3xl shadow-sm border">
+                        <h4 class="text-2xl font-black text-slate-800 mb-8 border-b pb-4">पतसंस्था माहिती</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block font-bold text-slate-500 mb-2">पतसंस्थेचे नाव:</label>
+                                <input type="text" id="set-name" class="w-full p-3 border rounded-xl font-bold" placeholder="उदा. जनसेवा ग्रामीण पतसंस्था">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-500 mb-2">शाखा:</label>
+                                <input type="text" id="set-branch" class="w-full p-3 border rounded-xl font-bold" placeholder="उदा. मुख्य शाखा, मुंबई">
+                            </div>
+                            <div class="md:col-span-2 text-right">
+                                <button onclick="saveSettings()" class="bg-slate-900 text-white px-10 py-3 rounded-2xl font-black">माहिती जतन करा</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Database Info -->
+                    <div class="bg-white p-10 rounded-3xl shadow-sm border">
+                        <h4 class="text-2xl font-black text-slate-800 mb-8 border-b pb-4">डेटा मॅनेजमेंट</h4>
+                        <p class="text-slate-500 font-bold mb-6">तुमची गुगल शीटची लिंक येथे अपडेट करू शकता.</p>
+                        <input type="text" id="set-api" class="w-full p-3 border rounded-xl font-bold mb-6" value="https://script.google.com/macros/s/AKfycbyKavhCEYmzWAhqDOcFDI_OPx26pUmACewgX7m3Lz7-jW70yR1P3871niVcN5sPXcg/exec">
+                        <div class="flex gap-4">
+                            <button onclick="testConnection()" class="bg-blue-100 text-blue-700 px-6 py-3 rounded-xl font-bold">कनेक्शन तपासा</button>
+                            <button onclick="clearCache()" class="bg-red-50 text-red-600 px-6 py-3 rounded-xl font-bold">कॅशे साफ करा</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 4. Modals Area -->
+    <div id="mainModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-body shadow-2xl" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center border-b pb-6 mb-8">
+                <h3 id="modal-title" class="text-3xl font-black text-slate-800">तपशील</h3>
+                <button onclick="closeModal()" class="text-4xl text-slate-300 hover:text-slate-600">&times;</button>
+            </div>
+            <div id="modal-content-area" class="overflow-x-auto">
+                <!-- Data via Script -->
             </div>
         </div>
-
-        <!-- ================= 3. REPORTS SECTION ================= -->
-        <div id="reports" class="section section-hidden">
-            <h2 class="text-4xl font-black text-slate-800 mb-10">रिपोर्ट्स आणि विश्लेषक</h2>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-                <!-- Filters for Reports -->
-                <div class="lg:col-span-3 bg-white p-6 rounded-3xl shadow-sm border flex flex-wrap items-center gap-6">
-                    <div class="flex items-center gap-3">
-                        <span class="font-bold">सुरुवात:</span>
-                        <input type="date" id="report-start" class="border p-2 rounded-lg font-bold">
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="font-bold">शेवट:</span>
-                        <input type="date" id="report-end" class="border p-2 rounded-lg font-bold">
-                    </div>
-                    <button onclick="generateReports()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-bold hover:bg-blue-700">रिपोर्ट जनरेट करा</button>
-                </div>
-
-                <!-- Charts -->
-                <div class="lg:col-span-2 bg-white p-8 rounded-3xl shadow-xl border h-[500px]">
-                    <h4 class="text-xl font-bold mb-6">कलेक्शन ट्रेंड (Daily Trends)</h4>
-                    <canvas id="collectionTrendChart"></canvas>
-                </div>
-                
-                <div class="bg-white p-8 rounded-3xl shadow-xl border h-[500px]">
-                    <h4 class="text-xl font-bold mb-6">प्रोडक्ट निहाय विभाजन</h4>
-                    <canvas id="productPieChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Agent Table Report -->
-            <div class="bg-white rounded-3xl shadow-xl border overflow-hidden mb-10">
-                <div class="p-6 bg-slate-800 text-white">
-                    <h3 class="text-xl font-bold">एजंट निहाय कामगिरी रिपोर्ट (Agent Performance)</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-slate-100 text-slate-600 text-xs font-black uppercase">
-                            <tr>
-                                <th class="p-5">एजंट नाव</th>
-                                <th class="p-5">एकूण पिग्मी</th>
-                                <th class="p-5">एकूण आरडी</th>
-                                <th class="p-5">एकूण एफडी</th>
-                                <th class="p-5 text-right">एकूण कलेक्शन (₹)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="agent-report-body" class="divide-y font-bold">
-                            <!-- Rows -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
     </div>
 
-    <!-- Details Modal -->
-    <div id="detailModal" class="modal-overlay" onclick="closeDetailModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center border-b pb-6 mb-6">
-                <div>
-                    <h3 id="modal-title" class="text-3xl font-black text-slate-800">तपशील</h3>
-                    <p id="modal-subtitle" class="text-slate-500 font-bold mt-1">दिनांक: --</p>
-                </div>
-                <button onclick="closeDetailModal()" class="text-4xl text-slate-300 hover:text-slate-600 transition">&times;</button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-50 text-slate-600 uppercase text-xs font-black">
-                        <tr>
-                            <th class="p-4">एजंटचे नाव</th>
-                            <th class="p-4">एकुण खाती</th>
-                            <th class="p-4 text-right">जमा रक्कम (₹)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="modal-table-body" class="divide-y divide-slate-100 text-lg font-bold text-slate-700">
-                        <!-- Rows -->
-                    </tbody>
-                    <tfoot>
-                        <tr class="bg-slate-900 text-white">
-                            <td colspan="2" class="p-4 font-black">एकूण</td>
-                            <td id="modal-total" class="p-4 text-right font-black text-2xl">₹ 0</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- JS LOGIC START -->
+    <!-- JS SCRIPTS START (Logic Module) -->
     <script>
+        // 1. Core Variables & Config
         const API_URL = "https://script.google.com/macros/s/AKfycbyKavhCEYmzWAhqDOcFDI_OPx26pUmACewgX7m3Lz7-jW70yR1P3871niVcN5sPXcg/exec";
+        let allData = { dailyCollections: [], bankTransactions: [], expenses: [], settings: { agentNames: [] } };
+        let currentDateSelected = new Date();
+        let chartInstance = null;
+        let pieChartInstance = null;
 
-        let allData = { 
-            dailyCollections: [], 
-            bankTransactions: [], 
-            expenses: [], 
-            settings: { agentNames: [] } 
-        };
-        let currentViewDate = new Date();
-        let chart1 = null;
-        let chart2 = null;
-
-        // 1. Initial Load
-        window.onload = () => {
+        // 2. Initial Setup
+        window.onload = function() {
+            // Set Default Dates
             const today = new Date();
-            document.getElementById('filter-date').valueAsDate = today;
+            document.getElementById('dash-date-filter').valueAsDate = today;
             document.getElementById('form-date').valueAsDate = today;
-            document.getElementById('report-start').valueAsDate = new Date(today.getFullYear(), today.getMonth(), 1); // Start of month
-            document.getElementById('report-end').valueAsDate = today;
+            document.getElementById('rep-start').valueAsDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            document.getElementById('rep-end').valueAsDate = today;
+            document.getElementById('date-display').innerText = formatReadableDate(today);
 
-            fetchData();
-            addAgentRow('pigmy-container', 'PIGMY'); // Default one row
+            // Fetch Initial Data
+            refreshData();
+
+            // Run Clock
+            setInterval(updateClock, 1000);
+
+            // Add Initial Entry Rows
+            addNewAgentRow('pigmy-form-container', 'PIGMY');
         };
 
-        // 2. Data Fetching (Smart Logic)
-        async function fetchData(isFilter = false) {
-            document.getElementById('loader').style.display = 'flex';
+        // 3. Data Fetching Engine
+        async function refreshData(isFilter = false) {
+            showLoader();
             try {
                 const response = await fetch(API_URL);
                 if (!response.ok) throw new Error("API Connection Failed");
@@ -404,149 +530,146 @@
                 allData = data;
 
                 if (isFilter) {
-                    currentViewDate = new Date(document.getElementById('filter-date').value);
+                    currentDateSelected = new Date(document.getElementById('dash-date-filter').value);
                 } else {
-                    currentViewDate = new Date();
+                    currentDateSelected = new Date();
                 }
 
+                // Update UI Modules
                 renderDashboard();
-                if(!isFilter) generateReports(); // Only generate reports on first load or manual click
-
+                renderHistory();
+                populateFilters();
+                renderAgents();
+                
+                hideLoader();
             } catch (error) {
                 console.error("Critical Error:", error);
                 Swal.fire({
                     icon: 'error',
-                    title: 'डेटा लोड एरर',
-                    text: 'Google Script कडून प्रतिसाद मिळत नाही. तुमची API URL तपासा किंवा इंटरनेट तपासा.',
-                    confirmButtonColor: '#3b82f6'
+                    title: 'डेटा एरर!',
+                    text: 'इंटरनेट कनेक्शन किंवा API तपासा.',
+                    confirmButtonColor: '#2563eb'
                 });
-            } finally {
-                document.getElementById('loader').style.display = 'none';
+                hideLoader();
             }
         }
 
-        // 3. Render Dashboard (Fast & Clean)
+        // 4. Dashboard Rendering Module
         function renderDashboard() {
-            const selectedStr = currentViewDate.toISOString().split('T')[0];
-            const tbody = document.getElementById('main-table-body');
-            const emptyState = document.getElementById('empty-state');
-            tbody.innerHTML = "";
-
-            // Filter collections for selected date
-            const daily = allData.dailyCollections.filter(row => row[0].toString().split('T')[0] === selectedStr);
+            const dateStr = currentDateSelected.toISOString().split('T')[0];
+            const daily = allData.dailyCollections.filter(row => row[0].toString().split('T')[0] === dateStr);
             
             let sums = { PIGMY: 0, RD: 0, FD: 0 };
-            
+            const tbody = document.getElementById('dash-table-body');
+            const emptyState = document.getElementById('dash-empty');
+            tbody.innerHTML = "";
+
             if (daily.length === 0) {
                 emptyState.classList.remove('hidden');
-                document.getElementById('main-table').classList.add('hidden');
+                document.getElementById('dash-table').classList.add('hidden');
             } else {
                 emptyState.classList.add('hidden');
-                document.getElementById('main-table').classList.remove('hidden');
+                document.getElementById('dash-table').classList.remove('hidden');
 
                 daily.forEach(row => {
                     const type = row[1].toUpperCase();
                     const amount = Number(row[5]);
-                    sums[type] = (sums[type] || 0) + amount;
+                    sums[type] += amount;
 
                     tbody.innerHTML += `
-                        <tr class="hover:bg-blue-50/50 transition cursor-pointer" onclick="openDetailModal('${type}')">
-                            <td class="p-5 text-slate-500">${formatMarathiDate(row[0])}</td>
-                            <td class="p-5"><span class="px-3 py-1 rounded-full text-xs font-black ${getTypeColor(type)}">${type}</span></td>
-                            <td class="p-5 font-bold text-slate-800">${row[2]}</td>
-                            <td class="p-5 font-bold">${row[6]}</td>
-                            <td class="p-5 text-right font-black text-slate-900">${formatINR(amount)}</td>
+                        <tr class="hover:bg-blue-50/50 transition cursor-pointer" onclick="showTypeDetails('${type}')">
+                            <td class="text-xs font-bold text-slate-400">10:30 AM</td>
+                            <td class="font-black"><span class="px-3 py-1 rounded-full text-[10px] ${getTypeBadgeColor(type)}">${type}</span></td>
+                            <td class="font-bold text-slate-700">${row[2]}</td>
+                            <td class="font-black text-slate-500">${row[6]}</td>
+                            <td class="text-right font-black text-slate-900">${formatCurrency(amount)}</td>
                         </tr>
                     `;
                 });
             }
 
-            // Update KPIs
-            document.getElementById('kpi-pigmy-val').innerText = formatINR(sums.PIGMY);
-            document.getElementById('kpi-rd-val').innerText = formatINR(sums.RD);
-            document.getElementById('kpi-fd-val').innerText = formatINR(sums.FD);
-
-            const totalSystem = sums.PIGMY + sums.RD + sums.FD;
-            document.getElementById('kpi-system-val').innerText = formatINR(totalSystem);
-
-            // Bank Tally
-            const bankEntry = allData.bankTransactions.find(b => b[0].toString().split('T')[0] === selectedStr);
-            const bankVal = bankEntry ? Number(bankEntry[4]) : 0;
-            document.getElementById('kpi-bank-val').innerText = formatINR(bankVal);
-
-            // Tally Status
-            const matchCard = document.getElementById('match-status-card');
-            const matchText = document.getElementById('match-text');
+            // Update KPI Cards
+            document.getElementById('kpi-pigmy').innerText = formatCurrency(sums.PIGMY);
+            document.getElementById('kpi-rd').innerText = formatCurrency(sums.RD);
+            document.getElementById('kpi-fd').innerText = formatCurrency(sums.FD);
             
-            if (totalSystem === 0 && bankVal === 0) {
-                matchCard.style.borderColor = "#cbd5e1";
-                matchText.innerText = "माहिती नाही";
-                matchText.className = "text-xl font-black text-slate-400";
-            } else if (totalSystem === bankVal) {
-                matchCard.style.borderColor = "#10b981";
-                matchText.innerText = "जुळले ✓";
-                matchText.className = "text-xl font-black text-green-600";
+            const total = sums.PIGMY + sums.RD + sums.FD;
+            document.getElementById('kpi-system').innerText = formatCurrency(total, false);
+
+            // Bank Logic
+            const bankEntry = allData.bankTransactions.find(b => b[0].toString().split('T')[0] === dateStr);
+            const bankBal = bankEntry ? Number(bankEntry[4]) : 0;
+            const matchTag = document.getElementById('match-tag');
+            
+            if (total === bankBal && total > 0) {
+                matchTag.innerText = "जुळले (Matched)";
+                matchTag.className = "mt-4 text-[10px] font-black px-2 py-1 rounded w-fit bg-green-100 text-green-600";
             } else {
-                matchCard.style.borderColor = "#ef4444";
-                const diff = Math.abs(totalSystem - bankVal);
-                matchText.innerText = "फरक: ₹" + diff.toLocaleString();
-                matchText.className = "text-xl font-black text-red-600";
+                matchTag.innerText = "फरक आहे";
+                matchTag.className = "mt-4 text-[10px] font-black px-2 py-1 rounded w-fit bg-red-100 text-red-600";
             }
+
+            // Update Charts
+            updateTrendChart(sums);
+            updateDistributionChart(sums);
         }
 
-        // 4. Multiple Agent Logic (Smart Dynamic Rows)
-        function addAgentRow(containerId, type) {
+        // 5. Entry Form Logic (Multi-Agent Support)
+        function addNewAgentRow(containerId, type) {
             const container = document.getElementById(containerId);
-            const rowId = 'entry-' + Math.random().toString(36).substr(2, 9);
+            const rowId = 'row-' + Math.random().toString(36).substr(2, 9);
             
             const div = document.createElement('div');
-            div.className = "agent-entry-row grid grid-cols-1 md:grid-cols-12 gap-4 items-end bg-white p-4 rounded-xl border-2 border-slate-100 shadow-sm";
+            div.className = "agent-entry-box grid grid-cols-1 md:grid-cols-12 gap-6 items-end";
             div.id = rowId;
 
-            const agentOptions = allData.settings.agentNames.map(name => `<option value="${name}">${name}</option>`).join('');
+            const options = allData.settings.agentNames.map(name => `<option value="${name}">${name}</option>`).join('');
 
             div.innerHTML = `
                 <div class="md:col-span-5">
-                    <label class="text-xs font-black text-slate-400 uppercase mb-1 block">एजंट निवडा</label>
-                    <select class="agent-name w-full p-3 rounded-lg border-2 focus:border-blue-500 outline-none font-bold">
-                        ${agentOptions}
+                    <label class="block text-xs font-black text-slate-400 uppercase mb-2">एजंट निवडा</label>
+                    <select class="agent-select w-full p-3 rounded-xl border-2 font-bold outline-none focus:border-primary">
+                        ${options}
                     </select>
                 </div>
                 <div class="md:col-span-3">
-                    <label class="text-xs font-black text-slate-400 uppercase mb-1 block">एकुण खाती</label>
-                    <input type="number" placeholder="0" class="agent-count w-full p-3 rounded-lg border-2 focus:border-blue-500 outline-none font-bold">
+                    <label class="block text-xs font-black text-slate-400 uppercase mb-2">एकुण खाती</label>
+                    <input type="number" placeholder="0" class="agent-count w-full p-3 rounded-xl border-2 font-bold outline-none focus:border-primary">
                 </div>
                 <div class="md:col-span-3">
-                    <label class="text-xs font-black text-slate-400 uppercase mb-1 block">जमा रक्कम ₹</label>
-                    <input type="number" placeholder="0.00" class="agent-amount w-full p-3 rounded-lg border-2 focus:border-blue-500 outline-none font-black text-slate-800">
+                    <label class="block text-xs font-black text-slate-400 uppercase mb-2">जमा रक्कम ₹</label>
+                    <input type="number" placeholder="0" class="agent-amount w-full p-3 rounded-xl border-2 font-black text-xl outline-none focus:border-primary">
                 </div>
                 <div class="md:col-span-1 text-center">
-                    <button type="button" onclick="removeRow('${rowId}')" class="text-red-400 hover:text-red-600 text-2xl transition"><i class="fa-solid fa-trash-can"></i></button>
+                    <button type="button" onclick="removeAgentRow('${rowId}')" class="text-red-300 hover:text-red-600 text-2xl transition"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
             `;
             container.appendChild(div);
         }
 
-        function removeRow(id) {
+        function removeAgentRow(id) {
             const el = document.getElementById(id);
             if(el) el.remove();
         }
 
-        // 5. Submit Form (Power Submission)
-        async function handleFormSubmit(e) {
+        async function handleFinalSubmit(e) {
             e.preventDefault();
             
             const collections = [];
-            const types = ['pigmy', 'rd', 'fd'];
+            const types = [
+                { id: 'pigmy-form-container', name: 'PIGMY' },
+                { id: 'rd-form-container', name: 'RD' },
+                { id: 'fd-form-container', name: 'FD' }
+            ];
 
             types.forEach(t => {
-                const rows = document.getElementById(`${t}-container`).querySelectorAll('.agent-entry-row');
+                const rows = document.getElementById(t.id).querySelectorAll('.agent-entry-box');
                 rows.forEach(row => {
                     const amount = Number(row.querySelector('.agent-amount').value);
                     if (amount > 0) {
                         collections.push({
-                            type: t.toUpperCase(),
-                            agent: row.querySelector('.agent-name').value,
+                            type: t.name,
+                            agent: row.querySelector('.agent-select').value,
                             accountCount: Number(row.querySelector('.agent-count').value || 0),
                             amount: amount
                         });
@@ -555,7 +678,7 @@
             });
 
             if (collections.length === 0) {
-                Swal.fire("सूचना", "कमीतकमी एक जमा रक्कम भरणे आवश्यक आहे.", "warning");
+                Swal.fire("सूचना", "कृपया किमान एका एजंटची रक्कम भरा.", "warning");
                 return;
             }
 
@@ -580,188 +703,231 @@
             });
 
             try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
                 Swal.fire({
                     icon: 'success',
                     title: 'यशस्वी!',
-                    text: 'दैनंदिन माहिती ताळेबंदामध्ये साठवली गेली आहे.',
+                    text: 'तुमची नोंदणी यशस्वीरित्या जतन झाली आहे.',
                     confirmButtonColor: '#10b981'
                 }).then(() => location.reload());
             } catch (err) {
-                Swal.fire("Error", "डेटा साठवताना तांत्रिक अडचण आली. पुन्हा प्रयत्न करा.", "error");
+                Swal.fire("Error", "सबमिट करताना तांत्रिक अडचण आली.", "error");
             }
         }
 
-        // 6. Modal Functions (Drill Down)
-        function openDetailModal(type) {
-            const selectedStr = currentViewDate.toISOString().split('T')[0];
-            const data = allData.dailyCollections.filter(row => 
-                row[1].toUpperCase() === type.toUpperCase() && 
-                row[0].toString().split('T')[0] === selectedStr
-            );
+        // 6. Reports Module
+        function runAdvancedReport() {
+            const start = new Date(document.getElementById('rep-start').value);
+            const end = new Date(document.getElementById('rep-end').value);
+            const agentFilter = document.getElementById('rep-agent').value;
 
-            document.getElementById('modal-title').innerText = `${type} कलेक्शन तपशील`;
-            document.getElementById('modal-subtitle').innerText = `दिनांक: ${formatMarathiDate(selectedStr)}`;
-            
-            const tbody = document.getElementById('modal-table-body');
-            tbody.innerHTML = "";
-            let total = 0;
-
-            data.forEach(row => {
-                total += Number(row[5]);
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="p-4">${row[2]}</td>
-                        <td class="p-4">${row[6]}</td>
-                        <td class="p-4 text-right">${formatINR(row[5])}</td>
-                    </tr>
-                `;
-            });
-
-            document.getElementById('modal-total').innerText = formatINR(total);
-            document.getElementById('detailModal').style.display = 'flex';
-        }
-
-        function closeDetailModal() {
-            document.getElementById('detailModal').style.display = 'none';
-        }
-
-        // 7. Reports & Charts (The 1400+ Line Logic Power)
-        function generateReports() {
-            const start = new Date(document.getElementById('report-start').value);
-            const end = new Date(document.getElementById('report-end').value);
-
-            // Filter data for period
             const filtered = allData.dailyCollections.filter(row => {
                 const d = new Date(row[0]);
-                return d >= start && d <= end;
+                const a = row[2];
+                const dateMatch = d >= start && d <= end;
+                const agentMatch = (agentFilter === 'all' || a === agentFilter);
+                return dateMatch && agentMatch;
             });
 
-            // Aggregate Data for Charts
-            const productAgg = { PIGMY: 0, RD: 0, FD: 0 };
-            const agentAgg = {};
-            const trendAgg = {};
+            let pigmyTot = 0, rdTot = 0, fdTot = 0;
+            const agentSummary = {};
 
             filtered.forEach(row => {
-                const date = row[0].toString().split('T')[0];
-                const type = row[1].toUpperCase();
+                const type = row[1];
                 const agent = row[2];
-                const amount = Number(row[5]);
+                const amt = Number(row[5]);
 
-                productAgg[type] = (productAgg[type] || 0) + amount;
-                
-                if(!agentAgg[agent]) agentAgg[agent] = { PIGMY: 0, RD: 0, FD: 0, TOTAL: 0 };
-                agentAgg[agent][type] += amount;
-                agentAgg[agent].TOTAL += amount;
+                if(type === 'PIGMY') pigmyTot += amt;
+                if(type === 'RD') rdTot += amt;
+                if(type === 'FD') fdTot += amt;
 
-                trendAgg[date] = (trendAgg[date] || 0) + amount;
+                if(!agentSummary[agent]) agentSummary[agent] = { PIGMY: 0, RD: 0, FD: 0, TOTAL: 0 };
+                agentSummary[agent][type] += amt;
+                agentSummary[agent].TOTAL += amt;
             });
 
-            // Update Agent Report Table
-            const reportTbody = document.getElementById('agent-report-body');
-            reportTbody.innerHTML = "";
-            Object.keys(agentAgg).forEach(agent => {
-                const d = agentAgg[agent];
-                reportTbody.innerHTML += `
+            // Update Report UI
+            document.getElementById('rep-total-pigmy').innerText = formatCurrency(pigmyTot);
+            document.getElementById('rep-total-rd').innerText = formatCurrency(rdTot);
+            document.getElementById('rep-total-collection').innerText = formatCurrency(pigmyTot + rdTot + fdTot);
+
+            const tbody = document.getElementById('rep-table-body');
+            tbody.innerHTML = "";
+            Object.keys(agentSummary).forEach(agent => {
+                const d = agentSummary[agent];
+                tbody.innerHTML += `
                     <tr>
-                        <td class="p-5">${agent}</td>
-                        <td class="p-5 text-green-600">${formatINR(d.PIGMY)}</td>
-                        <td class="p-5 text-blue-600">${formatINR(d.RD)}</td>
-                        <td class="p-5 text-indigo-600">${formatINR(d.FD)}</td>
-                        <td class="p-5 text-right font-black">${formatINR(d.TOTAL)}</td>
+                        <td class="font-black text-slate-800">${agent}</td>
+                        <td class="text-green-600">${formatCurrency(d.PIGMY)}</td>
+                        <td class="text-blue-600">${formatCurrency(d.RD)}</td>
+                        <td class="text-indigo-600">${formatCurrency(d.FD)}</td>
+                        <td class="text-right font-black text-lg">${formatCurrency(d.TOTAL)}</td>
                     </tr>
                 `;
             });
-
-            renderCharts(productAgg, trendAgg);
+            
+            if(filtered.length === 0) tbody.innerHTML = `<tr><td colspan="5" class="text-center p-10 text-slate-400 font-bold">या कालावधीत कोणताही डेटा नाही.</td></tr>`;
         }
 
-        function renderCharts(productData, trendData) {
-            // Pie Chart
-            if(chart1) chart1.destroy();
-            const ctx1 = document.getElementById('productPieChart').getContext('2d');
-            chart1 = new Chart(ctx1, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(productData),
-                    datasets: [{
-                        data: Object.values(productData),
-                        backgroundColor: ['#10b981', '#3b82f6', '#6366f1']
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
+        // 7. Utility & UI Logic
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('section-hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('section-hidden');
+            
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            el.classList.add('active');
 
-            // Line Chart
-            if(chart2) chart2.destroy();
-            const ctx2 = document.getElementById('collectionTrendChart').getContext('2d');
-            const sortedDates = Object.keys(trendData).sort();
-            chart2 = new Chart(ctx2, {
-                type: 'line',
-                data: {
-                    labels: sortedDates.map(d => formatMarathiDate(d)),
-                    datasets: [{
-                        label: 'दैनंदिन जमा',
-                        data: sortedDates.map(d => trendData[d]),
-                        borderColor: '#2563eb',
-                        fill: true,
-                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
+            document.getElementById('page-title').innerText = el.innerText;
+            if(tabId === 'dashboard') renderDashboard();
         }
 
-        // --- Utilities ---
-        function formatINR(val) {
-            return "₹ " + Number(val || 0).toLocaleString('en-IN');
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString();
         }
 
-        function formatMarathiDate(iso) {
-            if(!iso) return "--";
-            const d = new Date(iso);
-            return `${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}`;
+        function formatCurrency(val, includeSymbol = true) {
+            const sym = includeSymbol ? "₹ " : "";
+            return sym + Number(val || 0).toLocaleString('en-IN');
         }
 
-        function getTypeColor(type) {
+        function formatReadableDate(date) {
+            return date.toLocaleDateString('mr-IN', { day:'numeric', month:'long', year:'numeric' });
+        }
+
+        function getTypeBadgeColor(type) {
             if(type === 'PIGMY') return 'bg-green-100 text-green-700';
             if(type === 'RD') return 'bg-blue-100 text-blue-700';
             if(type === 'FD') return 'bg-indigo-100 text-indigo-700';
             return 'bg-slate-100 text-slate-700';
         }
 
-        function showSection(id) {
-            document.querySelectorAll('.section').forEach(s => s.classList.add('section-hidden'));
-            document.getElementById(id).classList.remove('section-hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
         }
 
-        function toggleMobileMenu() {
-            const m = document.getElementById('mobile-menu');
-            m.classList.toggle('hidden');
-            m.classList.toggle('flex');
+        function showLoader() { document.getElementById('loader').style.display = 'flex'; }
+        function hideLoader() { document.getElementById('loader').style.display = 'none'; }
+
+        function showTypeDetails(type) {
+            const dateStr = currentDateSelected.toISOString().split('T')[0];
+            const filtered = allData.dailyCollections.filter(row => row[1].toUpperCase() === type && row[0].toString().split('T')[0] === dateStr);
+            
+            document.getElementById('modal-title').innerText = `${type} कलेक्शन तपशील`;
+            const content = document.getElementById('modal-content-area');
+            
+            let total = 0;
+            let rowsHtml = filtered.map(r => {
+                total += Number(r[5]);
+                return `<tr><td class="p-4 font-bold">${r[2]}</td><td class="p-4">${r[6]}</td><td class="p-4 text-right font-black">₹${Number(r[5]).toLocaleString()}</td></tr>`;
+            }).join('');
+
+            content.innerHTML = `
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 text-xs font-black uppercase text-slate-500">
+                        <tr><th class="p-4">एजंट नाव</th><th class="p-4">खाती</th><th class="p-4 text-right">रक्कम (₹)</th></tr>
+                    </thead>
+                    <tbody class="divide-y">${rowsHtml}</tbody>
+                    <tfoot class="bg-slate-900 text-white font-black">
+                        <tr><td colspan="2" class="p-4">एकूण</td><td class="p-4 text-right text-2xl">₹${total.toLocaleString()}</td></tr>
+                    </tfoot>
+                </table>
+            `;
+            document.getElementById('mainModal').style.display = 'flex';
         }
 
-        function searchTable() {
-            const q = document.getElementById('search-input').value.toLowerCase();
-            const rows = document.querySelectorAll('#main-table-body tr');
-            rows.forEach(r => {
-                r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
+        function closeModal(e) { document.getElementById('mainModal').style.display = 'none'; }
+
+        // 8. Charting Module (Chart.js Power)
+        function updateTrendChart(todaySums) {
+            if(chartInstance) chartInstance.destroy();
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            // Mock Trend Data for 7 Days (Logic to be replaced by actual data loop)
+            const labels = ["सोम", "मंगळ", "बुध", "गुरू", "शुक्र", "शनि", "आज"];
+            const data = [12000, 15000, 11000, 18000, 14000, 16000, (todaySums.PIGMY + todaySums.RD + todaySums.FD)];
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'दैनंदिन जमा (₹)',
+                        data: data,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 4,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#2563eb'
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
             });
         }
 
-        function resetFilter() {
-            document.getElementById('filter-date').valueAsDate = new Date();
-            fetchData(true);
+        function updateDistributionChart(sums) {
+            if(pieChartInstance) pieChartInstance.destroy();
+            const ctx = document.getElementById('distributionChart').getContext('2d');
+            
+            pieChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['पिग्मी', 'RD', 'FD'],
+                    datasets: [{
+                        data: [sums.PIGMY, sums.RD, sums.FD],
+                        backgroundColor: ['#10b981', '#3b82f6', '#6366f1'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+            
+            // Manual Legend
+            const legend = document.getElementById('chart-legend');
+            legend.innerHTML = `
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500"></span><span class="text-xs font-bold text-slate-600">पिग्मी</span></div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span><span class="text-xs font-bold text-slate-600">आरडी</span></div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-indigo-500"></span><span class="text-xs font-bold text-slate-600">एफडी</span></div>
+            `;
         }
 
-        // Back-end Connectivity Notification
-        console.log("System Initialized. Checking API: " + API_URL);
+        function populateFilters() {
+            const select = document.getElementById('rep-agent');
+            select.innerHTML = '<option value="all">सर्व एजंट्स</option>';
+            allData.settings.agentNames.forEach(n => select.innerHTML += `<option value="${n}">${n}</option>`);
+        }
+
+        function renderAgents() {
+            const list = document.getElementById('agents-list');
+            list.innerHTML = "";
+            allData.settings.agentNames.forEach(n => {
+                list.innerHTML += `
+                    <div class="p-6 border rounded-2xl flex justify-between items-center hover:bg-slate-50 transition">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center font-black text-xl">${n.charAt(0)}</div>
+                            <div>
+                                <h5 class="font-black text-slate-800">${n}</h5>
+                                <p class="text-xs font-bold text-slate-400 uppercase">Active Agent</p>
+                            </div>
+                        </div>
+                        <button class="text-slate-300 hover:text-red-500 transition text-xl"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            });
+        }
 
     </script>
 </body>

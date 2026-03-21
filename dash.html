@@ -13,8 +13,8 @@
             --primary-blue: #2196F3;
             --secondary-blue: #03A9F4;
             --kpi-red: #D32F2F;
-            --kpi-darkblue: #1976D2; /* For the second KPI */
-            --kpi-darker-red: #B71C1C; /* For the third KPI */
+            --kpi-darkblue: #1976D2; /* For the second KPI, matching image */
+            --kpi-darker-red: #B71C1C; /* For the third KPI, matching image */
             --kpi-green: #4CAF50;
             --bg-light: #f4f7f6;
             --card-bg: #ffffff;
@@ -468,22 +468,22 @@
                 <div class="kpi-cards">
                     <div class="kpi-card red">
                         <h4>आजची एकूण पिग्मी</h4>
-                        <div class="amount"><span class="currency">₹</span><span id="kpi-pigmy">...</span></div>
+                        <div class="amount"><span class="currency">₹</span><span id="kpi-pigmy">डेटा लोड करत आहे...</span></div>
                         <p class="description">कलेक्शन</p>
                     </div>
                     <div class="kpi-card blue">
-                        <h4>आजची एकूण RD</h4> <!-- Assumed from image context -->
-                        <div class="amount"><span class="currency">₹</span><span id="kpi-rd">...</span></div>
+                        <h4>आजची एकूण RD</h4>
+                        <div class="amount"><span class="currency">₹</span><span id="kpi-rd">डेटा लोड करत आहे...</span></div>
                         <p class="description">कलेक्शन</p>
                     </div>
                     <div class="kpi-card dark-red">
                         <h4>आजची एकूण FD</h4>
-                        <div class="amount"><span class="currency">₹</span><span id="kpi-fd">...</span></div>
+                        <div class="amount"><span class="currency">₹</span><span id="kpi-fd">डेटा लोड करत आहे...</span></div>
                         <p class="description">(सर्व विभाग)</p>
                     </div>
                     <div class="kpi-card green">
                         <h4>आजचे एकूण कलेक्शन (सरसकट)</h4>
-                        <div class="amount"><span class="currency">₹</span><span id="kpi-total-collection">...</span></div>
+                        <div class="amount"><span class="currency">₹</span><span id="kpi-total-collection">डेटा लोड करत आहे...</span></div>
                         <p class="description">बॅलन्स जुळले डाहै</p>
                     </div>
                 </div>
@@ -494,11 +494,11 @@
                 <div class="bank-balance-grid">
                     <div class="balance-item">
                         <label>बँक बॅलन्स</label>
-                        <div class="value"><span class="currency">₹</span><span id="bank-balance">...</span></div>
+                        <div class="value"><span class="currency">₹</span><span id="bank-balance">डेटा लोड करत आहे...</span></div>
                     </div>
                     <div class="balance-item">
                         <label>सिस्टम बॅलन्स</label>
-                        <div class="value green"><span class="currency">₹</span><span id="system-balance">...</span></div>
+                        <div class="value green"><span class="currency">₹</span><span id="system-balance">डेटा लोड करत आहे...</span></div>
                     </div>
                 </div>
                 <p class="summary-text">सिंटनमनानुसार सध्याची उपलब्ध बॅलन्स:</p>
@@ -518,7 +518,7 @@
                     </thead>
                     <tbody id="agent-transactions-body">
                         <!-- Data will be loaded here by JavaScript -->
-                        <tr><td colspan="5" style="text-align: center;">डेटा लोड करत आहे...</td></tr>
+                        <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">डेटा लोड करत आहे...</td></tr>
                     </tbody>
                 </table>
                 <div class="legend">
@@ -528,7 +528,7 @@
 
             <section class="detailed-data">
                 <h3>तपशिलवार डेटा</h3>
-                <p>येथे तपशिलवार डेटा लोड केला जाईल.</p>
+                <p style="text-align: center; color: var(--text-muted);">येथे तपशिलवार डेटा लोड केला जाईल.</p>
             </section>
         </div>
 
@@ -550,8 +550,8 @@
     </div>
 
     <script>
-        // Your Google Apps Script Web App URL
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzexC0TkMbvoa39tWYCVC7kmHTEF1vwYpCwYclejPOVAep1_FG0l-tp-NKb2vNRJg/exec';
+        // *** तुमची अपडेटेड Google Apps Script वेब ॲप URL येथे आहे ***
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxGbR6Ey2ykOJVj3KdnLEoHsA16SlZarDr16WmG1Totp6IiqnGwrg5vwl0xHjnXFbc/exec';
 
         // Helper function to format date for API (YYYY-MM-DD)
         function getApiFormattedDate(date) {
@@ -577,12 +577,11 @@
         // Function to update current date and time
         function updateDateTime() {
             const now = new Date();
-            // Using a specific format for date to match the image: "DD Month YYYY, HH:MM AM/PM"
             const dateOptions = { day: '2-digit', month: 'long', year: 'numeric' };
             const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
             
             document.getElementById('currentDate').textContent = `आजची तारीख: ${now.toLocaleDateString('mr-IN', dateOptions)}`;
-            document.getElementById('currentTime').textContent = now.toLocaleTimeString('en-US', timeOptions); // Using en-US for AM/PM format
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('en-US', timeOptions);
         }
 
         // --- Fetching Data Functions ---
@@ -595,15 +594,17 @@
             try {
                 const response = await fetch(url);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP error! status: ${response.status} from ${url}`);
                 }
                 const data = await response.json();
                 if (data && data.error) {
                     throw new Error(data.error);
                 }
+                console.log(`Fetched data from ${sheetName} for ${date ? getApiFormattedDate(date) : 'all dates'}:`, data); // For debugging
                 return data;
             } catch (error) {
-                console.error(`Error fetching data from ${sheetName}:`, error);
+                console.error(`Error fetching data from ${sheetName} (URL: ${url}):`, error);
+                // Display error message on the dashboard itself if needed
                 return [];
             }
         }
@@ -622,7 +623,7 @@
                 totalCollection += amount;
                 if (entry['व्यवहाराचा प्रकार'] === 'Pigmy') {
                     pigmyTotal += amount;
-                } else if (entry['व्यवहाराचा प्रकार'] === 'RD') { // Assuming this is RD
+                } else if (entry['व्यवहाराचा प्रकार'] === 'RD') { // Assuming 'RD' is the exact type string in your sheet
                     rdTotal += amount;
                 } else if (entry['व्यवहाराचा प्रकार'] === 'FD') {
                     fdTotal += amount;
@@ -643,11 +644,8 @@
             let systemBalance = 0;
 
             if (balanceData.length > 0) {
-                // Find the entry for today. If multiple, take the last one.
-                const todayEntry = balanceData.find(entry => {
-                    const entryDate = new Date(entry['दिनांक']);
-                    return entryDate.toDateString() === today.toDateString();
-                });
+                // The GAS script filters by date, so balanceData should only contain today's entry (if any)
+                const todayEntry = balanceData[0]; // Assuming one entry per day
                 
                 if (todayEntry) {
                     bankBalance = parseFloat(todayEntry['बँकेतील शिल्लक']) || 0;
@@ -723,10 +721,10 @@
                     label: 'कलेक्शन',
                     data: [],
                     backgroundColor: [
-                        '#FF9800', '#F44336', '#9C27B0', '#673AB7', '#3F51B5', '#2196F3', '#03A9F4' // More colors for 7 days
+                        '#FF9800', '#F44336', '#9C27B0', '#673AB7', '#3F51B5', '#2196F3', '#03A9F4'
                     ],
-                    borderColor: '#ffffff', // White border for bars
-                    borderWidth: 0 // No border for bars to match image
+                    borderColor: '#ffffff',
+                    borderWidth: 0
                 }]
             };
 
@@ -739,8 +737,6 @@
                 datesToFetch.push(date);
             }
 
-            // Fetch all collections data for the last 'numDays' days
-            // We fetch for each day to leverage the GAS script's date filtering
             const dailyCollectionsPromises = datesToFetch.map(date => fetchData('०१-आजचे कलेक्शन', date));
             const allCollections = await Promise.all(dailyCollectionsPromises);
 
@@ -765,7 +761,7 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            display: false // No legend in the image
+                            display: false
                         },
                         tooltip: {
                             callbacks: {
@@ -789,17 +785,17 @@
                                 }
                             },
                             grid: {
-                                display: true, // Show y-axis grid lines
+                                display: true,
                                 color: 'var(--border-color)'
                             }
                         },
                         x: {
                             grid: {
-                                display: false // No x-axis grid in the image
+                                display: false
                             },
                             ticks: {
                                 font: {
-                                    size: 10 // Smaller font for x-axis ticks
+                                    size: 10
                                 }
                             }
                         }

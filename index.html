@@ -2,1140 +2,675 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>पतसंस्था स्मार्ट डॅशबोर्ड</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <style>
-    /* Base styles - more spacious and modern */
-    body { 
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-      color: #1f2937; /* slate-900 equivalent */
-      background-color: #f8fafc; /* slate-50 */
-    }
-    .card { 
-      background:#fff; 
-      border-radius:1rem; /* more rounded */
-      box-shadow:0 10px 30px rgba(15,23,42,.08); /* slightly stronger shadow */
-      padding:1.5rem; /* more space inside cards */
-      border: 1px solid #e2e8f0; /* subtle border */
-    }
-    .input, .select { 
-      width:100%; 
-      border:1px solid #cbd5e1; 
-      border-radius:0.75rem; /* slightly more rounded */
-      padding:.85rem 1rem; /* more padding */
-      background:#fff; 
-      font-size: 0.95rem; /* slightly larger font */
-      transition: all 0.2s ease-in-out;
-    }
-    .input:focus, .select:focus { 
-      outline:none; 
-      border-color:#2563eb; 
-      box-shadow:0 0 0 4px rgba(37,99,235,.15); /* stronger focus ring */
-    }
-    .btn { 
-      border-radius:0.75rem; 
-      padding:.9rem 1.2rem; /* more padding */
-      font-weight:700; 
-      transition:.2s; 
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      font-size: 0.95rem;
-      line-height: 1;
-    }
-    .btn-primary { background:#2563eb; color:#fff; }
-    .btn-primary:hover { background:#1d4ed8; transform: translateY(-1px); }
-    .btn-green { background:#16a34a; color:#fff; }
-    .btn-green:hover { background:#15803d; transform: translateY(-1px); }
-    .btn-slate { background:#e2e8f0; color:#0f172a; }
-    .btn-slate:hover { background:#cbd5e1; transform: translateY(-1px); }
-    .btn-red { background:#dc2626; color:#fff; }
-    .btn-red:hover { background:#b91c1c; transform: translateY(-1px); }
-
-    .kpi { 
-      border-radius:1.25rem; /* more rounded */
-      padding:1.25rem; /* more space inside kpi */
-      color:#fff; 
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 120px; /* consistent height */
-      position: relative;
-    }
-    .kpi h3 { font-size:.9rem; opacity:.9; margin-bottom: 0.5rem; }
-    .kpi .val { font-size:1.9rem; font-weight:800; margin-top:.25rem; line-height: 1.1; }
-    .kpi .kpi-detail-btn {
-      background: rgba(255,255,255,0.2);
-      color: white;
-      border-radius: 0.5rem;
-      padding: 0.35rem 0.6rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      transition: background 0.2s;
-      margin-top: 0.75rem;
-      align-self: flex-start;
-    }
-    .kpi .kpi-detail-btn:hover { background: rgba(255,255,255,0.35); }
-
-    .hidden-section { display:none; }
-    .loader { display:none; position:fixed; inset:0; background:rgba(255,255,255,.85); z-index:9999; align-items:center; justify-content:center; flex-direction:column; gap:12px; backdrop-filter:blur(5px); }
-    .spin { width:52px; height:52px; border-radius:50%; border:5px solid #dbeafe; border-top-color:#2563eb; animation:spin 1s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
-    .pill { padding:.3rem .75rem; border-radius:999px; font-size:.875rem; font-weight:700; display: inline-flex; align-items: center; }
-    .pill-green { background:#dcfce7; color:#166534; }
-    .pill-red { background:#fee2e2; color:#991b1b; }
-    .pill-orange { background: #fff7ed; color: #b45309; }
-
-    .table-wrap { overflow-x:auto; } /* Ensure horizontal scroll for tables on small screens */
-    .table-wrap table { width: 100%; border-collapse: separate; border-spacing: 0; }
-    .table-wrap th, .table-wrap td { padding: 0.9rem 1.2rem; } /* More padding for table cells */
-    .table-wrap thead { background-color: #f1f5f9; /* slate-100 */ color: #334155; /* slate-700 */ }
-    .table-wrap th { text-align: left; font-weight: 600; }
-    .table-wrap tbody tr:nth-child(even) { background-color: #f8fafc; /* slate-50 */ }
-    .table-wrap tbody tr:hover { background-color: #f0f4f8; /* slightly darker on hover */ }
-    .table-wrap tbody tr:last-child td:first-child { border-bottom-left-radius: 1rem; }
-    .table-wrap tbody tr:last-child td:last-child { border-bottom-right-radius: 1rem; }
-    
-    canvas { max-height:380px; width: 100% !important; } /* Taller charts */
-
-    /* SweetAlert2 custom styles */
-    .swal2-popup {
-      border-radius: 1rem !important;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.15) !important;
-    }
-    .swal2-title { font-size: 1.75rem !important; margin-bottom: 0.75rem !important; color: #1f2937 !important; }
-    .swal2-html-container { font-size: 1rem !important; color: #4b5563 !important; }
-    .swal2-confirm { background-color: #2563eb !important; border-radius: 0.75rem !important; padding: 0.8rem 1.5rem !important; font-size: 1rem !important; }
-    .swal2-cancel { border-radius: 0.75rem !important; padding: 0.8rem 1.5rem !important; font-size: 1rem !important; }
-    
-    /* Specific styles for collection/expense rows */
-    .collection-row, .expense-row {
-      background-color: #f8fafc; /* slate-50 */
-      border: 1px solid #e2e8f0; /* slate-200 */
-      border-radius: 0.75rem;
-      padding: 1rem;
-    }
-
-    /* Header adjustments for a more premium feel */
-    header {
-        background: linear-gradient(135deg, #1f2937, #0f172a); /* Darker, gradient header */
-        color: #e2e8f0;
-        padding: 1rem 0;
-    }
-    header .text-2xl { font-weight: 900; color: #e0f2fe; } /* Brighter title */
-    header .text-sm { color: #94a3b8; } /* Lighter subtitle */
-
-    /* Main content padding */
-    main { padding-top: 2.5rem; padding-bottom: 2.5rem; }
-
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>लोकपर्याय पतसंस्था — ERP</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#eef2f9;--w:#fff;--b:#dde5f2;--tx:#1a2744;--mu:#64748b;
+  --br:#1d4ed8;--bl:#eff6ff;--gn:#059669;--gl:#d1fae5;
+  --rd:#dc2626;--rl:#fee2e2;--am:#d97706;--al:#fef3c7;
+  --sh:0 2px 8px rgba(29,78,216,.07),0 1px 3px rgba(0,0,0,.05);
+}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;min-height:100vh}
+button,input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:#c7d2ee;border-radius:99px}
+.hdr{background:linear-gradient(120deg,#0c1a3a 0%,#1a3a8a 55%,#2563eb 100%);position:sticky;top:0;z-index:200;box-shadow:0 2px 20px rgba(0,0,0,.35)}
+.hdr-in{max-width:1500px;margin:0 auto;padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:62px;gap:10px}
+.logo{width:44px;height:44px;border-radius:11px;overflow:hidden;flex-shrink:0;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.logo img{width:40px;height:40px;object-fit:contain}
+.bname{font-size:15px;font-weight:900;color:#fff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bsub{font-size:10px;color:rgba(255,255,255,.6);margin-top:1px}
+.nav{display:flex;gap:3px}
+.nb{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;color:rgba(255,255,255,.72);background:transparent;transition:all .15s}
+.nb:hover,.nb.act{background:rgba(255,255,255,.18);color:#fff}
+.hb{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;background:rgba(255,255,255,.13);border-radius:9px;border:none}
+.hb span{width:20px;height:2px;background:#fff;border-radius:2px;display:block}
+.mn{display:none;background:#0c1a3a;border-top:1px solid rgba(255,255,255,.1);padding:8px 14px 12px}
+.mn.op{display:flex;flex-direction:column;gap:3px}
+.mn .nb{width:100%;padding:12px 14px;border-radius:10px}
+.sh{max-width:1500px;margin:0 auto;padding:14px}
+.vs{display:flex;flex-direction:column;gap:14px}
+.gone{display:none!important}
+.gk{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.ga{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
+.card{background:var(--w);border:1.5px solid var(--b);border-radius:18px;padding:18px;box-shadow:var(--sh)}
+.chd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:11px;border-bottom:1.5px solid var(--b);flex-wrap:wrap;gap:8px}
+.ctit{font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px}
+.cic{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
+/* KPI Gradient Cards */
+.kpi{border-radius:18px;padding:18px 16px;color:#fff;cursor:pointer;position:relative;overflow:hidden;border:none;text-align:left;width:100%;transition:transform .14s,box-shadow .14s}
+.kpi:hover{transform:translateY(-4px);box-shadow:0 18px 50px rgba(0,0,0,.24)}
+.kpi:active{transform:translateY(0)}
+.kpi::after{content:'';position:absolute;bottom:-22px;right:-16px;width:95px;height:95px;border-radius:50%;background:rgba(255,255,255,.1)}
+.kpi::before{content:'';position:absolute;top:-16px;right:28px;width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.07)}
+.kpi-ic{font-size:28px;margin-bottom:12px;display:block}
+.kpi-val{font-size:22px;font-weight:900;line-height:1.1;letter-spacing:-.3px}
+.kpi-lbl{font-size:11px;font-weight:700;opacity:.88;margin-top:5px;line-height:1.3}
+.kpi-sub{font-size:10px;opacity:.72;margin-top:3px}
+.kpi-tag{position:absolute;bottom:10px;right:13px;font-size:9px;opacity:.65;font-weight:700}
+.kg{background:linear-gradient(135deg,#059669,#10b981);box-shadow:0 8px 26px rgba(5,150,105,.38)}
+.kb{background:linear-gradient(135deg,#1d4ed8,#3b82f6);box-shadow:0 8px 26px rgba(29,78,216,.38)}
+.kv{background:linear-gradient(135deg,#7c3aed,#a855f7);box-shadow:0 8px 26px rgba(124,58,237,.38)}
+.kt{background:linear-gradient(135deg,#0891b2,#22d3ee);box-shadow:0 8px 26px rgba(8,145,178,.38)}
+.kr{background:linear-gradient(135deg,#dc2626,#f87171);box-shadow:0 8px 26px rgba(220,38,38,.32)}
+.ks{background:linear-gradient(135deg,#334155,#64748b);box-shadow:0 8px 26px rgba(51,65,85,.32)}
+.ka{background:linear-gradient(135deg,#d97706,#fbbf24);box-shadow:0 8px 26px rgba(217,119,6,.38)}
+.ko{background:linear-gradient(135deg,#ea580c,#fb923c);box-shadow:0 8px 26px rgba(234,88,12,.35)}
+.kx{background:linear-gradient(135deg,#be185d,#f472b6);box-shadow:0 8px 26px rgba(190,24,93,.35)}
+/* Range bar */
+.rbbar{background:var(--w);border:1.5px solid var(--b);border-radius:18px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;box-shadow:var(--sh)}
+.rbbar label{font-size:10px;font-weight:800;color:var(--mu);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.rbadge{display:inline-flex;align-items:center;gap:5px;background:var(--bl);color:#1e40af;border-radius:9px;padding:6px 12px;font-size:11px;font-weight:800}
+.qrow{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:11px;padding:10px 16px;font-weight:800;font-size:13px;transition:opacity .12s,transform .12s;white-space:nowrap;cursor:pointer;line-height:1.2}
+.btn:hover{opacity:.88;transform:translateY(-1px)}.btn:active{transform:translateY(0);opacity:1}
+.btn-blue{background:#1d4ed8;color:#fff;box-shadow:0 4px 14px rgba(29,78,216,.3)}
+.btn-green{background:#059669;color:#fff;box-shadow:0 4px 14px rgba(5,150,105,.28)}
+.btn-red{background:#dc2626;color:#fff}
+.btn-violet{background:#7c3aed;color:#fff}
+.btn-print{background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;box-shadow:0 4px 14px rgba(15,118,110,.3)}
+.btn-ghost{background:var(--bl);color:#1e40af}
+.btn-pale{background:#f1f5f9;color:var(--tx)}
+.btn-sm{padding:8px 13px;font-size:12px;border-radius:9px}
+.btn-ico{width:34px;height:34px;padding:0;border-radius:9px;font-size:15px}
+/* Inputs */
+.inp{border:1.5px solid var(--b);border-radius:10px;padding:9px 12px;background:var(--w);color:var(--tx);transition:border-color .15s;font-size:14px;width:100%}
+.inp:focus{outline:none;border-color:#1d4ed8;box-shadow:0 0 0 3px rgba(29,78,216,.1)}
+.inpro{background:#f8faff;color:var(--mu)}
+textarea.inp{resize:vertical}
+.lbl{display:block;font-size:10px;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+/* Pills */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800}
+.pp{background:var(--gl);color:#065f46}.pa{background:var(--al);color:#78350f}
+.pr{background:var(--rl);color:#7f1d1d}.pbb{background:var(--bl);color:#1e3a8a}
+/* Tables */
+.tw{overflow-x:auto;border-radius:13px;border:1.5px solid var(--b)}
+.tw table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+thead th{background:#f5f8ff;padding:9px 13px;font-size:10px;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;position:sticky;top:0;z-index:1}
+td{padding:9px 13px;border-top:1px solid #f1f5fb;white-space:nowrap}
+tbody tr:hover{background:#f5f8ff}
+.ttr{text-align:right}.ttb{font-weight:800}
+/* Modal */
+.ov{position:fixed;inset:0;background:rgba(12,26,58,.58);z-index:9000;display:none;align-items:center;justify-content:center;padding:12px;backdrop-filter:blur(5px)}
+.ov.on{display:flex}
+.mo{background:#fff;border-radius:22px;box-shadow:0 24px 80px rgba(0,0,0,.3);width:100%;max-width:820px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;animation:su .18s ease}
+@keyframes su{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.mhd{padding:17px 22px;border-bottom:1.5px solid var(--b);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.mbd{padding:17px 22px;overflow-y:auto;flex:1}
+.mst{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.ms{background:#f5f8ff;border:1.5px solid var(--b);border-radius:13px;padding:13px}
+.ms .sl{font-size:10px;font-weight:800;color:var(--mu);text-transform:uppercase}
+.ms .sv{font-size:19px;font-weight:900;margin-top:4px}
+/* Loader */
+.ldr{position:fixed;inset:0;background:rgba(238,242,249,.96);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.ldr.on{display:flex}
+.sp{width:44px;height:44px;border-radius:50%;border:4px solid #dbeafe;border-top-color:#1d4ed8;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Toast */
+.tst{position:fixed;bottom:18px;right:16px;z-index:9999;background:#0f172a;color:#fff;border-radius:12px;padding:12px 18px;font-size:13px;font-weight:700;box-shadow:0 8px 28px rgba(0,0,0,.25);opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none;max-width:310px}
+.tst.on{opacity:1;transform:translateY(0)}.tst.ok{background:#047857}.tst.er{background:#b91c1c}
+/* Skeleton */
+.sk{background:linear-gradient(90deg,rgba(255,255,255,.15) 25%,rgba(255,255,255,.3) 50%,rgba(255,255,255,.15) 75%);background-size:200% 100%;animation:sk 1.2s infinite;border-radius:8px;display:block}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+/* Charts */
+.ch{position:relative;height:210px}.ch2{position:relative;height:260px}
+/* Entry form */
+.ecol{background:#fff;border:1.5px solid var(--b);border-radius:15px;padding:14px}
+.erow{background:#fff;border:1.5px solid var(--b);border-radius:12px;padding:12px;margin-bottom:8px}
+.ss{position:sticky;bottom:10px;z-index:40;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border:1.5px solid var(--b);border-radius:14px;padding:12px}
+/* Print modal */
+.pov{position:fixed;inset:0;background:rgba(12,26,58,.58);z-index:9100;display:none;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(5px)}
+.pov.on{display:flex}
+.pbox{background:#fff;border-radius:22px;width:100%;max-width:700px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.3);animation:su .18s ease}
+/* Responsive */
+@media(max-width:1024px){.g3{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){
+  .nav{display:none}.hb{display:flex}
+  .g2,.g3{grid-template-columns:1fr}
+  .gk{grid-template-columns:1fr 1fr}
+  .kpi-val{font-size:18px}
+  .sh{padding:10px}.card{padding:13px}.bname{font-size:13px}
+}
+@media(max-width:380px){.gk{grid-template-columns:1fr}}
+</style>
 </head>
-<body class="text-slate-800">
-  <div id="loader" class="loader flex">
-    <div class="spin"></div>
-    <div class="font-bold text-lg text-slate-700 mt-4">डेटा लोड होत आहे... कृपया प्रतीक्षा करा.</div>
+<body>
+
+<div id="ldr" class="ldr on">
+  <div class="sp"></div>
+  <div style="font-weight:800;font-size:16px;color:var(--tx)">माहिती लोड होत आहे...</div>
+  <div style="font-size:12px;color:var(--mu)">कृपया थांबा</div>
+</div>
+<div id="tst" class="tst"></div>
+
+<!-- KPI MODAL -->
+<div id="ov" class="ov" onclick="if(event.target===this)cmo()">
+  <div class="mo">
+    <div class="mhd">
+      <div id="mtt" style="font-size:17px;font-weight:900"></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div id="mts" style="font-size:11px;color:var(--mu)"></div>
+        <button class="btn btn-pale btn-ico" onclick="cmo()">✕</button>
+      </div>
+    </div>
+    <div id="mbd" class="mbd"></div>
+  </div>
+</div>
+
+<!-- PRINT MODAL -->
+<div id="pov" class="pov" onclick="if(event.target===this)closePrint()">
+  <div class="pbox">
+    <div style="padding:16px 22px;border-bottom:1.5px solid var(--b);display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:16px;font-weight:900">🖨 दैनंदिन अहवाल — प्रिंट / PDF</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-print btn-sm" onclick="doPrint()">🖨 प्रिंट / PDF काढा</button>
+        <button class="btn btn-pale btn-ico" onclick="closePrint()">✕</button>
+      </div>
+    </div>
+    <div id="printContent" style="padding:22px 24px"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-in">
+    <div style="display:flex;align-items:center;gap:11px;min-width:0">
+      <div class="logo">
+        <img src="https://anikfin.com/ANIKDATA/Logo.png" alt="L" onerror="this.style.display='none'"/>
+      </div>
+      <div style="min-width:0">
+        <div class="bname">लोकपर्याय जिल्हा सहकारी पतसंस्था</div>
+        <div class="bsub">म.हासेगांव &nbsp;|&nbsp; दैनंदिन बँकिंग ERP</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <button id="navD" class="nb act" onclick="goTab('d')">📊 डॅशबोर्ड</button>
+      <button id="navE" class="nb" onclick="goTab('e');onED()">➕ नवीन नोंद</button>
+    </nav>
+    <button class="hb" onclick="toggleMob()"><span></span><span></span><span></span></button>
+  </div>
+  <div id="mobMenu" class="mn">
+    <button class="nb" onclick="goTab('d');closeMob()">📊 डॅशबोर्ड</button>
+    <button class="nb" onclick="goTab('e');onED();closeMob()">➕ नवीन नोंद</button>
+  </div>
+</header>
+
+<!-- DASHBOARD -->
+<div id="secDash" class="sh vs">
+  <div class="rbbar">
+    <div><label>📅 तारखेपासून</label><input id="fromDate" type="date" class="inp" style="width:148px"/></div>
+    <div><label>📅 तारखेपर्यंत</label><input id="toDate" type="date" class="inp" style="width:148px"/></div>
+    <div>
+      <label style="opacity:0;font-size:10px">.</label>
+      <div class="qrow">
+        <button class="btn btn-blue btn-sm" onclick="loadData(true)">🔄 रिफ्रेश</button>
+        <button class="btn btn-pale btn-sm" onclick="setQ(0)">आजचा दिवस</button>
+        <button class="btn btn-pale btn-sm" onclick="setQ(6)">मागील ७ दिवस</button>
+        <button class="btn btn-pale btn-sm" onclick="setQ(29)">मागील ३० दिवस</button>
+        <button class="btn btn-print btn-sm" onclick="openPrint()">🖨 समरी प्रिंट</button>
+        <button class="btn btn-pale btn-ico btn-sm" onclick="showDbg()" title="Debug">🐛</button>
+      </div>
+    </div>
+    <div style="margin-left:auto;align-self:flex-end"><div id="rb" class="rbadge">⏳ लोड होत आहे...</div></div>
   </div>
 
-  <header class="sticky top-0 z-40 shadow-lg">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-      <div class="flex items-center gap-4">
-        <i class="fa-solid fa-building-columns text-3xl text-blue-300"></i>
-        <div>
-          <div class="text-2xl font-extrabold">पतसंस्था स्मार्ट डॅशबोर्ड</div>
-          <div class="text-sm text-slate-300">दैनिक जमा, खर्च, बँक बॅलेन्स व रिपोर्ट</div>
+  <div class="gk" id="kpiGrid"></div>
+
+  <div class="g3" id="cr1">
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#eff6ff">📊</span>उत्पादन — रक्कम</div></div><div class="ch"><canvas id="cPie"></canvas></div></div>
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#f0fdf4">📦</span>उत्पादन — खाती</div></div><div class="ch"><canvas id="cBar"></canvas></div></div>
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#fff7ed">💸</span>खर्चाचे वर्गीकरण</div></div><div class="ch"><canvas id="cExp"></canvas></div></div>
+  </div>
+
+  <div class="g2">
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#eff6ff">🏆</span>एजंट निहाय रक्कम (Top 10)</div></div><div class="ch2"><canvas id="cAgA"></canvas></div></div>
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#f0fdf4">👥</span>एजंट निहाय खाती (Top 10)</div></div><div class="ch2"><canvas id="cAgC"></canvas></div></div>
+  </div>
+
+  <div class="g2">
+    <div class="card vs">
+      <div class="chd">
+        <div class="ctit"><span class="cic" style="background:#eff6ff">📋</span>कलेक्शन तपशील</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <input id="srchBox" type="text" class="inp" style="width:152px;font-size:12px" placeholder="🔍 एजंट / खाते शोधा"/>
+          <select id="tFilt" class="inp" style="width:100px;font-size:12px">
+            <option value="ALL">सर्व प्रकार</option>
+            <option value="PIGMY">PIGMY</option>
+            <option value="RD">RD</option>
+            <option value="FD">FD</option>
+          </select>
         </div>
       </div>
-      <div class="hidden md:flex gap-3">
-        <button class="btn btn-slate" onclick="showSection('dashboardSection')"><i class="fa-solid fa-chart-line"></i>डॅशबोर्ड</button>
-        <button class="btn btn-green" onclick="showSection('entrySection')"><i class="fa-solid fa-plus-circle"></i>नवीन जमा नोंद</button>
-      </div>
-      <div class="md:hidden">
-        <button class="btn btn-slate text-xl p-3" onclick="toggleMobileNav()"><i class="fa-solid fa-bars"></i></button>
+      <div class="tw" style="max-height:290px;overflow-y:auto">
+        <table><thead><tr><th>तारीख</th><th>प्रकार</th><th>एजंट नाव</th><th>खाते क्र.</th><th class="ttr">खाती</th><th class="ttr">रक्कम</th></tr></thead>
+        <tbody id="tbC"></tbody></table>
       </div>
     </div>
-    <nav id="mobileNav" class="md:hidden bg-slate-800 py-2 hidden">
-      <ul class="flex flex-col gap-2 px-6 pb-2">
-        <li><button class="btn btn-slate w-full" onclick="showSection('dashboardSection'); toggleMobileNav();"><i class="fa-solid fa-chart-line"></i>डॅशबोर्ड</button></li>
-        <li><button class="btn btn-green w-full" onclick="showSection('entrySection'); toggleMobileNav();"><i class="fa-solid fa-plus-circle"></i>नवीन जमा नोंद</button></li>
-      </ul>
-    </nav>
-  </header>
-
-  <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
-    <section id="dashboardSection" class="space-y-8">
-      <div class="card">
-        <div class="flex flex-col lg:flex-row gap-5 lg:items-end lg:justify-between">
-          <div>
-            <h2 class="text-3xl font-extrabold text-slate-800">डॅशबोर्ड</h2>
-            <p class="text-slate-600 mt-1">दिनांकानुसार जमा, खर्च, बँक मॅचिंग व तपशील</p>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full lg:w-auto">
-            <div>
-              <label class="text-sm font-semibold text-slate-700 mb-1 block">आजचा दिनांक</label>
-              <input id="dashboardDate" type="date" class="input" />
-            </div>
-            <div>
-              <label class="text-sm font-semibold text-slate-700 mb-1 block">पासून</label>
-              <input id="fromDate" type="date" class="input" />
-            </div>
-            <div>
-              <label class="text-sm font-semibold text-slate-700 mb-1 block">पर्यंत</label>
-              <input id="toDate" type="date" class="input" />
-            </div>
-            <div class="flex flex-col sm:flex-row gap-2">
-              <button class="btn btn-primary w-full mt-auto" onclick="loadDashboard()"><i class="fa-solid fa-rotate"></i>रिफ्रेश</button>
-              <button class="btn btn-slate w-full mt-auto" onclick="loadReports()"><i class="fa-solid fa-filter"></i>रिपोर्ट</button>
-            </div>
-          </div>
-        </div>
+    <div class="card vs">
+      <div class="chd">
+        <div class="ctit"><span class="cic" style="background:#f0fdf4">👤</span>एजंट निहाय सारांश</div>
+        <button class="btn btn-ghost btn-sm" onclick="omo('agent','एजंट संपूर्ण तपशील')">विस्तार ↗</button>
       </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div class="kpi" style="background:linear-gradient(135deg,#10b981,#34d399)"><h3>आजची पिग्मी जमा</h3><div id="kpiPigmy" class="val">₹0</div><button class="kpi-detail-btn" onclick="showKpiDetails('PIGMY')"><i class="fa-solid fa-info-circle mr-1"></i>तपशील पहा</button></div>
-        <div class="kpi" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)"><h3>आजची आरडी जमा</h3><div id="kpiRd" class="val">₹0</div><button class="kpi-detail-btn" onclick="showKpiDetails('RD')"><i class="fa-solid fa-info-circle mr-1"></i>तपशील पहा</button></div>
-        <div class="kpi" style="background:linear-gradient(135deg,#6366f1,#818cf8)"><h3>आजची एफडी जमा</h3><div id="kpiFd" class="val">₹0</div><button class="kpi-detail-btn" onclick="showKpiDetails('FD')"><i class="fa-solid fa-info-circle mr-1"></i>तपशील पहा</button></div>
-        <div class="kpi" style="background:linear-gradient(135deg,#a855f7,#c084fc)"><h3>आजचे एकूण जमा</h3><div id="kpiTotalCollection" class="val">₹0</div><button class="kpi-detail-btn" onclick="showKpiDetails('TOTAL_COLLECTION')"><i class="fa-solid fa-info-circle mr-1"></i>तपशील पहा</button></div>
-        <div class="kpi" style="background:linear-gradient(135deg,#ef4444,#f87171)"><h3>आजचा खर्च</h3><div id="kpiExpense" class="val">₹0</div><button class="kpi-detail-btn" onclick="showKpiDetails('EXPENSE')"><i class="fa-solid fa-info-circle mr-1"></i>तपशील पहा</button></div>
-        <div class="kpi" style="background:linear-gradient(135deg,#475569,#64748b)"><h3>सिस्टम बँक बॅलेन्स</h3><div id="kpiSystem" class="val">₹0</div></div>
-        <div class="kpi" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6)"><h3>Actual बँक बॅलेन्स</h3><div id="kpiActual" class="val">₹0</div></div>
-        <div class="kpi" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)"><h3>मॅच स्टेटस</h3><div id="kpiMatch" class="val">N/A</div></div>
+      <div class="tw" style="max-height:290px;overflow-y:auto">
+        <table><thead><tr><th>एजंट नाव</th><th class="ttr">खाती</th><th class="ttr">एकूण रक्कम</th><th class="ttr">PIGMY</th><th class="ttr">RD</th><th class="ttr">FD</th></tr></thead>
+        <tbody id="tbA"></tbody></table>
       </div>
+    </div>
+  </div>
 
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div class="card">
-          <div class="flex items-center justify-between mb-5">
-            <h3 class="text-xl font-extrabold text-slate-800">Product-wise जमा</h3>
-            <div class="text-sm text-slate-600">पिग्मी / आरडी / एफडी</div>
-          </div>
-          <canvas id="productChart"></canvas>
-        </div>
-        <div class="card">
-          <div class="flex items-center justify-between mb-5">
-            <h3 class="text-xl font-extrabold text-slate-800">Agent-wise कामगिरी</h3>
-            <div class="text-sm text-slate-600">एजंटनुसार एकूण रक्कम</div>
-          </div>
-          <canvas id="agentChart"></canvas>
-        </div>
+  <div class="card">
+    <div class="chd"><div class="ctit"><span class="cic" style="background:#f0fdf4">📈</span>कालावधी सारांश</div><span id="sb"></span></div>
+    <div id="sg" class="g4"></div>
+  </div>
+</div>
+
+<!-- ENTRY -->
+<div id="secEntry" class="sh gone vs">
+  <div class="card vs" style="border-top:5px solid #059669">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:20px;font-weight:900">नवीन जमा नोंद</div>
+        <div style="font-size:12px;color:var(--mu);margin-top:3px">PIGMY / RD / FD जमा आणि खर्च नोंदवा</div>
       </div>
-
-      <div class="card">
-        <div class="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between mb-5">
-          <div>
-            <h3 class="text-xl font-extrabold text-slate-800">एकूण जमा रकमेचा दैनिक ट्रेंड</h3>
-            <p class="text-slate-600 text-sm">निवडलेल्या तारखांनुसार एकूण जमा रकमेचा ट्रेंड</p>
-          </div>
-          <canvas id="dailyTrendChart"></canvas>
-        </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="setET()">📅 आजची तारीख</button>
+        <button class="btn btn-pale btn-sm" onclick="rsf()">🗑 रीसेट</button>
       </div>
-
-      <div class="card">
-        <div class="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between mb-5">
-          <div>
-            <h3 class="text-xl font-extrabold text-slate-800">आजचे कलेक्शन तपशील</h3>
-            <p class="text-slate-600 text-sm">एजंट किंवा खाते क्र. नुसार फिल्टर करा</p>
-          </div>
-          <input id="searchBox" type="text" class="input lg:w-96" placeholder="एजंट किंवा खाते क्र. शोधा..." oninput="renderCollectionTable()" />
+    </div>
+    <div class="ga">
+      <div><label class="lbl">दिनांक</label><input id="eDate" type="date" class="inp" onchange="onED()"/></div>
+      <div><label class="lbl">Opening शिल्लक (₹)</label><input id="eOp" type="number" class="inp" placeholder="0" oninput="rc()"/></div>
+      <div><label class="lbl">System शिल्लक (₹)</label><input id="eSy" type="number" class="inp inpro" readonly/></div>
+      <div><label class="lbl">प्रत्यक्ष बँक शिल्लक (₹)</label><input id="eAc" type="number" class="inp" placeholder="0" oninput="rc()"/></div>
+    </div>
+    <div class="g3">
+      <div class="ecol" style="border-top:4px solid #059669">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <b style="color:#065f46;font-size:13px">🐷 PIGMY संकलन</b>
+          <button class="btn btn-green btn-sm" onclick="ar('P')">+ जोडा</button>
         </div>
-        <div class="table-wrap rounded-xl overflow-hidden border border-slate-200">
-          <table class="min-w-full text-sm bg-white">
-            <thead class="bg-slate-100 text-slate-700">
-              <tr>
-                <th class="p-3 text-left">तारीख</th>
-                <th class="p-3 text-left">प्रकार</th>
-                <th class="p-3 text-left">एजंटचे नाव</th>
-                <th class="p-3 text-left">एकूण खात्यांची संख्या</th>
-                <th class="p-3 text-right">रक्कम (₹)</th>
-              </tr>
-            </thead>
-            <tbody id="collectionTableBody"></tbody>
-          </table>
-        </div>
+        <div id="rP" class="vs"></div>
       </div>
-
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div class="card">
-          <h3 class="text-xl font-extrabold text-slate-800 mb-5">Agent-wise सारांश</h3>
-          <div class="table-wrap rounded-xl overflow-hidden border border-slate-200">
-            <table class="min-w-full text-sm bg-white">
-              <thead class="bg-slate-100">
-                <tr>
-                  <th class="p-3 text-left">एजंट</th>
-                  <th class="p-3 text-right">खाती</th>
-                  <th class="p-3 text-right">एकूण रक्कम</th>
-                  <th class="p-3 text-right">PIGMY</th>
-                  <th class="p-3 text-right">RD</th>
-                  <th class="p-3 text-right">FD</th>
-                </tr>
-              </thead>
-              <tbody id="agentSummaryBody"></tbody>
-            </table>
-          </div>
+      <div class="ecol" style="border-top:4px solid #1d4ed8">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <b style="color:#1e3a8a;font-size:13px">📈 RD संकलन</b>
+          <button class="btn btn-blue btn-sm" onclick="ar('R')">+ जोडा</button>
         </div>
-        <div class="card">
-          <h3 class="text-xl font-extrabold text-slate-800 mb-5">दैनंदिन सारांश</h3>
-          <div id="summaryBox" class="grid grid-cols-2 gap-4 text-sm"></div>
-        </div>
+        <div id="rR" class="vs"></div>
       </div>
-
-      <div class="card">
-        <div class="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between mb-5">
-          <div>
-            <h3 class="text-xl font-extrabold text-slate-800">दिनांक पासून पर्यंत रिपोर्ट</h3>
-            <p class="text-slate-600 text-sm">विविध product-wise आणि search report</p>
-          </div>
-          <input id="reportSearch" type="text" class="input lg:w-96" placeholder="एजंट / प्रकार / खाते क्रमांक" />
+      <div class="ecol" style="border-top:4px solid #7c3aed">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <b style="color:#4c1d95;font-size:13px">🏦 FD संकलन</b>
+          <button class="btn btn-violet btn-sm" onclick="ar('F')">+ जोडा</button>
         </div>
-        <div class="table-wrap rounded-xl overflow-hidden border border-slate-200">
-          <table class="min-w-full text-sm bg-white">
-            <thead class="bg-slate-100">
-              <tr>
-                <th class="p-3 text-left">तारीख</th>
-                <th class="p-3 text-left">प्रकार</th>
-                <th class="p-3 text-left">एजंट</th>
-                <th class="p-3 text-left">खाते क्र.</th>
-                <th class="p-3 text-right">रक्कम</th>
-                <th class="p-3 text-right">खाती</th>
-              </tr>
-            </thead>
-            <tbody id="reportTableBody"></tbody>
-          </table>
-        </div>
+        <div id="rF" class="vs"></div>
       </div>
-
-      <div class="card">
-        <h3 class="text-xl font-extrabold text-slate-800 mb-5">खर्चाचा प्रकारानुसार विश्लेषण</h3>
-        <p class="text-slate-600 text-sm mb-4">आजच्या तारखेतील खर्चाच्या प्रकारानुसार वर्गीकरण</p>
-        <div class="flex justify-center">
-            <canvas id="expenseChart" class="max-w-md"></canvas>
-        </div>
+    </div>
+    <div class="ecol" style="border-top:4px solid #dc2626">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <b style="color:#991b1b;font-size:13px">🧾 खर्च तपशील</b>
+        <button class="btn btn-red btn-sm" onclick="ae()">+ जोडा</button>
       </div>
-
-    </section>
-
-    <section id="entrySection" class="hidden-section space-y-8">
-      <div class="card">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-          <div>
-            <h2 class="text-3xl font-extrabold text-slate-800">नवीन जमा नोंद</h2>
-            <p class="text-slate-600 mt-1">आजचे आलेले Pigmy / RD / FD, खर्च आणि बँक बॅलेन्स नोंदवा</p>
-          </div>
-          <button class="btn btn-slate" onclick="resetEntryForm()"><i class="fa-solid fa-eraser"></i>रीसेट करा</button>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-          <div>
-            <label class="text-sm font-semibold text-slate-700 mb-1 block">आजचा दिनांक</label>
-            <input id="entryDate" type="date" class="input" onchange="onEntryDateChange()" />
-          </div>
-          <div>
-            <label class="text-sm font-semibold text-slate-700 mb-1 block">Opening बँक बॅलेन्स</label>
-            <input id="openingBalance" type="number" class="input" placeholder="0" oninput="recalculateEntry()" />
-          </div>
-          <div>
-            <label class="text-sm font-semibold text-slate-700 mb-1 block">सिस्टीम नुसार बँक बॅलेन्स</label>
-            <input id="systemBalance" type="number" class="input bg-slate-100 cursor-not-allowed" readonly />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div class="card p-5 border border-green-300">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-extrabold text-green-700">आजचे आलेले पिग्मी नोंद</h3>
-              <button class="btn btn-green !py-2 !px-3" onclick="addCollectionRow('PIGMY')"><i class="fa-solid fa-plus"></i></button>
-            </div>
-            <div id="pigmyRows" class="space-y-4"></div>
-          </div>
-          <div class="card p-5 border border-cyan-300">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-extrabold text-cyan-700">आजचे आलेले आर डी नोंद</h3>
-              <button class="btn btn-primary !py-2 !px-3" onclick="addCollectionRow('RD')"><i class="fa-solid fa-plus"></i></button>
-            </div>
-            <div id="rdRows" class="space-y-4"></div>
-          </div>
-          <div class="card p-5 border border-blue-300">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-extrabold text-blue-700">आजचे आलेले एफ डी नोंद</h3>
-              <button class="btn btn-primary !py-2 !px-3" onclick="addCollectionRow('FD')"><i class="fa-solid fa-plus"></i></button>
-            </div>
-            <div id="fdRows" class="space-y-4"></div>
-          </div>
-        </div>
-
-        <div class="card p-5 border border-red-300 mt-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-extrabold text-red-700">आजचे इतर झालेले खर्च तपशील</h3>
-            <button class="btn btn-red !py-2 !px-3" onclick="addExpenseRow()"><i class="fa-solid fa-plus"></i></button>
-          </div>
-          <div id="expenseRows" class="space-y-4"></div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-5 mt-6">
-          <div>
-            <label class="text-sm font-semibold text-slate-700 mb-1 block">आजचे एकूण जमा</label>
-            <input id="totalCollection" type="number" class="input bg-slate-100 cursor-not-allowed" readonly />
-          </div>
-          <div>
-            <label class="text-sm font-semibold text-slate-700 mb-1 block">आजचा एकूण खर्च</label>
-            <input id="totalExpense" type="number" class="input bg-slate-100 cursor-not-allowed" readonly />
-          </div>
-          <div>
-            <label class="text-sm font-semibold text-slate-700 mb-1 block">सिस्टीम फरक</label>
-            <input id="balanceDifference" type="number" class="input bg-slate-100 cursor-not-allowed" readonly />
-          </div>
-          <div>
-            <label class="text-sm font-semibold text-slate-700 mb-1 block">आजचा एकुण बॅंक बॅंलेन्स</label>
-            <input id="actualBankBalance" type="number" class="input" placeholder="Actual bank balance" oninput="recalculateEntry()" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-4">
-          <div>
-            <label class="text-sm font-semibold text-slate-700 mb-1 block">मॅच स्टेटस</label>
-            <div id="entryMatchStatus" class="input bg-slate-100 flex items-center justify-center cursor-not-allowed">N/A</div>
-          </div>
-          <div>
-            <label class="text-sm font-semibold text-slate-700 mb-1 block">मॅच नसेल तर फरक का कारण नोंदवा</label>
-            <input id="mismatchReason" type="text" class="input" placeholder="फरक असल्यास कारण (उदा. चेक क्लिअर झाला नाही)" />
-          </div>
-        </div>
-
-        <div class="mt-8 flex flex-col md:flex-row gap-4">
-          <button class="btn btn-green flex-1" onclick="submitDailyEntry()"><i class="fa-solid fa-floppy-disk"></i>डेटा सेव्ह करा</button>
-          <button class="btn btn-slate flex-1" onclick="showSection('dashboardSection'); loadDashboard();"><i class="fa-solid fa-arrow-left"></i>डॅशबोर्डवर परत जा</button>
-        </div>
+      <div id="rE" class="vs"></div>
+    </div>
+    <div class="ga">
+      <div><label class="lbl">एकूण जमा</label><input id="eTc" type="number" class="inp inpro" readonly/></div>
+      <div><label class="lbl">एकूण खर्च</label><input id="eTe" type="number" class="inp inpro" readonly/></div>
+      <div><label class="lbl">फरक</label><input id="eDf" type="number" class="inp inpro" readonly/></div>
+      <div><label class="lbl">जुळणी स्थिती</label><div id="eMt" class="inp inpro" style="display:flex;align-items:center;min-height:42px">N/A</div></div>
+    </div>
+    <div class="g2">
+      <div><label class="lbl">जुळणी नसल्यास कारण</label><textarea id="eMi" class="inp" rows="3" placeholder="फरक असल्यास कारण लिहा..."></textarea></div>
+      <div class="card" style="background:#f8faff;border:none;padding:14px;font-size:12px;color:var(--mu);line-height:2">
+        <b style="color:#1d4ed8;display:block;margin-bottom:6px">💡 त्वरित तपासणी</b>
+        Opening + जमा − खर्च = System शिल्लक<br/>
+        प्रत्यक्ष ≠ System → कारण नोंदवा<br/>
+        सेव्ह केल्यावर पुढील Opening आपोआप
       </div>
-    </section>
-  </main>
+    </div>
+    <div class="ss">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <button class="btn btn-green" onclick="sub()">💾 सेव्ह करा</button>
+        <button class="btn btn-ghost" onclick="prv()">👁 Preview</button>
+        <button class="btn btn-pale" onclick="goTab('d');loadData(true)">← डॅशबोर्ड</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
-// --- Configuration Constants ---
-const API_URL = 'https://script.google.com/macros/s/AKfycbwmcynapxv_Y5o7-dKjGExxkGSX2iJ6u-mLDU9UX9d5w2fm5HMS3-UyJ_yzjy6I0SU/exec'; // ** Update this URL to your Google Apps Script URL **
-const MATCH_THRESHOLD = 0.01; // Allow for minor floating point inaccuracies
+var API = 'https://script.google.com/macros/s/AKfycbzVUEN3WqOevswOOD5Ag7M59rB1VcYX9_NGqGtUq8vFiuFdfXG0tRc-Rfz0C8Tbq8E/exec';
+var LK = 'pv11', MT = 60000, LT = 300000;
 
-// --- Global Application State ---
-let appState = {
-  settings: { agentNames: [], collectionTypes: [] },
-  dashboardData: null,
-  reportData: null,
-  charts: { product: null, agent: null, dailyTrend: null, expense: null }
-};
+function G(i) { return document.getElementById(i); }
+function td() { var d = new Date(); return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate()); }
+function z(n) { return String(n).padStart(2,'0'); }
+function num(v) { if(v==null||v==='')return 0; var n=Number(String(v).replace(/,/g,'')); return isFinite(n)?n:0; }
+function rupee(v) { return '₹'+num(v).toLocaleString('en-IN'); }
+function esc(s) {
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+}
+function dbn(fn,ms){var t;return function(){clearTimeout(t);t=setTimeout(fn,ms||300);};}
 
-// --- Utility Functions ---
-function qs(id){ return document.getElementById(id); }
-function showLoader(){ qs('loader').style.display='flex'; }
-function hideLoader(){ qs('loader').style.display='none'; }
-function showSection(id){
-  // Hide mobile nav if open
-  qs('mobileNav').classList.add('hidden');
-  ['dashboardSection','entrySection'].forEach(sec=>qs(sec).classList.add('hidden-section'));
-  qs(id).classList.remove('hidden-section');
-}
-function toggleMobileNav(){
-  qs('mobileNav').classList.toggle('hidden');
-}
-function todayStr(){
-  const d = new Date();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const day = String(d.getDate()).padStart(2,'0');
-  return `${d.getFullYear()}-${m}-${day}`;
-}
-function money(v){
-  return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(Number(v||0));
-}
-function escapeHtml(str){
-  return String(str||'').replace(/[&<>'"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
-}
-function safeFetch(url, options){
-  // Add a timestamp to prevent caching issues, especially with Google Apps Script
-  return fetch(url + (url.includes('?') ? '&' : '?') + '_ts=' + Date.now(), options);
+function nd(v) {
+  if(!v) return '';
+  if(typeof v==='number'&&Math.abs(v)<150000){
+    var e=new Date(Date.UTC(1899,11,30)); e.setUTCDate(e.getUTCDate()+Math.round(v));
+    return e.getUTCFullYear()+'-'+z(e.getUTCMonth()+1)+'-'+z(e.getUTCDate());
+  }
+  var s=String(v).trim();
+  if(/^\d{4}-\d{2}-\d{2}T/.test(s)){var d=new Date(s);return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());}
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){var p=s.split('/');return p[2]+'-'+p[1]+'-'+p[0];}
+  var d2=new Date(s); if(isNaN(d2)) return s.slice(0,10);
+  return d2.getFullYear()+'-'+z(d2.getMonth()+1)+'-'+z(d2.getDate());
 }
 
-// Debounce function for input events (e.g., search box)
-function debounce(func, delay) {
-  let timeout;
-  return function(...args) {
-    const context = this;
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(context, args), delay);
+var S={ag:[],data:null,raw:null,ch:{},mem:new Map()};
+var _tt;
+function toast(m,t,ms){var el=G('tst');el.textContent=m;el.className='tst on'+(t==='ok'?' ok':t==='er'?' er':'');clearTimeout(_tt);_tt=setTimeout(function(){el.classList.remove('on');},ms||2800);}
+function hideLdr(){G('ldr').classList.remove('on');}
+
+function lsG(k){try{var r=localStorage.getItem(LK+k);if(!r)return null;var o=JSON.parse(r);if(Date.now()-o.ts>LT){localStorage.removeItem(LK+k);return null;}return o.d;}catch(e){return null;}}
+function lsS(k,d){try{localStorage.setItem(LK+k,JSON.stringify({ts:Date.now(),d:d}));}catch(e){}}
+function clr(){S.mem.clear();try{Object.keys(localStorage).filter(function(k){return k.indexOf(LK)===0;}).forEach(function(k){localStorage.removeItem(k);});}catch(e){}}
+
+async function apf(url,force){
+  var ck=url.replace(API,''),now=Date.now();
+  var m=S.mem.get(ck);
+  if(!force&&m&&now-m.ts<MT) return m.d;
+  if(!force){var ls=lsG(ck);if(ls){S.mem.set(ck,{ts:now,d:ls});return ls;}}
+  var res=await fetch(url+(url.indexOf('?')>=0?'&':'?')+'_t='+now);
+  var txt=await res.text(); var data;
+  try{data=JSON.parse(txt);}catch(e){throw new Error('Parse error: '+txt.slice(0,100));}
+  S.mem.set(ck,{ts:now,d:data}); lsS(ck,data); return data;
+}
+
+function goTab(t){G('secDash').classList.toggle('gone',t!=='d');G('secEntry').classList.toggle('gone',t!=='e');G('navD').classList.toggle('act',t==='d');G('navE').classList.toggle('act',t==='e');}
+function toggleMob(){G('mobMenu').classList.toggle('op');}
+function closeMob(){G('mobMenu').classList.remove('op');}
+
+function setQ(days){
+  var to=new Date(),from=new Date();from.setDate(from.getDate()-days);
+  function f(d){return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());}
+  G('fromDate').value=f(from); G('toDate').value=f(to); loadData(true);
+}
+
+async function loadData(force){
+  var from=G('fromDate').value||td(), to=G('toDate').value||td();
+  G('rb').innerHTML='⏳ लोड होत आहे...';
+  try{
+    var ps=await Promise.all([
+      apf(API+'?action=dashboard',force),
+      apf(API+'?action=report&fromDate='+encodeURIComponent(from)+'&toDate='+encodeURIComponent(to)+'&search=',force)
+    ]);
+    var st=ps[0],rp=ps[1];
+    if(st&&st.status!=='error'){S.ag=(st.settings&&st.settings.agentNames)||[];popSel();}
+    if(rp.status==='error') throw new Error(rp.message||'Report error');
+    S.raw=rp; S.data=agg(rp); rall(from,to);
+  }catch(e){
+    console.error(e); toast('❌ '+e.message,'er',5000); G('rb').innerHTML='⚠ त्रुटी';
+  }finally{hideLdr();}
+}
+
+function agg(rp){
+  var ac=rp.collections||[];
+  var rows=ac.map(function(r){return{date:nd(r[0]),type:String(r[1]||'').toUpperCase().trim(),agent:String(r[2]||'').trim(),accountNo:String(r[3]||'').trim(),customer:String(r[4]||'').trim(),amount:num(r[5]),count:num(r[6])};});
+  var ex=(rp.expenses||[]).map(function(r){return{date:nd(r[0]),type:String(r[1]||'').trim(),amount:num(r[2]),note:String(r[3]||'').trim()};});
+  var sm=rp.summaries||[];
+  var sr=sm.filter(function(r){return /\d{4}/.test(String(r[0]||''))||(typeof r[0]==='number'&&r[0]>40000);})[0]||sm[0]||[];
+  function s(a,k){return a.reduce(function(t,r){return t+r[k];},0);}
+  var pR=rows.filter(function(r){return r.type==='PIGMY';}),rR=rows.filter(function(r){return r.type==='RD';}),fR=rows.filter(function(r){return r.type==='FD';});
+  var pA=s(pR,'amount'),pC=s(pR,'count'),rA=s(rR,'amount'),rC=s(rR,'count'),fA=s(fR,'amount'),fC=s(fR,'count'),tC=s(rows,'amount'),tE=s(ex,'amount'),op=num(sr[1]);
+  var pw={},ag={};
+  rows.forEach(function(r){
+    var t=r.type||'OTHER',a=r.agent||'-';
+    if(!pw[t])pw[t]={type:t,amount:0,count:0}; pw[t].amount+=r.amount; pw[t].count+=r.count;
+    if(!ag[a])ag[a]={agent:a,totalAmount:0,totalCount:0,PIGMY:0,RD:0,FD:0};
+    ag[a].totalAmount+=r.amount; ag[a].totalCount+=r.count;
+    if(['PIGMY','RD','FD'].indexOf(t)>=0) ag[a][t]+=r.amount;
+  });
+  return{
+    totals:{pigmyAmount:pA,pigmyCount:pC,rdAmount:rA,rdCount:rC,fdAmount:fA,fdCount:fC,totalCollection:tC,totalExpense:tE,openingBalance:op,systemBalance:num(sr[10])||(op+tC-tE),actualBankBalance:num(sr[11]),difference:num(sr[12]),matchStatus:sr[13]||(Math.abs(num(sr[12]))<0.01?'YES':'NO'),mismatchReason:sr[14]||''},
+    rows:rows,expenses:ex,productWise:Object.values(pw),agentWise:Object.values(ag).sort(function(a,b){return b.totalAmount-a.totalAmount;})
   };
 }
 
-// --- Initial Setup ---
-async function init(){
-  const today = todayStr();
-  qs('dashboardDate').value = today;
-  qs('fromDate').value = today.slice(0,8) + '01'; // Default to start of current month
-  qs('toDate').value = today;
-  qs('entryDate').value = today;
+var KP=[
+  {k:'pigmyAmount', s:'pigmyCount', l:'PIGMY जमा',            c:'kg',m:'pigmy',i:'🐷'},
+  {k:'rdAmount',    s:'rdCount',    l:'RD जमा',               c:'kb',m:'rd',   i:'📈'},
+  {k:'fdAmount',    s:'fdCount',    l:'FD जमा',               c:'kv',m:'fd',   i:'🏦'},
+  {k:'totalCollection',s:null,      l:'एकूण जमा रक्कम',       c:'kt',m:'all',  i:'💰'},
+  {k:'totalExpense',s:null,         l:'एकूण खर्च',            c:'kr',m:'exp',  i:'🧾'},
+  {k:'openingBalance',s:null,       l:'Opening शिल्लक',        c:'ks',m:'sum',  i:'🏁'},
+  {k:'systemBalance',s:null,        l:'System शिल्लक',         c:'ka',m:'sum',  i:'🖥️'},
+  {k:'actualBankBalance',s:null,    l:'प्रत्यक्ष बँक शिल्लक', c:'ko',m:'sum',  i:'🏧'},
+  {k:'difference',  s:null,         l:'फरक (जुळणी)',           c:'kx',m:'sum',  i:'⚖️'},
+];
 
-  // Add initial collection/expense rows
-  addCollectionRow('PIGMY');
-  addCollectionRow('RD');
-  addCollectionRow('FD');
-  addExpenseRow();
-
-  // Load initial data for dashboard and entry section
-  await loadDashboard();
-  await onEntryDateChange(); // Load opening balance for today
+function rall(from,to){
+  var d=S.data;if(!d)return;
+  var t=d.totals,is1=(from===to),rl=is1?from:from+' ते '+to;
+  G('rb').innerHTML='📅 '+esc(rl)+'&nbsp;|&nbsp;'+d.rows.length+' नोंदी';
+  G('kpiGrid').innerHTML=KP.map(function(k){
+    var v=rupee(t[k.k]||0);
+    var sb=k.s?'<div class="kpi-sub">खाती: '+(t[k.s]||0)+'</div>':'';
+    return '<button class="kpi '+k.c+'" onclick="omo(\''+k.m+'\',\''+esc(k.l)+'\')">'
+      +'<span class="kpi-ic">'+k.i+'</span>'
+      +'<div class="kpi-val">'+v+'</div>'
+      +'<div class="kpi-lbl">'+k.l+'</div>'
+      +sb+'<div class="kpi-tag">तपशील ↗</div></button>';
+  }).join('');
+  var ms=t.matchStatus||'N/A';
+  G('sb').innerHTML=ms==='YES'?'<span class="pill pp">✓ जुळणी झाली</span>':ms==='NO'?'<span class="pill pr">⚠ जुळणी नाही</span>':'<span class="pill pa">N/A</span>';
+  var sf=[['कालावधी',rl],['Opening शिल्लक',rupee(t.openingBalance)],['PIGMY खाती',t.pigmyCount],['PIGMY रक्कम',rupee(t.pigmyAmount)],['RD खाती',t.rdCount],['RD रक्कम',rupee(t.rdAmount)],['FD खाती',t.fdCount],['FD रक्कम',rupee(t.fdAmount)],['एकूण जमा',rupee(t.totalCollection)],['एकूण खर्च',rupee(t.totalExpense)],['System शिल्लक',rupee(t.systemBalance)],['प्रत्यक्ष शिल्लक',rupee(t.actualBankBalance)],['फरक',rupee(t.difference)],['जुळणी नाही कारण',t.mismatchReason||'-']];
+  G('sg').innerHTML=sf.map(function(x){return'<div style="background:#f5f8ff;border:1px solid var(--b);border-radius:12px;padding:12px"><div style="font-size:10px;font-weight:800;color:var(--mu);text-transform:uppercase">'+esc(x[0])+'</div><div style="font-size:13px;font-weight:800;margin-top:4px">'+esc(String(x[1]))+'</div></div>';}).join('');
+  rc2(); ra(); rcharts();
 }
 
-// --- API Interaction ---
-async function getJson(url){
-  const res = await safeFetch(url);
-  if (!res.ok) {
-    throw new Error(`HTTP error! Status: ${res.status}`);
-  }
-  const text = await res.text();
-  try { return JSON.parse(text); } catch(e) { throw new Error('Invalid JSON response: ' + text.slice(0,500)); }
-}
-
-// --- Dashboard Functions ---
-async function loadDashboard(){
-  showLoader();
-  try {
-    // Fetch all dashboard data in one go for efficiency
-    const fromDate = qs('fromDate').value;
-    const toDate = qs('toDate').value;
-    const dashboardDate = qs('dashboardDate').value; // For today's summary
-
-    const data = await getJson(`${API_URL}?action=dashboard&dashboardDate=${encodeURIComponent(dashboardDate)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`);
-    
-    if(data.status === 'error') throw new Error(data.message || 'डॅशबोर्ड डेटा लोड करताना त्रुटी.');
-    
-    appState.dashboardData = data;
-    appState.settings = data.settings || {agentNames:[], collectionTypes:[]};
-    
-    renderDashboard(data);
-    populateAgentDropdowns();
-    renderDailyTrendChart(); // Render daily trend based on the fetched report data
-    renderExpenseChart(); // Render expense chart
-    // No need to call loadReports here if dashboard data already includes report data
-  } catch(err) {
-    console.error("Dashboard Load Error:", err);
-    Swal.fire('त्रुटी', `डॅशबोर्ड लोड करताना समस्या आली: ${err.message}`, 'error');
-  } finally {
-    hideLoader();
-  }
-}
-
-function renderDashboard(data){
-  const s = data.todaySummary || {};
-  qs('kpiPigmy').textContent = money(s.pigmyAmount || 0);
-  qs('kpiRd').textContent = money(s.rdAmount || 0);
-  qs('kpiFd').textContent = money(s.fdAmount || 0);
-  qs('kpiTotalCollection').textContent = money(s.totalCollection || 0);
-  qs('kpiExpense').textContent = money(s.totalExpense || 0);
-  qs('kpiSystem').textContent = money(s.systemBalance || 0);
-  qs('kpiActual').textContent = money(s.actualBankBalance || 0);
-
-  const matchStatus = s.matchStatus;
-  let matchPill = '';
-  if (matchStatus === 'MATCH') {
-    matchPill = `<span class="pill pill-green"><i class="fa-solid fa-check-circle mr-1"></i>MATCH</span>`;
-  } else if (matchStatus === 'MISMATCH') {
-    matchPill = `<span class="pill pill-red"><i class="fa-solid fa-times-circle mr-1"></i>MISMATCH</span>`;
-  } else {
-    matchPill = `<span class="pill pill-orange"><i class="fa-solid fa-question-circle mr-1"></i>N/A</span>`;
-  }
-  qs('kpiMatch').innerHTML = matchPill;
-
-  const summaryPairs = [
-    ['दिनांक', s.date || data.today || '-'],
-    ['Opening Balance', money(s.openingBalance || 0)],
-    ['Pigmy Count', s.pigmyCount || 0],
-    ['Pigmy Amount', money(s.pigmyAmount || 0)],
-    ['RD Count', s.rdCount || 0],
-    ['RD Amount', money(s.rdAmount || 0)],
-    ['FD Count', s.fdCount || 0],
-    ['FD Amount', money(s.fdAmount || 0)],
-    ['Total Collection', money(s.totalCollection || 0)],
-    ['Total Expense', money(s.totalExpense || 0)],
-    ['System Balance', money(s.systemBalance || 0)],
-    ['Actual Balance', money(s.actualBankBalance || 0)],
-    ['Difference', money(s.difference || 0)],
-    ['Mismatch Reason', s.mismatchReason || '-']
-  ];
-  qs('summaryBox').innerHTML = summaryPairs.map(([k,v]) => `<div class="bg-slate-50 rounded-xl p-3"><div class="text-slate-500 text-xs">${k}</div><div class="font-bold text-base">${v}</div></div>`).join('');
-
-  renderCollectionTable();
-  renderAgentSummary();
-  renderProductAndAgentCharts();
-}
-
-function renderCollectionTable(){
-  const todayDate = qs('dashboardDate').value;
-  const allCollections = appState.dashboardData?.collectionDetails || [];
-  const todayCollections = allCollections.filter(c => c.date === todayDate);
-
-  const rows = todayCollections.filter(row => {
-    const q = qs('searchBox').value.trim().toLowerCase();
-    if(!q) return true;
-    return String(row.agent||'').toLowerCase().includes(q) || String(row.accountNo||'').toLowerCase().includes(q) || String(row.type||'').toLowerCase().includes(q);
+function rc2(){
+  var q=G('srchBox').value.trim().toLowerCase(),tp=G('tFilt').value;
+  var rows=(S.data&&S.data.rows||[]).filter(function(r){
+    if(tp!=='ALL'&&r.type!==tp)return false;
+    if(!q)return true;
+    return[r.agent,r.type,r.accountNo,r.customer].some(function(v){return String(v||'').toLowerCase().indexOf(q)>=0;});
   });
-  qs('collectionTableBody').innerHTML = rows.length ? rows.map(r => `
-    <tr class="border-t border-slate-100">
-      <td class="p-3">${escapeHtml(r.date)}</td>
-      <td class="p-3"><span class="pill ${r.type === 'PIGMY' ? 'pill-green' : r.type === 'RD' ? 'pill-orange' : 'pill-primary'}">${escapeHtml(r.type)}</span></td>
-      <td class="p-3">${escapeHtml(r.agent)}</td>
-      <td class="p-3">${escapeHtml(r.accountCount)}</td>
-      <td class="p-3 text-right font-bold">${money(r.amount)}</td>
-    </tr>`).join('') : `<tr><td colspan="5" class="p-4 text-center text-slate-500">आजसाठी कोणताही कलेक्शन डेटा उपलब्ध नाही.</td></tr>`;
+  var html=rows.map(function(r){
+    var pc=r.type==='PIGMY'?'pp':r.type==='RD'?'pbb':'pa';
+    return'<tr><td>'+esc(r.date)+'</td><td><span class="pill '+pc+'">'+esc(r.type)+'</span></td><td class="ttb">'+esc(r.agent||'-')+'</td><td>'+esc(r.accountNo||'-')+'</td><td class="ttr">'+(r.count||0)+'</td><td class="ttr ttb">'+rupee(r.amount)+'</td></tr>';
+  }).join('');
+  if(rows.length){var tA=rows.reduce(function(a,b){return a+b.amount;},0),tN=rows.reduce(function(a,b){return a+b.count;},0);html+='<tr style="background:#f0fdf4;font-weight:900"><td colspan="4" style="color:#065f46">एकूण</td><td class="ttr">'+tN+'</td><td class="ttr">'+rupee(tA)+'</td></tr>';}
+  G('tbC').innerHTML=html||'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--mu)">डेटा उपलब्ध नाही</td></tr>';
 }
 
-function renderAgentSummary(){
-  const rows = appState.dashboardData?.agentWise || [];
-  qs('agentSummaryBody').innerHTML = rows.length ? rows.map(r => `
-    <tr class="border-t border-slate-100">
-      <td class="p-3 font-semibold">${escapeHtml(r.agent)}</td>
-      <td class="p-3 text-right">${r.totalCount || 0}</td>
-      <td class="p-3 text-right font-bold">${money(r.totalAmount)}</td>
-      <td class="p-3 text-right">${money(r.PIGMY)}</td>
-      <td class="p-3 text-right">${money(r.RD)}</td>
-      <td class="p-3 text-right">${money(r.FD)}</td>
-    </tr>`).join('') : `<tr><td colspan="6" class="p-4 text-center text-slate-500">एजंट सारांश डेटा उपलब्ध नाही.</td></tr>`;
+function ra(){
+  var rows=(S.data&&S.data.agentWise)||[];
+  G('tbA').innerHTML=rows.length?rows.map(function(r){return'<tr><td class="ttb">'+esc(r.agent)+'</td><td class="ttr">'+(r.totalCount||0)+'</td><td class="ttr ttb" style="color:#1d4ed8">'+rupee(r.totalAmount)+'</td><td class="ttr" style="color:#059669">'+rupee(r.PIGMY)+'</td><td class="ttr">'+rupee(r.RD)+'</td><td class="ttr">'+rupee(r.FD)+'</td></tr>';}).join(''):'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--mu)">डेटा उपलब्ध नाही</td></tr>';
 }
 
-function renderProductAndAgentCharts(){
-  const prod = appState.dashboardData?.productWise || [];
-  const agent = appState.dashboardData?.agentWise || [];
+var CL=['#059669','#1d4ed8','#7c3aed','#d97706','#dc2626','#0891b2','#ea580c','#6366f1'];
+function mc(id,cfg){if(S.ch[id])S.ch[id].destroy();S.ch[id]=new Chart(G(id).getContext('2d'),cfg);}
+function co(x){return Object.assign({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},animation:{duration:380}},x||{});}
 
-  if(appState.charts.product) appState.charts.product.destroy();
-  if(appState.charts.agent) appState.charts.agent.destroy();
-
-  appState.charts.product = new Chart(qs('productChart').getContext('2d'), {
-    type:'bar',
-    data:{ 
-      labels: prod.map(x=>x.type), 
-      datasets:[{ 
-        label:'रक्कम', 
-        data: prod.map(x=>Number(x.amount||0)),
-        backgroundColor: ['#10b981', '#0ea5e9', '#6366f1'], // Custom colors
-        borderRadius: 6
-      }] 
-    },
-    options:{ 
-      responsive:true, 
-      maintainAspectRatio:false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: function(context) { return money(context.raw); } } }
-      },
-      scales: {
-        y: { beginAtZero: true, ticks: { callback: function(value) { return money(value); } } }
-      }
-    }
-  });
-
-  appState.charts.agent = new Chart(qs('agentChart').getContext('2d'), {
-    type:'bar',
-    data:{ 
-      labels: agent.map(x=>x.agent), 
-      datasets:[{ 
-        label:'रक्कम', 
-        data: agent.map(x=>Number(x.totalAmount||0)),
-        backgroundColor: '#a855f7',
-        borderRadius: 6
-      }] 
-    },
-    options:{ 
-      responsive:true, 
-      maintainAspectRatio:false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: function(context) { return money(context.raw); } } }
-      },
-      scales: {
-        y: { beginAtZero: true, ticks: { callback: function(value) { return money(value); } } }
-      }
-    }
-  });
+function rcharts(){
+  if(typeof Chart==='undefined'){setTimeout(function(){S.data&&rcharts();},800);return;}
+  var pw=(S.data&&S.data.productWise)||[],aw=((S.data&&S.data.agentWise)||[]).slice(0,10),ex=(S.data&&S.data.expenses)||[];
+  var eM={};ex.forEach(function(x){var k=x.type||'इतर';eM[k]=(eM[k]||0)+num(x.amount);});
+  mc('cPie',{type:'pie',data:{labels:pw.map(function(x){return x.type;}),datasets:[{data:pw.map(function(x){return x.amount;}),backgroundColor:CL.slice(0,pw.length),borderWidth:3,borderColor:'#fff',hoverOffset:8}]},options:Object.assign(co(),{plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:11,padding:9,font:{size:11}}}}})});
+  mc('cBar',{type:'bar',data:{labels:pw.map(function(x){return x.type;}),datasets:[{data:pw.map(function(x){return x.count;}),backgroundColor:CL.slice(0,pw.length),borderRadius:9,borderSkipped:false}]},options:co({scales:{x:{grid:{display:false}},y:{grid:{color:'#f1f5fb'}}}})});
+  var eL=Object.keys(eM),eV=Object.values(eM);
+  mc('cExp',{type:'doughnut',data:{labels:eL.length?eL:['खर्च नाही'],datasets:[{data:eV.length?eV:[1],backgroundColor:eL.length?CL:['#e2e8f0'],borderWidth:3,borderColor:'#fff'}]},options:Object.assign(co({cutout:'60%'}),{plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:11,padding:8,font:{size:11}}}}})});
+  mc('cAgA',{type:'bar',data:{labels:aw.map(function(x){return x.agent;}),datasets:[{data:aw.map(function(x){return x.totalAmount;}),backgroundColor:'rgba(29,78,216,.75)',borderRadius:7,borderSkipped:false}]},options:co({indexAxis:'y',scales:{x:{grid:{color:'#f1f5fb'},ticks:{callback:function(v){return rupee(v);}}},y:{grid:{display:false},ticks:{font:{size:11}}}}})});
+  mc('cAgC',{type:'bar',data:{labels:aw.map(function(x){return x.agent;}),datasets:[{data:aw.map(function(x){return x.totalCount;}),backgroundColor:'rgba(5,150,105,.72)',borderRadius:7,borderSkipped:false}]},options:co({indexAxis:'y',scales:{x:{grid:{color:'#f1f5fb'}},y:{grid:{display:false},ticks:{font:{size:11}}}}})});
 }
 
-function renderDailyTrendChart(){
-    if (appState.charts.dailyTrend) appState.charts.dailyTrend.destroy();
-
-    const dailyCollections = appState.dashboardData?.dailyCollectionTrend || [];
-    const labels = dailyCollections.map(d => d.date);
-    const data = dailyCollections.map(d => Number(d.totalCollection || 0));
-
-    appState.charts.dailyTrend = new Chart(qs('dailyTrendChart').getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'एकूण जमा रक्कम',
-                data: data,
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37,99,235,0.1)',
-                fill: true,
-                tension: 0.3,
-                pointBackgroundColor: '#2563eb',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: '#2563eb',
-                pointRadius: 5,
-                pointHoverRadius: 7
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': ' + money(context.raw); } } }
-            },
-            scales: {
-                x: {
-                    grid: { display: false }
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: { callback: function(value) { return money(value); } },
-                    grid: { borderDash: [5, 5] }
-                }
-            }
-        }
-    });
-}
-
-function renderExpenseChart(){
-    if (appState.charts.expense) appState.charts.expense.destroy();
-
-    const todayDate = qs('dashboardDate').value;
-    const allExpenses = appState.dashboardData?.expenseDetails || [];
-    const todayExpenses = allExpenses.filter(e => e.date === todayDate);
-
-    // Aggregate expenses by type
-    const expenseMap = new Map();
-    todayExpenses.forEach(exp => {
-        const type = exp.type || 'इतर खर्च';
-        expenseMap.set(type, (expenseMap.get(type) || 0) + Number(exp.amount || 0));
-    });
-
-    const labels = Array.from(expenseMap.keys());
-    const data = Array.from(expenseMap.values());
-
-    if (labels.length === 0) {
-        qs('expenseChart').style.display = 'none';
-        // Can add a message if no expenses
-        return;
-    } else {
-        qs('expenseChart').style.display = 'block';
-    }
-
-    const colors = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6', '#a3a3a3'];
-
-    appState.charts.expense = new Chart(qs('expenseChart').getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'खर्चाची रक्कम',
-                data: data,
-                backgroundColor: colors.slice(0, labels.length),
-                hoverOffset: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        font: { size: 12 },
-                        boxWidth: 20,
-                        padding: 15
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.label || '';
-                            if (label) label += ': ';
-                            if (context.raw !== null) label += money(context.raw);
-                            return label;
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-
-async function showKpiDetails(kpiType){
-  const todayDate = qs('dashboardDate').value;
-  let filteredDetails = [];
-  let title = '';
-
-  if (kpiType === 'EXPENSE') {
-    title = 'आजचे खर्च तपशील';
-    filteredDetails = (appState.dashboardData?.expenseDetails || []).filter(e => e.date === todayDate);
-    if (filteredDetails.length === 0) {
-      Swal.fire('माहिती', 'आज कोणताही खर्च नोंदवला नाही.', 'info');
-      return;
-    }
-    const tableContent = `
-      <div class="table-wrap rounded-xl overflow-hidden border border-slate-200 mt-4">
-        <table class="min-w-full text-sm bg-white">
-          <thead class="bg-slate-100 text-slate-700">
-            <tr>
-              <th class="p-3 text-left">प्रकार</th>
-              <th class="p-3 text-right">रक्कम (₹)</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${filteredDetails.map(d => `
-              <tr class="border-t border-slate-100">
-                <td class="p-3">${escapeHtml(d.type || 'इतर')}</td>
-                <td class="p-3 text-right font-bold">${money(d.amount)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
-    Swal.fire({
-      title: title,
-      html: tableContent,
-      width: 600,
-      showCloseButton: true,
-      showConfirmButton: false,
-      customClass: {
-        container: 'swal-wide'
-      }
-    });
-    return;
+function omo(kind,title){
+  var d=S.data||{totals:{},expenses:[],agentWise:[],rows:[]},t=d.totals;
+  var from=G('fromDate').value||td(),to=G('toDate').value||td();
+  G('mtt').textContent=title||'तपशील'; G('mts').textContent=(from===to?from:from+' ते '+to);
+  var html='';
+  if(['pigmy','rd','fd','all'].indexOf(kind)>=0){
+    var tf={pigmy:'PIGMY',rd:'RD',fd:'FD',all:'ALL'}[kind];
+    var fil=tf==='ALL'?d.rows:d.rows.filter(function(r){return r.type===tf;});
+    var tot=fil.reduce(function(a,b){return a+b.amount;},0),totC=fil.reduce(function(a,b){return a+b.count;},0);
+    html='<div class="mst"><div class="ms"><div class="sl">नोंदी</div><div class="sv">'+fil.length+'</div></div><div class="ms"><div class="sl">एकूण खाती</div><div class="sv">'+totC+'</div></div><div class="ms"><div class="sl">एकूण रक्कम</div><div class="sv" style="color:#1d4ed8">'+rupee(tot)+'</div></div></div>'
+      +'<div class="tw"><table><thead><tr><th>तारीख</th><th>प्रकार</th><th>एजंट नाव</th><th>खाते क्र.</th><th class="ttr">No of Accounts</th><th class="ttr">रक्कम</th></tr></thead><tbody>'
+      +fil.map(function(r){var pc=r.type==='PIGMY'?'pp':r.type==='RD'?'pbb':'pa';return'<tr><td>'+esc(r.date)+'</td><td><span class="pill '+pc+'">'+esc(r.type)+'</span></td><td class="ttb">'+esc(r.agent||'-')+'</td><td>'+esc(r.accountNo||'-')+'</td><td class="ttr">'+(r.count||0)+'</td><td class="ttr ttb">'+rupee(r.amount)+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+  }else if(kind==='agent'){
+    html='<div class="mst"><div class="ms"><div class="sl">एजंट</div><div class="sv">'+d.agentWise.length+'</div></div><div class="ms"><div class="sl">एकूण संकलन</div><div class="sv" style="color:#1d4ed8">'+rupee(t.totalCollection)+'</div></div></div>'
+      +'<div class="tw"><table><thead><tr><th>एजंट नाव</th><th class="ttr">No of Accounts</th><th class="ttr">एकूण रक्कम</th><th class="ttr">PIGMY</th><th class="ttr">RD</th><th class="ttr">FD</th></tr></thead><tbody>'
+      +d.agentWise.map(function(x){return'<tr><td class="ttb">'+esc(x.agent)+'</td><td class="ttr">'+(x.totalCount||0)+'</td><td class="ttr ttb" style="color:#1d4ed8">'+rupee(x.totalAmount)+'</td><td class="ttr" style="color:#059669">'+rupee(x.PIGMY)+'</td><td class="ttr">'+rupee(x.RD)+'</td><td class="ttr">'+rupee(x.FD)+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+  }else if(kind==='exp'){
+    html='<div class="mst"><div class="ms"><div class="sl">नोंदी</div><div class="sv">'+d.expenses.length+'</div></div><div class="ms"><div class="sl">एकूण खर्च</div><div class="sv" style="color:#dc2626">'+rupee(t.totalExpense)+'</div></div></div>'
+      +'<div class="tw"><table><thead><tr><th>तारीख</th><th>खर्च प्रकार</th><th class="ttr">रक्कम</th><th>तपशील</th></tr></thead><tbody>'
+      +d.expenses.map(function(x){return'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.type||'-')+'</td><td class="ttr ttb" style="color:#dc2626">'+rupee(x.amount)+'</td><td>'+esc(x.note||'-')+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+  }else{
+    html='<div class="mst"><div class="ms"><div class="sl">एकूण जमा</div><div class="sv" style="color:#1d4ed8">'+rupee(t.totalCollection)+'</div></div><div class="ms"><div class="sl">फरक</div><div class="sv">'+rupee(t.difference)+'</div></div></div>'
+      +'<div class="tw"><table><thead><tr><th>क्षेत्र</th><th>मूल्य</th></tr></thead><tbody>'
+      +[['Opening शिल्लक',rupee(t.openingBalance)],['एकूण जमा',rupee(t.totalCollection)],['एकूण खर्च',rupee(t.totalExpense)],['System शिल्लक',rupee(t.systemBalance)],['प्रत्यक्ष शिल्लक',rupee(t.actualBankBalance)],['फरक',rupee(t.difference)],['जुळणी',t.matchStatus||'N/A'],['जुळणी नाही कारण',t.mismatchReason||'-']].map(function(r){return'<tr><td class="ttb">'+r[0]+'</td><td>'+esc(String(r[1]))+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
   }
+  G('mbd').innerHTML=html; G('ov').classList.add('on');
+}
+function cmo(){G('ov').classList.remove('on');}
 
-  // For collections
-  let allCollections = appState.dashboardData?.collectionDetails || [];
-  let todayCollections = allCollections.filter(c => c.date === todayDate);
-
-  if (kpiType === 'TOTAL_COLLECTION') {
-    title = 'आजचे एकूण जमा तपशील';
-    filteredDetails = todayCollections;
-  } else {
-    title = `आजची ${kpiType} जमा तपशील`;
-    filteredDetails = todayCollections.filter(d => d.type === kpiType);
-  }
-
-  if (filteredDetails.length === 0) {
-    Swal.fire('माहिती', `आज ${kpiType} साठी कोणताही डेटा उपलब्ध नाही.`, 'info');
-    return;
-  }
-
-  const tableContent = `
-    <div class="table-wrap rounded-xl overflow-hidden border border-slate-200 mt-4">
-      <table class="min-w-full text-sm bg-white">
-        <thead class="bg-slate-100 text-slate-700">
-          <tr>
-            <th class="p-3 text-left">प्रकार</th>
-            <th class="p-3 text-left">एजंट</th>
-            <th class="p-3 text-left">खाते संख्या</th>
-            <th class="p-3 text-right">रक्कम (₹)</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${filteredDetails.map(d => `
-            <tr class="border-t border-slate-100">
-              <td class="p-3">${escapeHtml(d.type)}</td>
-              <td class="p-3">${escapeHtml(d.agent)}</td>
-              <td class="p-3">${escapeHtml(d.accountCount)}</td>
-              <td class="p-3 text-right font-bold">${money(d.amount)}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
-
-  Swal.fire({
-    title: title,
-    html: tableContent,
-    width: 700,
-    showCloseButton: true,
-    showConfirmButton: false,
-    customClass: {
-      container: 'swal-wide'
-    }
-  });
+/* PRINT */
+function openPrint(){
+  var d=S.data; if(!d){toast('⚠ आधी डेटा लोड करा','er');return;}
+  var t=d.totals,from=G('fromDate').value||td(),to=G('toDate').value||td();
+  var is1=(from===to),rl=is1?from:from+' ते '+to;
+  var now=new Date(),timeStr=now.getHours()+':'+z(now.getMinutes());
+  var aRows=d.agentWise.map(function(x){return'<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:7px 10px;font-weight:700">'+esc(x.agent)+'</td><td style="padding:7px 10px;text-align:right">'+(x.totalCount||0)+'</td><td style="padding:7px 10px;text-align:right;font-weight:900;color:#1d4ed8">'+rupee(x.totalAmount)+'</td><td style="padding:7px 10px;text-align:right;color:#059669">'+rupee(x.PIGMY)+'</td><td style="padding:7px 10px;text-align:right">'+rupee(x.RD)+'</td><td style="padding:7px 10px;text-align:right">'+rupee(x.FD)+'</td></tr>';}).join('');
+  var sf=[['PIGMY संकलन',rupee(t.pigmyAmount),'खाती: '+t.pigmyCount],['RD संकलन',rupee(t.rdAmount),'खाती: '+t.rdCount],['FD संकलन',rupee(t.fdAmount),'खाती: '+t.fdCount],['एकूण जमा',rupee(t.totalCollection),''],['एकूण खर्च',rupee(t.totalExpense),''],['Opening शिल्लक',rupee(t.openingBalance),''],['System शिल्लक',rupee(t.systemBalance),''],['प्रत्यक्ष शिल्लक',rupee(t.actualBankBalance),''],['फरक',rupee(t.difference),t.matchStatus==='YES'?'✓ जुळणी झाली':'⚠ जुळणी नाही']];
+  var html='<div style="font-family:system-ui,sans-serif;color:#1a2744">'
+    +'<div style="text-align:center;border-bottom:3px solid #1d4ed8;padding-bottom:16px;margin-bottom:20px">'
+    +'<img src="https://anikfin.com/ANIKDATA/Logo.png" style="width:54px;height:54px;object-fit:contain;margin-bottom:8px" onerror="this.style.display=\'none\'"/>'
+    +'<div style="font-size:19px;font-weight:900">लोकपर्याय जिल्हा सहकारी पतसंस्था</div>'
+    +'<div style="font-size:12px;color:#64748b;margin-top:3px">म.हासेगांव &nbsp;|&nbsp; दैनंदिन बँकिंग ERP</div>'
+    +'<div style="font-size:14px;font-weight:800;color:#1d4ed8;margin-top:8px">दैनंदिन अहवाल — '+esc(rl)+'</div>'
+    +'<div style="font-size:11px;color:#94a3b8;margin-top:3px">मुद्रण वेळ: '+timeStr+' | '+td()+'</div>'
+    +'</div>'
+    +'<div style="margin-bottom:20px"><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;border-bottom:1px solid #e2e8f0;padding-bottom:6px">आर्थिक सारांश</div>'
+    +sf.map(function(r,i){return'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-radius:9px;background:'+(i%2===0?'#f5f8ff':'#fff')+';margin-bottom:4px"><div style="font-weight:700;color:#64748b">'+r[0]+(r[2]?'<span style="font-size:11px;margin-left:8px;color:#94a3b8">'+r[2]+'</span>':'')+'</div><div style="font-weight:900;font-size:15px">'+esc(r[1])+'</div></div>';}).join('')
+    +'</div>'
+    +(d.agentWise.length?'<div><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;border-bottom:1px solid #e2e8f0;padding-bottom:6px">एजंट निहाय सारांश</div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#f5f8ff"><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">एजंट नाव</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">खाती</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">एकूण</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">PIGMY</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">RD</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">FD</th></tr></thead><tbody>'+aRows+'</tbody></table></div>':'')
+    +(t.mismatchReason?'<div style="background:#fff3dc;border:1.5px solid #fbbf24;border-radius:10px;padding:12px;font-size:13px;margin-top:12px"><b style="color:#92400e">⚠ जुळणी नाही कारण:</b> '+esc(t.mismatchReason)+'</div>':'')
+    +'<div style="text-align:center;margin-top:20px;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px">लोकपर्याय पतसंस्था ERP — '+td()+'</div>'
+    +'</div>';
+  G('printContent').innerHTML=html; G('pov').classList.add('on');
+}
+function closePrint(){G('pov').classList.remove('on');}
+function doPrint(){
+  var c=G('printContent').innerHTML;
+  var w=window.open('','_blank','width=820,height=900');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>दैनंदिन अहवाल</title><style>body{font-family:system-ui,sans-serif;padding:20px;color:#1a2744}table{width:100%;border-collapse:collapse}@media print{body{padding:10px}}</style></head><body>'+c+'<script>window.onload=function(){window.print();}<\/script></body></html>');
+  w.document.close();
 }
 
-// --- Report Functions ---
-async function loadReports(){
-  showLoader();
-  try {
-    const fromDate = qs('fromDate').value;
-    const toDate = qs('toDate').value;
-    const search = encodeURIComponent(qs('reportSearch').value || '');
-    const data = await getJson(`${API_URL}?action=report&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}&search=${search}`);
-    if(data.status === 'error') throw new Error(data.message || 'रिपोर्ट डेटा लोड करताना त्रुटी.');
-    appState.reportData = data;
-    renderReports();
-    renderDailyTrendChart(); // Update daily trend chart when report dates change
-  } catch(err) {
-    console.error("Report Load Error:", err);
-    Swal.fire('त्रुटी', `रिपोर्ट लोड करताना समस्या आली: ${err.message}`, 'error');
-  } finally {
-    hideLoader();
-  }
+/* Debug */
+function showDbg(){var r=S.raw;if(!r){alert('डेटा अद्याप नाही');return;}var c=r.collections||[];var i={नोंदी:c.length,पहिली_नोंद:c[0]||'रिकामी',कच्ची_तारीख:c[0]&&c[0][0],सामान्य_तारीख:c[0]?nd(c[0][0]):'n/a',पासून:G('fromDate').value,पर्यंत:G('toDate').value,एकूण_नोंदी:S.data&&S.data.rows&&S.data.rows.length||0};console.log('[DEBUG]',i);alert(JSON.stringify(i,null,2));}
+
+/* Entry form — DOM-based, NO onclick in innerHTML */
+function makeRow(){
+  var div=document.createElement('div'); div.className='erow';
+  div.innerHTML='<div style="display:grid;grid-template-columns:1fr 88px 100px 34px;gap:8px;align-items:end">'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">एजंट</div><select class="inp agS" style="padding:8px 10px;font-size:13px"><option value="">निवडा</option></select></div>'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">खाती</div><input type="number" class="inp aCn" value="0" min="0" style="padding:8px 10px" oninput="rc()"/></div>'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">रक्कम</div><input type="number" class="inp aAm" value="0" min="0" style="padding:8px 10px" oninput="rc()"/></div>'
+    +'<button class="btn btn-pale btn-ico" style="color:#dc2626;height:34px;font-size:15px">✕</button>'
+    +'</div>';
+  div.querySelector('button').addEventListener('click',function(){div.remove();rc();});
+  return div;
+}
+function makeExp(){
+  var div=document.createElement('div'); div.className='erow';
+  div.innerHTML='<div style="display:grid;grid-template-columns:1fr 110px 34px;gap:8px;align-items:end">'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">खर्च प्रकार</div><input type="text" class="inp eTyp" placeholder="Travel / Cement..." style="padding:8px 10px;font-size:13px"/></div>'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">रक्कम</div><input type="number" class="inp eAm" value="0" min="0" style="padding:8px 10px" oninput="rc()"/></div>'
+    +'<button class="btn btn-pale btn-ico" style="color:#dc2626;height:34px;font-size:15px">✕</button>'
+    +'</div>';
+  div.querySelector('button').addEventListener('click',function(){div.remove();rc();});
+  return div;
 }
 
-function renderReports(){
-  const rows = appState.reportData?.collections || [];
-  qs('reportTableBody').innerHTML = rows.length ? rows.map(r => `
-    <tr class="border-t border-slate-100">
-      <td class="p-3">${escapeHtml(r[0])}</td>
-      <td class="p-3"><span class="pill ${r[1] === 'PIGMY' ? 'pill-green' : r[1] === 'RD' ? 'pill-orange' : 'pill-primary'}">${escapeHtml(r[1])}</span></td>
-      <td class="p-3">${escapeHtml(r[2])}</td>
-      <td class="p-3">${escapeHtml(r[3] || '')}</td>
-      <td class="p-3 text-right font-bold">${money(r[5])}</td>
-      <td class="p-3 text-right">${escapeHtml(r[6] || 0)}</td>
-    </tr>`).join('') : `<tr><td colspan="6" class="p-4 text-center text-slate-500">रिपोर्ट डेटा उपलब्ध नाही.</td></tr>`;
+function ar(tp){G('r'+tp).appendChild(makeRow());popSel();}
+function ae(){G('rE').appendChild(makeExp());}
+
+function popSel(){
+  var o='<option value="">निवडा</option>'+S.ag.map(function(a){return'<option value="'+esc(a)+'">'+esc(a)+'</option>';}).join('');
+  document.querySelectorAll('.agS').forEach(function(s){var v=s.value;s.innerHTML=o;if(v)s.value=v;});
 }
 
-
-// --- Entry Section Functions ---
-function populateAgentDropdowns(){
-  document.querySelectorAll('.agent-select').forEach(sel => {
-    const current = sel.value;
-    sel.innerHTML = '<option value="">एजंट निवडा</option>' + (appState.settings.agentNames || []).map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
-    sel.value = current;
-  });
+async function onED(){
+  var date=G('eDate').value; if(!date)return;
+  try{var d=await apf(API+'?action=openingBalance&date='+encodeURIComponent(date),true);if(d.status==='error')throw new Error(d.message);G('eOp').value=num(d.openingBalance);rc();}catch(e){toast('❌ '+e.message,'er',4000);}
 }
 
-function collectionRowTemplate(type){
-  return `
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end collection-row" data-type="${type}">
-      <div class="md:col-span-5">
-        <label class="text-xs font-semibold text-slate-600 mb-1 block">एजेंटचे नांव</label>
-        <select class="select agent-select" required><option value="">एजंट निवडा</option></select>
-      </div>
-      <div class="md:col-span-3">
-        <label class="text-xs font-semibold text-slate-600 mb-1 block">एकुण आलेले खाते</label>
-        <input type="number" class="input account-count" min="0" value="0" oninput="recalculateEntry()" />
-      </div>
-      <div class="md:col-span-3">
-        <label class="text-xs font-semibold text-slate-600 mb-1 block">रक्कम</label>
-        <input type="number" class="input amount" min="0" value="0" oninput="recalculateEntry()" required />
-      </div>
-      <div class="md:col-span-1">
-        <button type="button" class="btn btn-slate w-full !p-3" onclick="this.closest('.collection-row').remove();recalculateEntry();" title="ही ओळ काढून टाका"><i class="fa-solid fa-trash"></i></button>
-      </div>
-    </div>`;
+function rc(){
+  var op=num(G('eOp').value),ac=num(G('eAc').value),tC=0,tE=0;
+  document.querySelectorAll('.aAm').forEach(function(r){tC+=num(r.value);});
+  document.querySelectorAll('.eAm').forEach(function(r){tE+=num(r.value);});
+  var sys=op+tC-tE,diff=ac-sys,ok=Math.abs(diff)<0.01;
+  G('eTc').value=tC; G('eTe').value=tE; G('eSy').value=sys; G('eDf').value=diff;
+  G('eMt').innerHTML=ok?'<span class="pill pp">✓ जुळणी झाली</span>':'<span class="pill pr">⚠ जुळणी नाही</span>';
 }
 
-function addCollectionRow(type){
-  const map = { PIGMY:'pigmyRows', RD:'rdRows', FD:'fdRows' };
-  qs(map[type]).insertAdjacentHTML('beforeend', collectionRowTemplate(type));
-  populateAgentDropdowns();
+function cCl(tp){var m={P:'PIGMY',R:'RD',F:'FD'};return Array.from(document.querySelectorAll('#r'+tp+' .erow')).map(function(r){return{type:m[tp],agent:r.querySelector('.agS').value.trim(),amount:num(r.querySelector('.aAm').value),accountCount:Math.max(0,Math.floor(num(r.querySelector('.aCn').value)))};}).filter(function(r){return r.agent||r.amount>0||r.accountCount>0;});}
+function cEx(){return Array.from(document.querySelectorAll('#rE .erow')).map(function(r){return{type:r.querySelector('.eTyp').value.trim(),amount:num(r.querySelector('.eAm').value),note:''};}).filter(function(r){return r.type||r.amount>0;});}
+function bP(){return{type:'daily_entry',date:G('eDate').value,collections:cCl('P').concat(cCl('R')).concat(cCl('F')),expenses:cEx(),bank:{openingBalance:num(G('eOp').value),actualBankBalance:num(G('eAc').value),mismatchReason:G('eMi').value.trim()}};}
+function prv(){var p=bP();var w=window.open('','_blank','width=600,height=500');w.document.write('<pre style="font-size:13px;padding:20px;white-space:pre-wrap">'+esc(JSON.stringify(p,null,2))+'</pre>');}
+
+async function sub(){
+  var p=bP();
+  if(!p.date){toast('दिनांक आवश्यक आहे','er');return;}
+  if(!p.collections.length&&!p.expenses.length&&!num(p.bank.actualBankBalance)){toast('किमान काही डेटा भरा','er');return;}
+  if(Math.abs(num(G('eDf').value))>=0.01&&!p.bank.mismatchReason){toast('फरक असल्यास कारण नोंदवा','er');return;}
+  G('ldr').classList.add('on');
+  try{
+    var res=await fetch(API,{method:'POST',body:JSON.stringify(p)});
+    var txt=await res.text(); var d;
+    try{d=JSON.parse(txt);}catch(e){throw new Error('Invalid: '+txt.slice(0,80));}
+    if(d.status!=='success') throw new Error(d.message||'Save failed');
+    clr(); toast('✅ यशस्वीरित्या सेव्ह झाले!','ok',3000);
+    rsf(false); await onED();
+    G('fromDate').value=p.date; G('toDate').value=p.date;
+    await loadData(true); goTab('d');
+  }catch(e){toast('❌ '+e.message,'er',5000);}
+  finally{hideLdr();}
 }
 
-function addExpenseRow(){
-  qs('expenseRows').insertAdjacentHTML('beforeend', `
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end expense-row">
-      <div class="md:col-span-5">
-        <label class="text-xs font-semibold text-slate-600 mb-1 block">खर्चाचा प्रकार</label>
-        <input type="text" class="input expense-type" placeholder="उदा. Stationery, पगार" />
-      </div>
-      <div class="md:col-span-5">
-        <label class="text-xs font-semibold text-slate-600 mb-1 block">रक्कम</label>
-        <input type="number" class="input expense-amount" min="0" value="0" oninput="recalculateEntry()" required />
-      </div>
-      <div class="md:col-span-2">
-        <button type="button" class="btn btn-slate w-full !p-3" onclick="this.closest('.expense-row').remove();recalculateEntry();" title="ही ओळ काढून टाका"><i class="fa-solid fa-trash"></i></button>
-      </div>
-    </div>`);
+function setET(){G('eDate').value=td();onED();}
+function rsf(rd){G('rP').innerHTML='';G('rR').innerHTML='';G('rF').innerHTML='';G('rE').innerHTML='';ar('P');ar('R');ar('F');ae();if(rd!==false)G('eDate').value=td();G('eAc').value='';G('eMi').value='';rc();}
+
+function applyGrid(){var w=window.innerWidth,r=G('cr1');if(r)r.style.gridTemplateColumns=w<640?'1fr':w<1024?'1fr 1fr':'1fr 1fr 1fr';}
+window.addEventListener('resize',applyGrid);
+
+function init(){
+  setTimeout(hideLdr,12000);
+  var t=td(); G('fromDate').value=t; G('toDate').value=t; G('eDate').value=t;
+  rsf(false); applyGrid();
+  G('srchBox').addEventListener('input',dbn(rc2,180));
+  G('tFilt').addEventListener('change',rc2);
+  G('fromDate').addEventListener('change',function(){loadData(true);});
+  G('toDate').addEventListener('change',function(){loadData(true);});
+  G('kpiGrid').innerHTML=KP.map(function(k){return'<div class="kpi '+k.c+'" style="opacity:.55"><span class="kpi-ic">'+k.i+'</span><div class="sk" style="height:22px;width:100px;margin-bottom:6px"></div><div class="kpi-lbl">'+k.l+'</div></div>';}).join('');
+  loadData(false).then(function(){if(typeof Chart==='undefined')setTimeout(function(){S.data&&rcharts();},1000);}).catch(function(e){console.error(e);hideLdr();});
+  onED();
 }
-
-async function onEntryDateChange(){
-  const date = qs('entryDate').value;
-  if(!date) {
-    qs('openingBalance').value = 0;
-    recalculateEntry();
-    return;
-  }
-  showLoader();
-  try {
-    const data = await getJson(`${API_URL}?action=openingBalance&date=${encodeURIComponent(date)}`);
-    if(data.status === 'error') throw new Error(data.message || 'Opening balance डेटा लोड करताना त्रुटी.');
-    qs('openingBalance').value = Number(data.openingBalance || 0);
-    recalculateEntry();
-  } catch(err) {
-    console.error("Opening Balance Load Error:", err);
-    Swal.fire('त्रुटी', `Opening Balance लोड करताना समस्या आली: ${err.message}`, 'error');
-  } finally {
-    hideLoader();
-  }
-}
-
-function recalculateEntry(){
-  const opening = Number(qs('openingBalance').value || 0);
-  const actual = Number(qs('actualBankBalance').value || 0);
-  let totalCollection = 0;
-  let totalExpense = 0;
-
-  document.querySelectorAll('.collection-row').forEach(row => {
-    totalCollection += Number(row.querySelector('.amount').value || 0);
-  });
-  document.querySelectorAll('.expense-row').forEach(row => {
-    totalExpense += Number(row.querySelector('.expense-amount').value || 0);
-  });
-
-  const system = opening + totalCollection - totalExpense;
-  const diff = actual - system;
-  const matched = Math.abs(diff) < MATCH_THRESHOLD;
-
-  qs('totalCollection').value = totalCollection;
-  qs('totalExpense').value = totalExpense;
-  qs('systemBalance').value = system;
-  qs('balanceDifference').value = diff.toFixed(2); // Display difference with 2 decimal places
-  qs('entryMatchStatus').innerHTML = matched
-    ? '<span class="pill pill-green"><i class="fa-solid fa-check-circle mr-1"></i>MATCH</span>'
-    : '<span class="pill pill-red"><i class="fa-solid fa-times-circle mr-1"></i>MISMATCH</span>';
-}
-
-function collectCollections(type){
-  const map = { PIGMY:'pigmyRows', RD:'rdRows', FD:'fdRows' };
-  return [...qs(map[type]).querySelectorAll('.collection-row')].map(row => ({
-    type,
-    agent: row.querySelector('.agent-select').value,
-    amount: Number(row.querySelector('.amount').value || 0),
-    accountCount: Number(row.querySelector('.account-count').value || 0)
-  })).filter(r => r.agent && (r.amount > 0 || r.accountCount > 0)); // Filter out empty rows
-}
-
-function collectExpenses(){
-  return [...qs('expenseRows').querySelectorAll('.expense-row')].map(row => ({
-    type: row.querySelector('.expense-type').value,
-    amount: Number(row.querySelector('.expense-amount').value || 0),
-    note: '' // Currently not used, but good to keep structure
-  })).filter(r => r.type && r.amount > 0); // Filter out empty rows
-}
-
-async function submitDailyEntry(){
-  const date = qs('entryDate').value;
-  if(!date) {
-    return Swal.fire('सूचना','दिनांक आवश्यक आहे. कृपया योग्य दिनांक निवडा.','warning');
-  }
-
-  const collections = [
-    ...collectCollections('PIGMY'),
-    ...collectCollections('RD'),
-    ...collectCollections('FD')
-  ];
-  const expenses = collectExpenses();
-  const openingBalance = Number(qs('openingBalance').value || 0);
-  const actualBankBalance = Number(qs('actualBankBalance').value || 0);
-  const difference = Number(qs('balanceDifference').value || 0);
-  const mismatchReason = qs('mismatchReason').value.trim();
-
-  // Basic validation
-  if(collections.length === 0 && expenses.length === 0 && actualBankBalance === 0 && openingBalance === 0){
-    return Swal.fire('सूचना','किमान एक जमा, खर्च किंवा ओपनिंग बॅलन्सची नोंद करणे आवश्यक आहे.','warning');
-  }
-  if(Math.abs(difference) >= MATCH_THRESHOLD && !mismatchReason){
-    return Swal.fire('सूचना','बँक बॅलन्समध्ये फरक (Mismatch) असल्यास, कृपया त्याचे कारण नोंदवा.','warning');
-  }
-  
-  // Validate if agent is selected for collection rows that have amount/account count
-  for (const coll of collections) {
-      if (!coll.agent) {
-          return Swal.fire('सूचना', `जमा प्रकार ${coll.type} मध्ये एजंटचे नाव निवडणे आवश्यक आहे.`, 'warning');
-      }
-      if (coll.amount <= 0 && coll.accountCount <=0) {
-           return Swal.fire('सूचना', `जमा प्रकार ${coll.type} आणि एजंट ${coll.agent} साठी रक्कम किंवा खाती संख्या 0 पेक्षा जास्त असावी.`, 'warning');
-      }
-  }
-
-  // Validate if expense type is provided for expense rows that have amount
-  for (const exp of expenses) {
-      if (!exp.type) {
-          return Swal.fire('सूचना', `खर्च प्रकारात खर्चाचे नाव नमूद करणे आवश्यक आहे.`, 'warning');
-      }
-      if (exp.amount <= 0) {
-          return Swal.fire('सूचना', `खर्च प्रकार ${exp.type} साठी रक्कम 0 पेक्षा जास्त असावी.`, 'warning');
-      }
-  }
-
-  const payload = {
-    type: 'daily_entry',
-    date,
-    collections,
-    expenses,
-    bank: {
-      openingBalance: openingBalance,
-      actualBankBalance: actualBankBalance,
-      mismatchReason
-    }
-  };
-
-  showLoader();
-  try {
-    const res = await safeFetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    const text = await res.text();
-    let data;
-    try { data = JSON.parse(text); } catch(e) { throw new Error('अयोग्य प्रतिसाद: ' + text.slice(0,500)); }
-    if(data.status !== 'success') throw new Error(data.message || 'डेटा सेव्ह करताना त्रुटी.');
-
-    await Swal.fire('यशस्वी', 'तुमचा दैनंदिन डेटा Google Sheet मध्ये यशस्वीरित्या सेव्ह झाला आहे.', 'success');
-    resetEntryForm(false); // Reset form, keep current date
-    await onEntryDateChange(); // Reload opening balance
-    await loadDashboard(); // Refresh dashboard with new data
-    showSection('dashboardSection'); // Go back to dashboard
-  } catch(err) {
-    console.error("Submission Error:", err);
-    Swal.fire('त्रुटी', `डेटा सेव्ह करताना समस्या आली: ${err.message}`, 'error');
-  } finally {
-    hideLoader();
-  }
-}
-
-function resetEntryForm(resetDate=true){
-  qs('pigmyRows').innerHTML='';
-  qs('rdRows').innerHTML='';
-  qs('fdRows').innerHTML='';
-  qs('expenseRows').innerHTML='';
-  addCollectionRow('PIGMY');
-  addCollectionRow('RD');
-  addCollectionRow('FD');
-  addExpenseRow();
-  if(resetDate) qs('entryDate').value = todayStr();
-  qs('actualBankBalance').value='';
-  qs('mismatchReason').value='';
-  // Reset opening balance to 0 and recalculate
-  qs('openingBalance').value = 0;
-  recalculateEntry();
-}
-
-// --- Event Listeners ---
-qs('reportSearch').addEventListener('input', debounce(loadReports, 500)); // Debounce search input
-qs('dashboardDate').addEventListener('change', ()=>{
-  const d = qs('dashboardDate').value;
-  qs('fromDate').value = d;
-  qs('toDate').value = d;
-  loadDashboard(); // Refresh dashboard and reports for the new single day
-});
-
-// Load dashboard and reports when fromDate or toDate changes
-qs('fromDate').addEventListener('change', loadDashboard);
-qs('toDate').addEventListener('change', loadDashboard);
-
-window.addEventListener('load', init);
+document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>

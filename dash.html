@@ -1,183 +1,506 @@
-<!-- FINAL FULL UI + PERFORMANCE OPTIMIZED ERP -->
-<!DOCTYPE html>
-<html lang="mr">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>लोकपर्याय ERP (FINAL FAST)</title>
-
-<!-- LIGHTWEIGHT CHART -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js" defer></script>
-
-<style>
-/* ORIGINAL STYLE + OPTIMIZED */
-body{font-family:system-ui;background:#eef2f9;margin:0;color:#1a2744}
-.hdr{background:#1d4ed8;color:#fff;padding:12px;font-weight:800}
-.card{background:#fff;border-radius:14px;padding:14px;margin:10px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
-.kpi{padding:14px;border-radius:12px;color:#fff;font-weight:800}
-.k1{background:#059669}.k2{background:#1d4ed8}.k3{background:#7c3aed}
-.loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;z-index:9999}
-.hidden{display:none}
-input{padding:8px;border-radius:8px;border:1px solid #ddd}
-</style>
-</head>
-
-<body>
-
-<div class="hdr">📊 लोकपर्याय ERP Dashboard</div>
-
-<div id="ldr" class="loader">⚡ Loading Fast ERP...</div>
-
-<div id="app" class="hidden">
-
-  <!-- KPI -->
-  <div id="kpiWrap" class="grid"></div>
-
-  <!-- FILTER -->
-  <div class="card">
-    <input id="search" placeholder="🔍 Search agent..." />
-  </div>
-
-  <!-- TABLE -->
-  <div class="card" id="table"></div>
-
-  <!-- CHARTS -->
-  <div class="grid">
-    <div class="card"><canvas id="chart1"></canvas></div>
-    <div class="card"><canvas id="chart2"></canvas></div>
-  </div>
-
-</div>
-
 <script>
+var API = 'https://script.google.com/macros/s/AKfycbzVUEN3WqOevswOOD5Ag7M59rB1VcYX9_NGqGtUq8vFiuFdfXG0tRc-Rfz0C8Tbq8E/exec';
+var LK = 'pv11', MT = 60000, LT = 300000; // MT: In-memory cache TTL (1 minute), LT: LocalStorage cache TTL (5 minutes)
 
-const API="https://script.google.com/macros/s/AKfycbzVUEN3WqOevswOOD5Ag7M59rB1VcYX9_NGqGtUq8vFiuFdfXG0tRc-Rfz0C8Tbq8E/exec";
+function G(i) { return document.getElementById(i); }
+function td() { var d = new Date(); return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate()); }
+function z(n) { return String(n).padStart(2,'0'); }
+function num(v) { if(v==null||v==='')return 0; var n=Number(String(v).replace(/,/g,'')); return isFinite(n)?n:0; }
+function rupee(v) { return '₹'+num(v).toLocaleString('en-IN'); }
+function esc(s) {
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+}
+function dbn(fn,ms){var t;return function(){clearTimeout(t);t=setTimeout(fn,ms||300);};}
 
-const S={data:null,cache:new Map(),charts:{}};
-
-function G(id){return document.getElementById(id)}
-
-function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}}
-
-async function fastFetch(url){
-  if(S.cache.has(url)) return S.cache.get(url);
-  const res=await fetch(url+"&_="+Date.now());
-  const data=await res.json();
-  S.cache.set(url,data);
-  return data;
+function nd(v) {
+  if(!v) return '';
+  if(typeof v==='number'&&Math.abs(v)<150000){ // Excel-like date serial number
+    var e=new Date(Date.UTC(1899,11,30)); e.setUTCDate(e.getUTCDate()+Math.round(v));
+    return e.getUTCFullYear()+'-'+z(e.getUTCMonth()+1)+'-'+z(e.getUTCDate());
+  }
+  var s=String(v).trim();
+  if(/^\d{4}-\d{2}-\d{2}T/.test(s)){var d=new Date(s);return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());}
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){var p=s.split('/');return p[2]+'-'+p[1]+'-'+p[0];}
+  var d2=new Date(s); if(isNaN(d2.getTime())) return s.slice(0,10); // Use getTime() for robust NaN check
+  return d2.getFullYear()+'-'+z(d2.getMonth()+1)+'-'+z(d2.getDate());
 }
 
-// PROCESS (NON BLOCKING)
-function process(raw){
-  const rows=(raw.collections||[]).map(r=>({
-    agent:r[2]||"-",
-    type:r[1],
-    amount:Number(r[5])||0,
-    count:Number(r[6])||0
-  }));
+var S={ag:[],data:null,raw:null,ch:{},mem:new Map()}; // S: Global state object
+var _tt; // For toast timeout
+function toast(m,t,ms){var el=G('tst');el.textContent=m;el.className='tst on'+(t==='ok'?' ok':t==='er'?' er':'');clearTimeout(_tt);_tt=setTimeout(function(){el.classList.remove('on');},ms||2800);}
+function hideLdr(){G('ldr').classList.remove('on');} // Hide global loader
 
-  const total=rows.reduce((a,b)=>a+b.amount,0);
-
-  const byAgent={};
-  rows.forEach(r=>{
-    if(!byAgent[r.agent]) byAgent[r.agent]=0;
-    byAgent[r.agent]+=r.amount;
-  });
-
-  return {rows,total,byAgent};
-}
-
-async function load(){
+// Reads data from localStorage, checks TTL
+function lsG(k){
   try{
-    const raw=await fastFetch(API+"?action=report");
-
-    // STEP 1 FAST UI
-    setTimeout(()=>{
-      S.data=process(raw);
-      renderKPI();
-      G('app').classList.remove('hidden');
-      G('ldr').classList.add('hidden');
-    },0);
-
-    // STEP 2 TABLE
-    setTimeout(renderTable,100);
-
-    // STEP 3 CHARTS (IDLE)
-    setTimeout(()=>requestIdleCallback(renderCharts),400);
-
-  }catch(e){alert(e.message)}
+    var r=localStorage.getItem(LK+k);
+    if(!r)return null;
+    var o=JSON.parse(r);
+    if(Date.now()-o.ts>LT){
+      localStorage.removeItem(LK+k); // Cache expired
+      return null;
+    }
+    return o.d;
+  }catch(e){
+    console.warn('Error reading from localStorage for key:', k, e);
+    return null;
+  }
+}
+// Stores data to localStorage with timestamp
+function lsS(k,d){
+  try{
+    localStorage.setItem(LK+k,JSON.stringify({ts:Date.now(),d:d}));
+  }catch(e){
+    console.warn('Error writing to localStorage for key:', k, e);
+  }
+}
+// Clears all app-specific localStorage and in-memory cache
+function clr(){
+  S.mem.clear();
+  try{
+    Object.keys(localStorage).filter(function(k){return k.indexOf(LK)===0;}).forEach(function(k){localStorage.removeItem(k);});
+  }catch(e){
+    console.warn('Error clearing localStorage:', e);
+  }
 }
 
-function renderKPI(){
-  const t=S.data.total;
+// Fetches data from API, caches in memory and localStorage
+// `forceNetwork`: if true, skips cache checks and always fetches from network
+async function apf(url, forceNetwork = false) {
+    const ck = url.replace(API, '');
+    const now = Date.now();
 
-  G('kpiWrap').innerHTML=`
-    <div class="kpi k1">💰 Total ₹${t.toLocaleString()}</div>
-    <div class="kpi k2">📊 Entries ${S.data.rows.length}</div>
-    <div class="kpi k3">👥 Agents ${Object.keys(S.data.byAgent).length}</div>
-  `;
+    if (!forceNetwork) {
+        // 1. Check in-memory cache first
+        let m = S.mem.get(ck);
+        if (m && now - m.ts < MT) {
+            return m.d;
+        }
+
+        // 2. Check localStorage cache
+        let ls = lsG(ck);
+        if (ls) {
+            S.mem.set(ck, { ts: now, d: ls }); // Update in-memory cache timestamp
+            return ls; // Return cached data
+        }
+    }
+
+    // 3. No valid cache found, or forceNetwork is true, so fetch from network
+    const res = await fetch(url + (url.indexOf('?') >= 0 ? '&' : '?') + '_t=' + now);
+    if (!res.ok) { // Check for HTTP errors
+        throw new Error(`Network response was not ok: ${res.status} ${res.statusText}`);
+    }
+    const txt = await res.text();
+    let data;
+    try {
+        data = JSON.parse(txt);
+    } catch (e) {
+        throw new Error('Parse error for ' + url + ': ' + txt.slice(0, 100));
+    }
+    S.mem.set(ck, { ts: now, d: data });
+    lsS(ck, data);
+    return data;
 }
 
-function renderTable(){
-  const rows=S.data.rows.slice(0,150);
+function goTab(t){G('secDash').classList.toggle('gone',t!=='d');G('secEntry').classList.toggle('gone',t!=='e');G('navD').classList.toggle('act',t==='d');G('navE').classList.toggle('act',t==='e');}
+function toggleMob(){G('mobMenu').classList.toggle('op');}
+function closeMob(){G('mobMenu').classList.remove('op');}
 
-  let html="<b>Recent Data:</b><br/>";
-  rows.forEach(r=>{
-    html+=`${r.agent} | ₹${r.amount}<br/>`;
-  });
-
-  G('table').innerHTML=html;
+function setQ(days){
+  var to=new Date(),from=new Date();from.setDate(from.getDate()-days);
+  function f(d){return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());}
+  G('fromDate').value=f(from); G('toDate').value=f(to); loadData(true); // Always force refresh for quick select
 }
 
-function renderCharts(){
-  if(!window.Chart) return setTimeout(renderCharts,200);
+// Function to update the UI with given dashboard and report data
+function updateUI(from, to, dashboardData, reportData) {
+    if (dashboardData && dashboardData.status !== 'error') {
+        S.ag = (dashboardData.settings && dashboardData.settings.agentNames) || [];
+        popSel(); // Update agent dropdowns
+    } else if (dashboardData) { // If dashboardData is available but has error
+        console.error("Dashboard data has status error:", dashboardData.message);
+        // Do not throw here, allow report data to potentially render if it's fine.
+    }
 
-  const entries=Object.entries(S.data.byAgent).slice(0,10);
+    if (reportData && reportData.status === 'error') {
+        throw new Error(reportData.message || 'Report data contains an error');
+    }
 
-  if(S.charts.c1) S.charts.c1.destroy();
-
-  S.charts.c1=new Chart(G('chart1'),{
-    type:'bar',
-    data:{
-      labels:entries.map(x=>x[0]),
-      datasets:[{data:entries.map(x=>x[1])}]
-    },
-    options:{animation:false}
-  });
-
-  if(S.charts.c2) S.charts.c2.destroy();
-
-  S.charts.c2=new Chart(G('chart2'),{
-    type:'pie',
-    data:{
-      labels:entries.map(x=>x[0]),
-      datasets:[{data:entries.map(x=>x[1])}]
-    },
-    options:{animation:false}
-  });
+    S.raw = reportData;
+    S.data = agg(reportData); // Aggregate raw data for display
+    rall(from, to); // Render dashboard elements (KPIs, summary, tables)
+    
+    // Ensure charts are rendered after data is ready and Chart.js is loaded
+    if (typeof Chart !== 'undefined') {
+        rcharts();
+    } else {
+        // Fallback if Chart.js is not yet loaded (e.g., very slow network).
+        // This is a safety net; if Chart.js takes longer, charts will eventually appear.
+        setTimeout(() => S.data && rcharts(), 500);
+    }
 }
 
-// SEARCH FAST
-G('search').addEventListener('input',debounce(()=>{
-  const q=G('search').value.toLowerCase();
+// Main data loading function for the dashboard
+// `forceRefresh`: if true, always fetches fresh data from the network.
+// If false, it attempts to load from cache immediately, then updates with fresh data in the background.
+async function loadData(forceRefresh = false) {
+    const from = G('fromDate').value || td();
+    const to = G('toDate').value || td();
+    const rbElement = G('rb');
+    
+    G('ldr').classList.add('on'); // Show loader at the beginning of the process
 
-  const rows=S.data.rows
-    .filter(r=>r.agent.toLowerCase().includes(q))
-    .slice(0,80);
+    // 1. Attempt to display cached data immediately if not forcing a network refresh
+    if (!forceRefresh) {
+        try {
+            const cachedSt = lsG('?action=dashboard');
+            const cachedRp = lsG('?action=report&fromDate=' + encodeURIComponent(from) + '&toDate=' + encodeURIComponent(to) + '&search=');
 
-  let html="";
-  rows.forEach(r=>{
-    html+=`${r.agent} | ₹${r.amount}<br/>`;
+            if (cachedSt && cachedRp) {
+                // Pre-populate S.mem immediately from localStorage to benefit subsequent apf calls
+                S.mem.set('?action=dashboard', {ts: Date.now(), d: cachedSt});
+                S.mem.set('?action=report&fromDate=' + encodeURIComponent(from) + '&toDate=' + encodeURIComponent(to) + '&search=', {ts: Date.now(), d: cachedRp});
+                
+                updateUI(from, to, cachedSt, cachedRp);
+                rbElement.innerHTML = '✅ कॅशमधून लोड झाले. अपडेट करत आहे...';
+                hideLdr(); // Hide loader immediately after showing cached data
+                console.log('Displayed cached data instantly.');
+
+                // Now, asynchronously fetch fresh data and update the UI in the background
+                console.log('Fetching fresh data in background...');
+                Promise.all([
+                    apf(API + '?action=dashboard', true), // Force network refresh for background update
+                    apf(API + '?action=report&fromDate=' + encodeURIComponent(from) + '&toDate=' + encodeURIComponent(to) + '&search=', true) // Force network refresh
+                ])
+                .then(([freshSt, freshRp]) => {
+                    updateUI(from, to, freshSt, freshRp);
+                    rbElement.innerHTML = '✅ डेटा अपडेट झाला!';
+                    toast('✅ डेटा अपडेट झाला!','ok',1500);
+                    console.log('Displayed fresh data from network.');
+                })
+                .catch(e => {
+                    console.error('Error fetching fresh data in background:', e);
+                    toast('❌ डेटा अपडेट करताना त्रुटी: ' + e.message, 'er', 5000);
+                    rbElement.innerHTML = '⚠ कॅश डेटा, पण अपडेट त्रुटी';
+                });
+                return; // Exit, as background fetch will handle the final UI update
+            }
+        } catch (e) {
+            console.warn('Could not display cached data, falling back to network fetch:', e);
+            // If cached data display failed, fall through to full fresh load
+        }
+    }
+
+    // 2. If no cached data could be displayed (or forceRefresh is true),
+    //    fetch fresh data and wait for it. The loader is already shown from the beginning.
+    try {
+        const [freshSt, freshRp] = await Promise.all([
+            apf(API + '?action=dashboard', true), // Always force network here
+            apf(API + '?action=report&fromDate=' + encodeURIComponent(from) + '&toDate=' + encodeURIComponent(to) + '&search=', true) // Always force network here
+        ]);
+        updateUI(from, to, freshSt, freshRp);
+        rbElement.innerHTML = '✅ डेटा लोड झाला!';
+        toast('✅ डेटा लोड झाला!','ok',1500);
+        console.log('Displayed fresh data directly.');
+    } catch (e) {
+        console.error(e);
+        toast('❌ ' + e.message, 'er', 5000);
+        rbElement.innerHTML = '⚠ त्रुटी';
+    } finally {
+        hideLdr(); // Always hide loader at the end of this main loadData flow
+    }
+}
+
+// Aggregates raw report data into structured data for display
+function agg(rp){
+  var ac=rp.collections||[];
+  var rows=ac.map(function(r){return{date:nd(r[0]),type:String(r[1]||'').toUpperCase().trim(),agent:String(r[2]||'').trim(),accountNo:String(r[3]||'').trim(),customer:String(r[4]||'').trim(),amount:num(r[5]),count:num(r[6])};});
+  var ex=(rp.expenses||[]).map(function(r){return{date:nd(r[0]),type:String(r[1]||'').trim(),amount:num(r[2]),note:String(r[3]||'').trim()};});
+  var sm=rp.summaries||[];
+  var sr=sm.filter(function(r){return /\d{4}/.test(String(r[0]||''))||(typeof r[0]==='number'&&r[0]>40000);})[0]||sm[0]||[]; // Find summary row, prioritizing date-like entries
+  function s(a,k){return a.reduce(function(t,r){return t+r[k];},0);} // Helper for sum
+  var pR=rows.filter(function(r){return r.type==='PIGMY';}),rR=rows.filter(function(r){return r.type==='RD';}),fR=rows.filter(function(r){return r.type==='FD';});
+  var pA=s(pR,'amount'),pC=s(pR,'count'),rA=s(rR,'amount'),rC=s(rR,'count'),fA=s(fR,'amount'),fC=s(fR,'count'),tC=s(rows,'amount'),tE=s(ex,'amount'),op=num(sr[1]);
+  var pw={}; // productWise aggregation
+  var ag={}; // agentWise aggregation
+  rows.forEach(function(r){
+    var t=r.type||'OTHER',a=r.agent||'-';
+    if(!pw[t])pw[t]={type:t,amount:0,count:0}; pw[t].amount+=r.amount; pw[t].count+=r.count;
+    if(!ag[a])ag[a]={agent:a,totalAmount:0,totalCount:0,PIGMY:0,RD:0,FD:0};
+    ag[a].totalAmount+=r.amount; ag[a].totalCount+=r.count;
+    if(['PIGMY','RD','FD'].indexOf(t)>=0) ag[a][t]+=r.amount;
   });
+  return{
+    totals:{pigmyAmount:pA,pigmyCount:pC,rdAmount:rA,rdCount:rC,fdAmount:fA,fdCount:fC,totalCollection:tC,totalExpense:tE,openingBalance:op,systemBalance:num(sr[10])||(op+tC-tE),actualBankBalance:num(sr[11]),difference:num(sr[12]),matchStatus:sr[13]||(Math.abs(num(sr[12]))<0.01?'YES':'NO'),mismatchReason:sr[14]||''},
+    rows:rows,expenses:ex,productWise:Object.values(pw),agentWise:Object.values(ag).sort(function(a,b){return b.totalAmount-a.totalAmount;})
+  };
+}
 
-  G('table').innerHTML=html;
+// KPI definitions
+var KP=[
+  {k:'pigmyAmount', s:'pigmyCount', l:'PIGMY जमा',            c:'kg',m:'pigmy',i:'🐷'},
+  {k:'rdAmount',    s:'rdCount',    l:'RD जमा',               c:'kb',m:'rd',   i:'📈'},
+  {k:'fdAmount',    s:'fdCount',    l:'FD जमा',               c:'kv',m:'fd',   i:'🏦'},
+  {k:'totalCollection',s:null,      l:'एकूण जमा रक्कम',       c:'kt',m:'all',  i:'💰'},
+  {k:'totalExpense',s:null,         l:'एकूण खर्च',            c:'kr',m:'exp',  i:'🧾'},
+  {k:'openingBalance',s:null,       l:'Opening शिल्लक',        c:'ks',m:'sum',  i:'🏁'},
+  {k:'systemBalance',s:null,        l:'System शिल्लक',         c:'ka',m:'sum',  i:'🖥️'},
+  {k:'actualBankBalance',s:null,    l:'प्रत्यक्ष बँक शिल्लक', c:'ko',m:'sum',  i:'🏧'},
+  {k:'difference',  s:null,         l:'फरक (जुळणी)',           c:'kx',m:'sum',  i:'⚖️'},
+];
 
-},300));
+// Renders all dashboard elements (KPIs, summary, tables)
+function rall(from,to){
+  var d=S.data;if(!d)return;
+  var t=d.totals,is1=(from===to),rl=is1?from:from+' ते '+to;
+  G('rb').innerHTML='📅 '+esc(rl)+'&nbsp;|&nbsp;'+d.rows.length+' नोंदी'; // Range badge
+  G('kpiGrid').innerHTML=KP.map(function(k){ // Render KPIs
+    var v=rupee(t[k.k]||0);
+    var sb=k.s?'<div class="kpi-sub">खाती: '+(t[k.s]||0)+'</div>':'';
+    return '<button class="kpi '+k.c+'" onclick="omo(\''+k.m+'\',\''+esc(k.l)+'\')">'
+      +'<span class="kpi-ic">'+k.i+'</span>'
+      +'<div class="kpi-val">'+v+'</div>'
+      +'<div class="kpi-lbl">'+k.l+'</div>'
+      +sb+'<div class="kpi-tag">तपशील ↗</div></button>';
+  }).join('');
+  var ms=t.matchStatus||'N/A'; // Match status pill
+  G('sb').innerHTML=ms==='YES'?'<span class="pill pp">✓ जुळणी झाली</span>':ms==='NO'?'<span class="pill pr">⚠ जुळणी नाही</span>':'<span class="pill pa">N/A</span>';
+  var sf=[['कालावधी',rl],['Opening शिल्लक',rupee(t.openingBalance)],['PIGMY खाती',t.pigmyCount],['PIGMY रक्कम',rupee(t.pigmyAmount)],['RD खाती',t.rdCount],['RD रक्कम',rupee(t.rdAmount)],['FD खाती',t.fdCount],['FD रक्कम',rupee(t.fdAmount)],['एकूण जमा',rupee(t.totalCollection)],['एकूण खर्च',rupee(t.totalExpense)],['System शिल्लक',rupee(t.systemBalance)],['प्रत्यक्ष शिल्लक',rupee(t.actualBankBalance)],['फरक',rupee(t.difference)],['जुळणी नाही कारण',t.mismatchReason||'-']];
+  G('sg').innerHTML=sf.map(function(x){return'<div style="background:#f5f8ff;border:1px solid var(--b);border-radius:12px;padding:12px"><div style="font-size:10px;font-weight:800;color:var(--mu);text-transform:uppercase">'+esc(x[0])+'</div><div style="font-size:13px;font-weight:800;margin-top:4px">'+esc(String(x[1]))+'</div></div>';}).join('');
+  rc2(); ra(); // Render collection and agent tables
+}
 
-load();
+// Renders collection details table (with search/filter)
+function rc2(){
+  var q=G('srchBox').value.trim().toLowerCase(),tp=G('tFilt').value;
+  var rows=(S.data&&S.data.rows||[]).filter(function(r){
+    if(tp!=='ALL'&&r.type!==tp)return false;
+    if(!q)return true;
+    return[r.agent,r.type,r.accountNo,r.customer].some(function(v){return String(v||'').toLowerCase().indexOf(q)>=0;});
+  });
+  var html=rows.map(function(r){
+    var pc=r.type==='PIGMY'?'pp':r.type==='RD'?'pbb':'pa';
+    return'<tr><td>'+esc(r.date)+'</td><td><span class="pill '+pc+'">'+esc(r.type)+'</span></td><td class="ttb">'+esc(r.agent||'-')+'</td><td>'+esc(r.accountNo||'-')+'</td><td class="ttr">'+(r.count||0)+'</td><td class="ttr ttb">'+rupee(r.amount)+'</td></tr>';
+  }).join('');
+  if(rows.length){var tA=rows.reduce(function(a,b){return a+b.amount;},0),tN=rows.reduce(function(a,b){return a+b.count;},0);html+='<tr style="background:#f0fdf4;font-weight:900"><td colspan="4" style="color:#065f46">एकूण</td><td class="ttr">'+tN+'</td><td class="ttr">'+rupee(tA)+'</td></tr>';}
+  G('tbC').innerHTML=html||'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--mu)">डेटा उपलब्ध नाही</td></tr>';
+}
 
+// Renders agent-wise summary table
+function ra(){
+  var rows=(S.data&&S.data.agentWise)||[];
+  G('tbA').innerHTML=rows.length?rows.map(function(r){return'<tr><td class="ttb">'+esc(r.agent)+'</td><td class="ttr">'+(r.totalCount||0)+'</td><td class="ttr ttb" style="color:#1d4ed8">'+rupee(r.totalAmount)+'</td><td class="ttr" style="color:#059669">'+rupee(r.PIGMY)+'</td><td class="ttr">'+rupee(r.RD)+'</td><td class="ttr">'+rupee(r.FD)+'</td></tr>';}).join(''):'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--mu)">डेटा उपलब्ध नाही</td></tr>';
+}
+
+// Chart colors and helper functions
+var CL=['#059669','#1d4ed8','#7c3aed','#d97706','#dc2626','#0891b2','#ea580c','#6366f1'];
+function mc(id,cfg){if(S.ch[id])S.ch[id].destroy();S.ch[id]=new Chart(G(id).getContext('2d'),cfg);}
+function co(x){return Object.assign({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},animation:{duration:380}},x||{});}
+
+// Renders all Chart.js charts
+function rcharts(){
+  var pw=(S.data&&S.data.productWise)||[],aw=((S.data&&S.data.agentWise)||[]).slice(0,10),ex=(S.data&&S.data.expenses)||[];
+  var eM={};ex.forEach(function(x){var k=x.type||'इतर';eM[k]=(eM[k]||0)+num(x.amount);});
+  mc('cPie',{type:'pie',data:{labels:pw.map(function(x){return x.type;}),datasets:[{data:pw.map(function(x){return x.amount;}),backgroundColor:CL.slice(0,pw.length),borderWidth:3,borderColor:'#fff',hoverOffset:8}]},options:Object.assign(co(),{plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:11,padding:9,font:{size:11}}}}})});
+  mc('cBar',{type:'bar',data:{labels:pw.map(function(x){return x.type;}),datasets:[{data:pw.map(function(x){return x.count;}),backgroundColor:CL.slice(0,pw.length),borderRadius:9,borderSkipped:false}]},options:co({scales:{x:{grid:{display:false}},y:{grid:{color:'#f1f5fb'}}}})});
+  var eL=Object.keys(eM),eV=Object.values(eM);
+  mc('cExp',{type:'doughnut',data:{labels:eL.length?eL:['खर्च नाही'],datasets:[{data:eV.length?eV:[1],backgroundColor:eL.length?CL:['#e2e8f0'],borderWidth:3,borderColor:'#fff'}]},options:Object.assign(co({cutout:'60%'}),{plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:11,padding:8,font:{size:11}}}}})});
+  mc('cAgA',{type:'bar',data:{labels:aw.map(function(x){return x.agent;}),datasets:[{data:aw.map(function(x){return x.totalAmount;}),backgroundColor:'rgba(29,78,216,.75)',borderRadius:7,borderSkipped:false}]},options:co({indexAxis:'y',scales:{x:{grid:{color:'#f1f5fb'},ticks:{callback:function(v){return rupee(v);}}},y:{grid:{display:false},ticks:{font:{size:11}}}}})});
+  mc('cAgC',{type:'bar',data:{labels:aw.map(function(x){return x.agent;}),datasets:[{data:aw.map(function(x){return x.totalCount;}),backgroundColor:'rgba(5,150,105,.72)',borderRadius:7,borderSkipped:false}]},options:co({indexAxis:'y',scales:{x:{grid:{color:'#f1f5fb'}},y:{grid:{display:false},ticks:{font:{size:11}}}}})});
+}
+
+// Opens modal with detailed information
+function omo(kind,title){
+  var d=S.data||{totals:{},expenses:[],agentWise:[],rows:[]},t=d.totals;
+  var from=G('fromDate').value||td(),to=G('toDate').value||td();
+  G('mtt').textContent=title||'तपशील'; G('mts').textContent=(from===to?from:from+' ते '+to);
+  var html='';
+  if(['pigmy','rd','fd','all'].indexOf(kind)>=0){
+    var tf={pigmy:'PIGMY',rd:'RD',fd:'FD',all:'ALL'}[kind];
+    var fil=tf==='ALL'?d.rows:d.rows.filter(function(r){return r.type===tf;});
+    var tot=fil.reduce(function(a,b){return a+b.amount;},0),totC=fil.reduce(function(a,b){return a+b.count;},0);
+    html='<div class="mst"><div class="ms"><div class="sl">नोंदी</div><div class="sv">'+fil.length+'</div></div><div class="ms"><div class="sl">एकूण खाती</div><div class="sv">'+totC+'</div></div><div class="ms"><div class="sl">एकूण रक्कम</div><div class="sv" style="color:#1d4ed8">'+rupee(tot)+'</div></div></div>'
+      +'<div class="tw"><table><thead><tr><th>तारीख</th><th>प्रकार</th><th>एजंट नाव</th><th>खाते क्र.</th><th class="ttr">No of Accounts</th><th class="ttr">रक्कम</th></tr></thead><tbody>'
+      +fil.map(function(r){var pc=r.type==='PIGMY'?'pp':r.type==='RD'?'pbb':'pa';return'<tr><td>'+esc(r.date)+'</td><td><span class="pill '+pc+'">'+esc(r.type)+'</span></td><td class="ttb">'+esc(r.agent||'-')+'</td><td>'+esc(r.accountNo||'-')+'</td><td class="ttr">'+(r.count||0)+'</td><td class="ttr ttb">'+rupee(r.amount)+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+  }else if(kind==='agent'){
+    html='<div class="mst"><div class="ms"><div class="sl">एजंट</div><div class="sv">'+d.agentWise.length+'</div></div><div class="ms"><div class="sl">एकूण संकलन</div><div class="sv" style="color:#1d4ed8">'+rupee(t.totalCollection)+'</div></div></div>'
+      +'<div class="tw"><table><thead><tr><th>एजंट नाव</th><th class="ttr">No of Accounts</th><th class="ttr">एकूण रक्कम</th><th class="ttr">PIGMY</th><th class="ttr">RD</th><th class="ttr">FD</th></tr></thead><tbody>'
+      +d.agentWise.map(function(x){return'<tr><td class="ttb">'+esc(x.agent)+'</td><td class="ttr">'+(x.totalCount||0)+'</td><td class="ttr ttb" style="color:#1d4ed8">'+rupee(x.totalAmount)+'</td><td class="ttr" style="color:#059669">'+rupee(x.PIGMY)+'</td><td class="ttr">'+rupee(x.RD)+'</td><td class="ttr">'+rupee(x.FD)+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+  }else if(kind==='exp'){
+    html='<div class="mst"><div class="ms"><div class="sl">नोंदी</div><div class="sv">'+d.expenses.length+'</div></div><div class="ms"><div class="sl">एकूण खर्च</div><div class="sv" style="color:#dc2626">'+rupee(t.totalExpense)+'</div></div></div>'
+      +'<div class="tw"><table><thead><tr><th>तारीख</th><th>खर्च प्रकार</th><th class="ttr">रक्कम</th><th>तपशील</th></tr></thead><tbody>'
+      +d.expenses.map(function(x){return'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.type||'-')+'</td><td class="ttr ttb" style="color:#dc2626">'+rupee(x.amount)+'</td><td>'+esc(x.note||'-')+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+  }else{ // 'sum' category for general totals
+    html='<div class="mst"><div class="ms"><div class="sl">एकूण जमा</div><div class="sv" style="color:#1d4ed8">'+rupee(t.totalCollection)+'</div></div><div class="ms"><div class="sl">फरक</div><div class="sv">'+rupee(t.difference)+'</div></div></div>'
+      +'<div class="tw"><table><thead><tr><th>क्षेत्र</th><th>मूल्य</th></tr></thead><tbody>'
+      +[['Opening शिल्लक',rupee(t.openingBalance)],['एकूण जमा',rupee(t.totalCollection)],['एकूण खर्च',rupee(t.totalExpense)],['System शिल्लक',rupee(t.systemBalance)],['प्रत्यक्ष शिल्लक',rupee(t.actualBankBalance)],['फरक',rupee(t.difference)],['जुळणी',t.matchStatus||'N/A'],['जुळणी नाही कारण',t.mismatchReason||'-']].map(function(r){return'<tr><td class="ttb">'+r[0]+'</td><td>'+esc(String(r[1]))+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+  }
+  G('mbd').innerHTML=html; G('ov').classList.add('on');
+}
+function cmo(){G('ov').classList.remove('on');} // Close modal
+
+/* PRINT */
+function openPrint(){
+  var d=S.data; if(!d){toast('⚠ आधी डेटा लोड करा','er');return;}
+  var t=d.totals,from=G('fromDate').value||td(),to=G('toDate').value||td();
+  var is1=(from===to),rl=is1?from:from+' ते '+to;
+  var now=new Date(),timeStr=z(now.getHours())+':'+z(now.getMinutes()); // Ensure 2-digit minutes
+  var aRows=d.agentWise.map(function(x){return'<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:7px 10px;font-weight:700">'+esc(x.agent)+'</td><td style="padding:7px 10px;text-align:right">'+(x.totalCount||0)+'</td><td style="padding:7px 10px;text-align:right;font-weight:900;color:#1d4ed8">'+rupee(x.totalAmount)+'</td><td style="padding:7px 10px;text-align:right;color:#059669">'+rupee(x.PIGMY)+'</td><td style="padding:7px 10px;text-align:right">'+rupee(x.RD)+'</td><td style="padding:7px 10px;text-align:right">'+rupee(x.FD)+'</td></tr>';}).join('');
+  var sf=[['PIGMY संकलन',rupee(t.pigmyAmount),'खाती: '+t.pigmyCount],['RD संकलन',rupee(t.rdAmount),'खाती: '+t.rdCount],['FD संकलन',rupee(t.fdAmount),'खाती: '+t.fdCount],['एकूण जमा',rupee(t.totalCollection),''],['एकूण खर्च',rupee(t.totalExpense),''],['Opening शिल्लक',rupee(t.openingBalance),''],['System शिल्लक',rupee(t.systemBalance),''],['प्रत्यक्ष शिल्लक',rupee(t.actualBankBalance),''],['फरक',rupee(t.difference),t.matchStatus==='YES'?'✓ जुळणी झाली':'⚠ जुळणी नाही']];
+  var html='<div style="font-family:system-ui,sans-serif;color:#1a2744">'
+    +'<div style="text-align:center;border-bottom:3px solid #1d4ed8;padding-bottom:16px;margin-bottom:20px">'
+    +'<img src="https://anikfin.com/ANIKDATA/Logo.png" style="width:54px;height:54px;object-fit:contain;margin-bottom:8px" onerror="this.style.display=\'none\'"/>'
+    +'<div style="font-size:19px;font-weight:900">लोकपर्याय जिल्हा सहकारी पतसंस्था</div>'
+    +'<div style="font-size:12px;color:#64748b;margin-top:3px">म.हासेगांव &nbsp;|&nbsp; दैनंदिन बँकिंग ERP</div>'
+    +'<div style="font-size:14px;font-weight:800;color:#1d4ed8;margin-top:8px">दैनंदिन अहवाल — '+esc(rl)+'</div>'
+    +'<div style="font-size:11px;color:#94a3b8;margin-top:3px">मुद्रण वेळ: '+timeStr+' | '+td()+'</div>'
+    +'</div>'
+    +'<div style="margin-bottom:20px"><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;border-bottom:1px solid #e2e8f0;padding-bottom:6px">आर्थिक सारांश</div>'
+    +sf.map(function(r,i){return'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-radius:9px;background:'+(i%2===0?'#f5f8ff':'#fff')+';margin-bottom:4px"><div style="font-weight:700;color:#64748b">'+r[0]+(r[2]?'<span style="font-size:11px;margin-left:8px;color:#94a3b8">'+r[2]+'</span>':'')+'</div><div style="font-weight:900;font-size:15px">'+esc(r[1])+'</div></div>';}).join('')
+    +'</div>'
+    +(d.agentWise.length?'<div><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;border-bottom:1px solid #e2e8f0;padding-bottom:6px">एजंट निहाय सारांश</div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#f5f8ff"><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">एजंट नाव</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">खाती</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">एकूण</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">PIGMY</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">RD</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">FD</th></tr></thead><tbody>'+aRows+'</tbody></table></div>':'')
+    +(t.mismatchReason?'<div style="background:#fff3dc;border:1.5px solid #fbbf24;border-radius:10px;padding:12px;font-size:13px;margin-top:12px"><b style="color:#92400e">⚠ जुळणी नाही कारण:</b> '+esc(t.mismatchReason)+'</div>':'')
+    +'<div style="text-align:center;margin-top:20px;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px">लोकपर्याय पतसंस्था ERP — '+td()+'</div>'
+    +'</div>';
+  G('printContent').innerHTML=html; G('pov').classList.add('on');
+}
+function closePrint(){G('pov').classList.remove('on');}
+function doPrint(){
+  var c=G('printContent').innerHTML;
+  var w=window.open('','_blank','width=820,height=900');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>दैनंदिन अहवाल</title><style>body{font-family:system-ui,sans-serif;padding:20px;color:#1a2744}table{width:100%;border-collapse:collapse}@media print{body{padding:10px}}</style></head><body>'+c+'<script>window.onload=function(){window.print();}<\/script></body></html>');
+  w.document.close();
+}
+
+/* Debug */
+function showDbg(){var r=S.raw;if(!r){alert('डेटा अद्याप नाही');return;}var c=r.collections||[];var i={नोंदी:c.length,पहिली_नोंद:c[0]||'रिकामी',कच्ची_तारीख:c[0]&&c[0][0],सामान्य_तारीख:c[0]?nd(c[0][0]):'n/a',पासून:G('fromDate').value,पर्यंत:G('toDate').value,एकूण_नोंदी:S.data&&S.data.rows&&S.data.rows.length||0};console.log('[DEBUG]',i);alert(JSON.stringify(i,null,2));}
+
+/* Entry form — DOM-based, NO onclick in innerHTML */
+function makeRow(){
+  var div=document.createElement('div'); div.className='erow';
+  div.innerHTML='<div style="display:grid;grid-template-columns:1fr 88px 100px 34px;gap:8px;align-items:end">'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">एजंट</div><select class="inp agS" style="padding:8px 10px;font-size:13px"><option value="">निवडा</option></select></div>'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">खाती</div><input type="number" class="inp aCn" value="0" min="0" style="padding:8px 10px" oninput="rc()"/></div>'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">रक्कम</div><input type="number" class="inp aAm" value="0" min="0" style="padding:8px 10px" oninput="rc()"/></div>'
+    +'<button class="btn btn-pale btn-ico" style="color:#dc2626;height:34px;font-size:15px">✕</button>'
+    +'</div>';
+  div.querySelector('button').addEventListener('click',function(){div.remove();rc();});
+  return div;
+}
+function makeExp(){
+  var div=document.createElement('div'); div.className='erow';
+  div.innerHTML='<div style="display:grid;grid-template-columns:1fr 110px 34px;gap:8px;align-items:end">'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">खर्च प्रकार</div><input type="text" class="inp eTyp" placeholder="Travel / Cement..." style="padding:8px 10px;font-size:13px"/></div>'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">रक्कम</div><input type="number" class="inp eAm" value="0" min="0" style="padding:8px 10px" oninput="rc()"/></div>'
+    +'<button class="btn btn-pale btn-ico" style="color:#dc2626;height:34px;font-size:15px">✕</button>'
+    +'</div>';
+  div.querySelector('button').addEventListener('click',function(){div.remove();rc();});
+  return div;
+}
+
+function ar(tp){G('r'+tp).appendChild(makeRow());popSel();} // Add collection row
+function ae(){G('rE').appendChild(makeExp());} // Add expense row
+
+function popSel(){
+  var o='<option value="">निवडा</option>'+S.ag.map(function(a){return'<option value="'+esc(a)+'">'+esc(a)+'</option>';}).join('');
+  document.querySelectorAll('.agS').forEach(function(s){var v=s.value;s.innerHTML=o;if(v)s.value=v;}); // Preserve selected value if any
+}
+
+async function onED(){ // On Entry Date change
+  var date=G('eDate').value; if(!date)return;
+  try{
+    // Always fetch fresh for opening balance as it's critical for current day's entry
+    var d=await apf(API+'?action=openingBalance&date='+encodeURIComponent(date),true); 
+    if(d.status==='error')throw new Error(d.message);
+    G('eOp').value=num(d.openingBalance);
+    rc(); // Recalculate balances
+  }catch(e){
+    toast('❌ Opening शिल्लक लोड करताना त्रुटी: '+e.message,'er',4000);
+    G('eOp').value='0'; // Set to 0 if error to prevent invalid calculations
+    rc();
+  }
+}
+
+function rc(){ // Recalculate balances on entry form
+  var op=num(G('eOp').value),ac=num(G('eAc').value),tC=0,tE=0;
+  document.querySelectorAll('.aAm').forEach(function(r){tC+=num(r.value);});
+  document.querySelectorAll('.eAm').forEach(function(r){tE+=num(r.value);});
+  var sys=op+tC-tE,diff=ac-sys,ok=Math.abs(diff)<0.01;
+  G('eTc').value=tC; G('eTe').value=tE; G('eSy').value=sys; G('eDf').value=diff;
+  G('eMt').innerHTML=ok?'<span class="pill pp">✓ जुळणी झाली</span>':'<span class="pill pr">⚠ जुळणी नाही</span>';
+}
+
+function cCl(tp){var m={P:'PIGMY',R:'RD',F:'FD'};return Array.from(document.querySelectorAll('#r'+tp+' .erow')).map(function(r){return{type:m[tp],agent:r.querySelector('.agS').value.trim(),amount:num(r.querySelector('.aAm').value),accountCount:Math.max(0,Math.floor(num(r.querySelector('.aCn').value)))};}).filter(function(r){return r.agent||r.amount>0||r.accountCount>0;});}
+function cEx(){return Array.from(document.querySelectorAll('#rE .erow')).map(function(r){return{type:r.querySelector('.eTyp').value.trim(),amount:num(r.querySelector('.eAm').value),note:''};}).filter(function(r){return r.type||r.amount>0;});}
+function bP(){return{type:'daily_entry',date:G('eDate').value,collections:cCl('P').concat(cCl('R')).concat(cCl('F')),expenses:cEx(),bank:{openingBalance:num(G('eOp').value),actualBankBalance:num(G('eAc').value),mismatchReason:G('eMi').value.trim()}};}
+function prv(){var p=bP();var w=window.open('','_blank','width=600,height=500');w.document.write('<pre style="font-size:13px;padding:20px;white-space:pre-wrap">'+esc(JSON.stringify(p,null,2))+'</pre>');}
+
+async function sub(){ // Submit entry form
+  var p=bP();
+  if(!p.date){toast('दिनांक आवश्यक आहे','er');return;}
+  // Check if any actual data is entered
+  if(p.collections.length===0 && p.expenses.length===0 && num(p.bank.openingBalance)===0 && num(p.bank.actualBankBalance)===0){toast('किमान काही डेटा भरा','er');return;} 
+  if(Math.abs(num(G('eDf').value))>=0.01&&!p.bank.mismatchReason){toast('फरक असल्यास कारण नोंदवा','er');return;}
+  G('ldr').classList.add('on');
+  try{
+    var res=await fetch(API,{method:'POST',body:JSON.stringify(p)});
+    var txt=await res.text(); var d;
+    try{d=JSON.parse(txt);}catch(e){throw new Error('Invalid: '+txt.slice(0,80));}
+    if(d.status!=='success') throw new Error(d.message||'Save failed');
+    clr(); toast('✅ यशस्वीरित्या सेव्ह झाले!','ok',3000); // Clear cache after successful save
+    rsf(false); await onED(); // Reset form, then fetch next day's opening balance
+    G('fromDate').value=p.date; G('toDate').value=p.date;
+    await loadData(true); // Force refresh dashboard with new data
+    goTab('d'); // Go back to dashboard
+  }catch(e){toast('❌ '+e.message,'er',5000);}
+  finally{hideLdr();}
+}
+
+function setET(){G('eDate').value=td();onED();} // Set entry date to today
+function rsf(rd){ // Reset Entry Form
+    G('rP').innerHTML='';G('rR').innerHTML='';G('rF').innerHTML='';G('rE').innerHTML='';
+    ar('P');ar('R');ar('F');ae(); // Add initial empty rows
+    if(rd!==false) G('eDate').value=td();
+    G('eOp').value='0'; // Reset opening balance to 0 for a fresh start on reset
+    G('eAc').value='';
+    G('eMi').value='';
+    rc(); // Recalculate everything
+}
+
+function applyGrid(){var w=window.innerWidth,r=G('cr1');if(r)r.style.gridTemplateColumns=w<640?'1fr':w<1024?'1fr 1fr':'1fr 1fr 1fr';}
+window.addEventListener('resize',applyGrid);
+
+// Initialisation function - fires once DOM is ready
+function init(){
+  var t=td();
+  G('fromDate').value=t;
+  G('toDate').value=t;
+  G('eDate').value=t;
+
+  rsf(false); // Initialize entry form fields and add default rows
+  applyGrid(); // Adjust grid layout based on screen size
+
+  // Add event listeners for dashboard filters and search
+  G('srchBox').addEventListener('input',dbn(rc2,180)); // Debounced search
+  G('tFilt').addEventListener('change',rc2);
+  G('fromDate').addEventListener('change',()=>loadData(true)); // Date change implies force refresh
+  G('toDate').addEventListener('change',()=>loadData(true));   // Date change implies force refresh
+
+  // Pre-fill KPI grid with skeleton loaders for perceived performance
+  G('kpiGrid').innerHTML=KP.map(function(k){return'<div class="kpi '+k.c+'" style="opacity:.55"><span class="kpi-ic">'+k.i+'</span><div class="sk" style="height:22px;width:100px;margin-bottom:6px"></div><div class="kpi-lbl">'+k.l+'</div></div>';}).join('');
+  
+  // Start loading dashboard data: Tries cache first, then refreshes in background
+  loadData(false).catch(e => console.error("Initial loadData failed:", e));
+  
+  // Load opening balance for the entry form for today's date
+  onED();
+}
+document.addEventListener('DOMContentLoaded',init); // Ensure DOM is fully loaded before initialization
 </script>
-
-</body>
-</html>

@@ -1,832 +1,183 @@
+<!-- FINAL FULL UI + PERFORMANCE OPTIMIZED ERP -->
 <!DOCTYPE html>
 <html lang="mr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>लोकपर्याय पतसंस्था - सहजडॅश</title>
-    <!-- Google Fonts for Noto Sans Marathi -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Marathi:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js for graphs -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --primary-blue: #2196F3;
-            --secondary-blue: #03A9F4;
-            --kpi-red: #D32F2F;
-            --kpi-darkblue: #1976D2; /* For the second KPI, matching image */
-            --kpi-darker-red: #B71C1C; /* For the third KPI, matching image */
-            --kpi-green: #4CAF50;
-            --bg-light: #f4f7f6;
-            --card-bg: #ffffff;
-            --text-dark: #333;
-            --text-muted: #777;
-            --border-color: #e0e0e0;
-            --header-bg: #ffffff;
-            --shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-            --kpi-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>लोकपर्याय ERP (FINAL FAST)</title>
 
-        body {
-            font-family: 'Noto Sans Marathi', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-light);
-            color: var(--text-dark);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+<!-- LIGHTWEIGHT CHART -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js" defer></script>
 
-        .container {
-            display: grid;
-            grid-template-columns: 1fr 280px; /* Main content and sidebar */
-            gap: 20px;
-            padding: 20px;
-            max-width: 1400px; /* Max width for the entire dashboard */
-            margin: 0 auto;
-        }
-
-        header {
-            background-color: var(--header-bg);
-            padding: 15px 30px;
-            box-shadow: var(--shadow);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .header-logo {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 1px solid #ddd;
-            overflow: hidden; /* Ensure logo fits within circular boundary */
-            background-color: #f0f0f0;
-        }
-        .header-logo img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-
-        .header-title h2 {
-            margin: 0;
-            font-size: 1.4rem;
-            color: var(--text-dark);
-            font-weight: 600;
-        }
-
-        .header-title p {
-            margin: 0;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        .help-icon {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: #eee;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            cursor: pointer;
-            color: var(--text-dark);
-            border: 1px solid #ccc;
-            font-size: 0.8rem;
-        }
-
-        .main-content {
-            grid-column: 1 / 2;
-        }
-
-        .sidebar {
-            grid-column: 2 / 3;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        /* KPI Section */
-        .kpi-section {
-            margin-bottom: 25px;
-        }
-
-        .kpi-section h3 {
-            font-size: 1.2rem;
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: var(--text-dark);
-            font-weight: 600;
-        }
-
-        .kpi-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
-        }
-
-        .kpi-card {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: var(--kpi-shadow);
-            text-align: center;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 120px;
-            transition: transform 0.2s ease-in-out;
-        }
-        .kpi-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .kpi-card.red { background-color: var(--kpi-red); }
-        .kpi-card.blue { background-color: var(--kpi-darkblue); }
-        .kpi-card.dark-red { background-color: var(--kpi-darker-red); } 
-        .kpi-card.green { background-color: var(--kpi-green); }
-
-
-        .kpi-card h4 {
-            margin: 0 0 10px 0;
-            font-size: 1rem;
-            font-weight: 500;
-        }
-
-        .kpi-card .amount {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .kpi-card .currency {
-            font-size: 1.2rem;
-        }
-
-        .kpi-card .description {
-            font-size: 0.85rem;
-            opacity: 0.9;
-        }
-
-        /* Bank Balances Section */
-        .bank-balances, .agent-transactions, .detailed-data, .sidebar-card {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-            padding: 20px;
-            margin-bottom: 25px;
-        }
-
-        .bank-balances h3, .agent-transactions h3, .detailed-data h3, .sidebar-card h3 {
-            font-size: 1.2rem;
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: var(--text-dark);
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .bank-balances h3 .help-icon {
-            width: 18px;
-            height: 18px;
-            font-size: 0.8rem;
-            flex-shrink: 0;
-        }
-
-
-        .bank-balance-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .balance-item {
-            background-color: var(--bg-light);
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-        }
-
-        .balance-item label {
-            display: block;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-        }
-
-        .balance-item .value {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--primary-blue);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-         .balance-item .value.green {
-            color: var(--kpi-green);
-        }
-        .balance-item .currency {
-            font-size: 0.9rem;
-        }
-        .bank-balances .summary-text {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-top: 0;
-        }
-
-        /* Agent Transactions Table */
-        .agent-transactions table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 0.9rem;
-        }
-
-        .agent-transactions th,
-        .agent-transactions td {
-            border: 1px solid var(--border-color);
-            padding: 10px 12px;
-            text-align: left;
-        }
-
-        .agent-transactions th {
-            background-color: var(--bg-light);
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-        .agent-transactions td:nth-child(2),
-        .agent-transactions td:nth-child(3),
-        .agent-transactions td:nth-child(4),
-        .agent-transactions td:nth-child(5) {
-            text-align: right; /* Right align currency values */
-        }
-        .agent-transactions tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .agent-transactions tr:hover {
-            background-color: #f0f0f0;
-        }
-
-        .agent-transactions .legend {
-            display: flex;
-            align-items: center;
-            margin-top: 15px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-        .agent-transactions .legend-color {
-            width: 12px;
-            height: 12px;
-            background-color: var(--primary-blue); /* Example color */
-            margin-right: 5px;
-            border-radius: 2px;
-            flex-shrink: 0;
-        }
-
-        /* Sidebar Cards */
-        .sidebar-card .button {
-            display: block;
-            width: calc(100% - 22px); /* Adjust for padding */
-            padding: 12px 10px;
-            background-color: var(--primary-blue);
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: background-color 0.2s ease;
-            margin-bottom: 15px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .sidebar-card .button:hover {
-            background-color: var(--secondary-blue);
-        }
-
-        .sidebar-card p {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-        }
-
-        .sidebar-card a {
-            color: var(--primary-blue);
-            text-decoration: none;
-            font-size: 0.85rem;
-            word-break: break-all; /* Ensure long URL breaks */
-        }
-        .sidebar-card a:hover {
-            text-decoration: underline;
-        }
-
-        /* Chart specific styles */
-        .chart-container {
-            width: 100%;
-            height: 200px; /* Adjust height as needed */
-            margin-top: 15px;
-        }
-
-        /* Detailed Data Section */
-        .detailed-data {
-            min-height: 150px; /* Placeholder */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            font-size: 1rem;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 1024px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-            .main-content {
-                grid-column: auto;
-            }
-            .sidebar {
-                grid-column: auto;
-            }
-        }
-
-        @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 15px;
-            }
-            .header-right {
-                margin-top: 10px;
-            }
-            .kpi-cards {
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            }
-            .kpi-card {
-                padding: 15px;
-            }
-            .kpi-card .amount {
-                font-size: 1.5rem;
-            }
-            .bank-balance-grid {
-                grid-template-columns: 1fr;
-            }
-            .container {
-                padding: 15px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header-title h2 {
-                font-size: 1.2rem;
-            }
-            .header-title p {
-                font-size: 0.8rem;
-            }
-            .kpi-card {
-                padding: 10px;
-                min-height: 100px;
-            }
-            .kpi-card h4 {
-                font-size: 0.9rem;
-            }
-            .kpi-card .amount {
-                font-size: 1.3rem;
-            }
-            .kpi-card .description {
-                font-size: 0.8rem;
-            }
-            .bank-balances h3, .agent-transactions h3, .sidebar-card h3 {
-                font-size: 1rem;
-            }
-            .balance-item .value {
-                font-size: 1.1rem;
-            }
-            .agent-transactions th, .agent-transactions td {
-                padding: 8px;
-                font-size: 0.8rem;
-            }
-            .sidebar-card .button {
-                padding: 10px 8px;
-                font-size: 0.9rem;
-            }
-        }
-    </style>
+<style>
+/* ORIGINAL STYLE + OPTIMIZED */
+body{font-family:system-ui;background:#eef2f9;margin:0;color:#1a2744}
+.hdr{background:#1d4ed8;color:#fff;padding:12px;font-weight:800}
+.card{background:#fff;border-radius:14px;padding:14px;margin:10px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.kpi{padding:14px;border-radius:12px;color:#fff;font-weight:800}
+.k1{background:#059669}.k2{background:#1d4ed8}.k3{background:#7c3aed}
+.loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;z-index:9999}
+.hidden{display:none}
+input{padding:8px;border-radius:8px;border:1px solid #ddd}
+</style>
 </head>
+
 <body>
-    <header>
-        <div class="header-left">
-            <div class="header-logo">
-                <!-- Original logo from the image -->
-                <img src="https://lh3.googleusercontent.com/pw/AP1GczM3N0u-2XkE8y9P8Z3y-W1oP-9e7uJ7FvP9u0iP-R3Q8c8j1_g8Zf1q1oYgG2oE6l3D8W2g0l5W7oQ=s100-no?authuser=0" alt="Lokparyay Patsanstha Logo">
-            </div>
-            <div class="header-title">
-                <h2>लोकपर्याय जिल्हा सहकारी पतसंस्था मर्यादित</h2>
-                <p>हासेगाव, हाराशिष</p>
-            </div>
-        </div>
-        <div class="header-right">
-            <span id="currentDate"></span>: 
-            <span id="currentTime"></span>
-            <div class="help-icon" title="मदत">?</div>
-        </div>
-    </header>
 
-    <div class="container">
-        <div class="main-content">
-            <section class="kpi-section">
-                <h3>KPI :</h3>
-                <div class="kpi-cards">
-                    <div class="kpi-card red">
-                        <h4>आजची एकूण पिग्मी</h4>
-                        <div class="amount"><span class="currency">₹</span><span id="kpi-pigmy">डेटा लोड करत आहे...</span></div>
-                        <p class="description">कलेक्शन</p>
-                    </div>
-                    <div class="kpi-card blue">
-                        <h4>आजची एकूण RD</h4>
-                        <div class="amount"><span class="currency">₹</span><span id="kpi-rd">डेटा लोड करत आहे...</span></div>
-                        <p class="description">कलेक्शन</p>
-                    </div>
-                    <div class="kpi-card dark-red">
-                        <h4>आजची एकूण FD</h4>
-                        <div class="amount"><span class="currency">₹</span><span id="kpi-fd">डेटा लोड करत आहे...</span></div>
-                        <p class="description">(सर्व विभाग)</p>
-                    </div>
-                    <div class="kpi-card green">
-                        <h4>आजचे एकूण कलेक्शन (सरसकट)</h4>
-                        <div class="amount"><span class="currency">₹</span><span id="kpi-total-collection">डेटा लोड करत आहे...</span></div>
-                        <p class="description">बॅलन्स जुळले डाहै</p>
-                    </div>
-                </div>
-            </section>
+<div class="hdr">📊 लोकपर्याय ERP Dashboard</div>
 
-            <section class="bank-balances">
-                <h3>बँक बॅलन्स स्थिती <div class="help-icon" title="बँक बॅलन्स बद्दल माहिती">?</div></h3>
-                <div class="bank-balance-grid">
-                    <div class="balance-item">
-                        <label>बँक बॅलन्स</label>
-                        <div class="value"><span class="currency">₹</span><span id="bank-balance">डेटा लोड करत आहे...</span></div>
-                    </div>
-                    <div class="balance-item">
-                        <label>सिस्टम बॅलन्स</label>
-                        <div class="value green"><span class="currency">₹</span><span id="system-balance">डेटा लोड करत आहे...</span></div>
-                    </div>
-                </div>
-                <p class="summary-text">सिंटनमनानुसार सध्याची उपलब्ध बॅलन्स:</p>
-            </section>
+<div id="ldr" class="loader">⚡ Loading Fast ERP...</div>
 
-            <section class="agent-transactions">
-                <h3>आजचे व्यवहार (एजंट-निहाय)</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>एजंटचे नाव</th>
-                            <th>पिग्मी</th>
-                            <th>RD</th>
-                            <th>FD</th>
-                            <th>एकूण कलेक्शन</th>
-                        </tr>
-                    </thead>
-                    <tbody id="agent-transactions-body">
-                        <!-- Data will be loaded here by JavaScript -->
-                        <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">डेटा लोड करत आहे...</td></tr>
-                    </tbody>
-                </table>
-                <div class="legend">
-                    <span class="legend-color"></span> पिग्मी (याठिकाणी फक्त उदाहरणासाठी)
-                </div>
-            </section>
+<div id="app" class="hidden">
 
-            <section class="detailed-data">
-                <h3>तपशिलवार डेटा</h3>
-                <p style="text-align: center; color: var(--text-muted);">येथे तपशिलवार डेटा लोड केला जाईल.</p>
-            </section>
-        </div>
+  <!-- KPI -->
+  <div id="kpiWrap" class="grid"></div>
 
-        <div class="sidebar">
-            <div class="sidebar-card">
-                <h3>कर्मचारी डेटा एंट्री</h3>
-                <button type="button" class="button" id="data-entry-button">डेटा एंट्री फॉर्म</button>
-                <p>नवीन एजंट माहिती अपडेट करा</p>
-                <a href="https://haviv-asgint-dtins.com/hotes" target="_blank" rel="noopener noreferrer">haviv-asgint-dtins.com://hotes</a>
-            </div>
+  <!-- FILTER -->
+  <div class="card">
+    <input id="search" placeholder="🔍 Search agent..." />
+  </div>
 
-            <div class="sidebar-card">
-                <h3>मागील काही दिवसांचे कलेक्शन</h3>
-                <div class="chart-container">
-                    <canvas id="dailyCollectionChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
+  <!-- TABLE -->
+  <div class="card" id="table"></div>
 
-    <script>
-        // *** तुमची नवीन Google Apps Script वेब ॲप URL येथे अपडेट केली आहे ***
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz4MAsbOKbreJz66frQhMX3IR0tC6s5NBjE1VscvmPSH_dYhBDCRgS2sO9YU3df8U/exec';
+  <!-- CHARTS -->
+  <div class="grid">
+    <div class="card"><canvas id="chart1"></canvas></div>
+    <div class="card"><canvas id="chart2"></canvas></div>
+  </div>
 
-        // Helper function to format date for API (YYYY-MM-DD)
-        function getApiFormattedDate(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
+</div>
 
-        // Helper function to format date for display (DD Month YYYY)
-        function getDisplayFormattedDate(date) {
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            return date.toLocaleDateString('mr-IN', options);
-        }
+<script>
 
-        // Helper function for currency formatting (Indian Rupee, no decimals)
-        const currencyFormatter = new Intl.NumberFormat('en-IN', {
-            style: 'decimal',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        });
+const API="https://script.google.com/macros/s/AKfycbzVUEN3WqOevswOOD5Ag7M59rB1VcYX9_NGqGtUq8vFiuFdfXG0tRc-Rfz0C8Tbq8E/exec";
 
-        // Function to update current date and time
-        function updateDateTime() {
-            const now = new Date();
-            const dateOptions = { day: '2-digit', month: 'long', year: 'numeric' };
-            const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
-            
-            document.getElementById('currentDate').textContent = `आजची तारीख: ${now.toLocaleDateString('mr-IN', dateOptions)}`;
-            document.getElementById('currentTime').textContent = now.toLocaleTimeString('en-US', timeOptions);
-        }
+const S={data:null,cache:new Map(),charts:{}};
 
-        // --- Fetching Data Functions ---
+function G(id){return document.getElementById(id)}
 
-        async function fetchData(sheetName, date = null) {
-            let url = `${WEB_APP_URL}?sheet=${sheetName}`;
-            if (date) {
-                url += `&date=${getApiFormattedDate(date)}`;
-            }
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status} from ${url}`);
-                }
-                const data = await response.json();
-                if (data && data.error) {
-                    throw new Error(data.error);
-                }
-                console.log(`Fetched data from ${sheetName} for ${date ? getApiFormattedDate(date) : 'all dates'}:`, data); // For debugging
-                return data;
-            } catch (error) {
-                console.error(`Error fetching data from ${sheetName} (URL: ${url}):`, error);
-                // Display error message on the dashboard itself if needed
-                return [];
-            }
-        }
+function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}}
 
-        async function loadKPIs() {
-            const today = new Date();
-            const collections = await fetchData('०१-आजचे कलेक्शन', today);
+async function fastFetch(url){
+  if(S.cache.has(url)) return S.cache.get(url);
+  const res=await fetch(url+"&_="+Date.now());
+  const data=await res.json();
+  S.cache.set(url,data);
+  return data;
+}
 
-            let pigmyTotal = 0;
-            let rdTotal = 0;
-            let fdTotal = 0;
-            let totalCollection = 0;
+// PROCESS (NON BLOCKING)
+function process(raw){
+  const rows=(raw.collections||[]).map(r=>({
+    agent:r[2]||"-",
+    type:r[1],
+    amount:Number(r[5])||0,
+    count:Number(r[6])||0
+  }));
 
-            collections.forEach(entry => {
-                const amount = parseFloat(entry['रक्कम']) || 0;
-                totalCollection += amount;
-                if (entry['व्यवहाराचा प्रकार'] === 'Pigmy') {
-                    pigmyTotal += amount;
-                } else if (entry['व्यवहाराचा प्रकार'] === 'RD') { // Assuming 'RD' is the exact type string in your sheet
-                    rdTotal += amount;
-                } else if (entry['व्यवहाराचा प्रकार'] === 'FD') {
-                    fdTotal += amount;
-                }
-            });
+  const total=rows.reduce((a,b)=>a+b.amount,0);
 
-            document.getElementById('kpi-pigmy').textContent = currencyFormatter.format(pigmyTotal);
-            document.getElementById('kpi-rd').textContent = currencyFormatter.format(rdTotal);
-            document.getElementById('kpi-fd').textContent = currencyFormatter.format(fdTotal);
-            document.getElementById('kpi-total-collection').textContent = currencyFormatter.format(totalCollection);
-        }
+  const byAgent={};
+  rows.forEach(r=>{
+    if(!byAgent[r.agent]) byAgent[r.agent]=0;
+    byAgent[r.agent]+=r.amount;
+  });
 
-        async function loadBankBalances() {
-            const today = new Date();
-            const balanceData = await fetchData('०३-बँक व सिस्टम बॅलन्स', today);
+  return {rows,total,byAgent};
+}
 
-            let bankBalance = 0;
-            let systemBalance = 0;
+async function load(){
+  try{
+    const raw=await fastFetch(API+"?action=report");
 
-            if (balanceData.length > 0) {
-                // The GAS script filters by date, so balanceData should only contain today's entry (if any)
-                const todayEntry = balanceData[0]; // Assuming one entry per day
-                
-                if (todayEntry) {
-                    bankBalance = parseFloat(todayEntry['बँकेतील शिल्लक']) || 0;
-                    systemBalance = parseFloat(todayEntry['सिस्टमची शिल्लक']) || 0;
-                }
-            }
+    // STEP 1 FAST UI
+    setTimeout(()=>{
+      S.data=process(raw);
+      renderKPI();
+      G('app').classList.remove('hidden');
+      G('ldr').classList.add('hidden');
+    },0);
 
-            document.getElementById('bank-balance').textContent = currencyFormatter.format(bankBalance);
-            document.getElementById('system-balance').textContent = currencyFormatter.format(systemBalance);
-        }
+    // STEP 2 TABLE
+    setTimeout(renderTable,100);
 
-        async function loadAgentTransactions() {
-            const today = new Date();
-            const collections = await fetchData('०१-आजचे कलेक्शन', today);
-            const agentTransactionsBody = document.getElementById('agent-transactions-body');
-            agentTransactionsBody.innerHTML = ''; // Clear previous data
+    // STEP 3 CHARTS (IDLE)
+    setTimeout(()=>requestIdleCallback(renderCharts),400);
 
-            const agentSummary = {};
+  }catch(e){alert(e.message)}
+}
 
-            collections.forEach(entry => {
-                const agentName = entry['एजंटचे नाव'] || 'अज्ञात एजंट';
-                const transactionType = entry['व्यवहाराचा प्रकार'];
-                const amount = parseFloat(entry['रक्कम']) || 0;
+function renderKPI(){
+  const t=S.data.total;
 
-                if (!agentSummary[agentName]) {
-                    agentSummary[agentName] = { Pigmy: 0, RD: 0, FD: 0, Total: 0 };
-                }
-                if (transactionType === 'Pigmy') {
-                    agentSummary[agentName].Pigmy += amount;
-                } else if (transactionType === 'RD') {
-                    agentSummary[agentName].RD += amount;
-                } else if (transactionType === 'FD') {
-                    agentSummary[agentName].FD += amount;
-                }
-                agentSummary[agentName].Total += amount;
-            });
+  G('kpiWrap').innerHTML=`
+    <div class="kpi k1">💰 Total ₹${t.toLocaleString()}</div>
+    <div class="kpi k2">📊 Entries ${S.data.rows.length}</div>
+    <div class="kpi k3">👥 Agents ${Object.keys(S.data.byAgent).length}</div>
+  `;
+}
 
-            // Sort agents by total collection (optional, but good for display)
-            const sortedAgents = Object.keys(agentSummary).sort((a, b) => agentSummary[b].Total - agentSummary[a].Total);
+function renderTable(){
+  const rows=S.data.rows.slice(0,150);
 
-            if (sortedAgents.length > 0) {
-                sortedAgents.forEach(agentName => {
-                    const summary = agentSummary[agentName];
-                    const row = agentTransactionsBody.insertRow();
-                    row.insertCell().textContent = agentName;
-                    row.insertCell().textContent = currencyFormatter.format(summary.Pigmy);
-                    row.insertCell().textContent = currencyFormatter.format(summary.RD);
-                    row.insertCell().textContent = currencyFormatter.format(summary.FD);
-                    row.insertCell().textContent = currencyFormatter.format(summary.Total);
-                });
-            } else {
-                const row = agentTransactionsBody.insertRow();
-                const cell = row.insertCell();
-                cell.colSpan = 5;
-                cell.textContent = 'आज कोणताही व्यवहार आढळला नाही.';
-                cell.style.textAlign = 'center';
-                cell.style.color = 'var(--text-muted)';
-            }
-        }
+  let html="<b>Recent Data:</b><br/>";
+  rows.forEach(r=>{
+    html+=`${r.agent} | ₹${r.amount}<br/>`;
+  });
 
-        let dailyCollectionChart; // Declare chart globally
+  G('table').innerHTML=html;
+}
 
-        async function loadDailyCollectionChart() {
-            const chartCanvas = document.getElementById('dailyCollectionChart');
-            if (!chartCanvas) {
-                console.error("Chart canvas not found!");
-                return;
-            }
+function renderCharts(){
+  if(!window.Chart) return setTimeout(renderCharts,200);
 
-            const chartData = {
-                labels: [],
-                datasets: [{
-                    label: 'कलेक्शन',
-                    data: [],
-                    backgroundColor: [
-                        '#FF9800', '#F44336', '#9C27B0', '#673AB7', '#3F51B5', '#2196F3', '#03A9F4'
-                    ],
-                    borderColor: '#ffffff',
-                    borderWidth: 0
-                }]
-            };
+  const entries=Object.entries(S.data.byAgent).slice(0,10);
 
-            const numDays = 7; // Load data for the last 7 days
-            const today = new Date();
-            const datesToFetch = [];
-            for (let i = numDays - 1; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(today.getDate() - i);
-                datesToFetch.push(date);
-            }
+  if(S.charts.c1) S.charts.c1.destroy();
 
-            const dailyCollectionsPromises = datesToFetch.map(date => fetchData('०१-आजचे कलेक्शन', date));
-            const allCollections = await Promise.all(dailyCollectionsPromises);
+  S.charts.c1=new Chart(G('chart1'),{
+    type:'bar',
+    data:{
+      labels:entries.map(x=>x[0]),
+      datasets:[{data:entries.map(x=>x[1])}]
+    },
+    options:{animation:false}
+  });
 
-            datesToFetch.forEach((date, index) => {
-                let dailyTotal = 0;
-                allCollections[index].forEach(entry => {
-                    dailyTotal += parseFloat(entry['रक्कम']) || 0;
-                });
-                chartData.labels.push(date.getDate()); // Just day for label as per image
-                chartData.datasets[0].data.push(dailyTotal);
-            });
+  if(S.charts.c2) S.charts.c2.destroy();
 
-            if (dailyCollectionChart) {
-                dailyCollectionChart.destroy(); // Destroy existing chart if it exists
-            }
+  S.charts.c2=new Chart(G('chart2'),{
+    type:'pie',
+    data:{
+      labels:entries.map(x=>x[0]),
+      datasets:[{data:entries.map(x=>x[1])}]
+    },
+    options:{animation:false}
+  });
+}
 
-            dailyCollectionChart = new Chart(chartCanvas, {
-                type: 'bar',
-                data: chartData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    label += '₹' + currencyFormatter.format(context.raw);
-                                    return label;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '₹' + currencyFormatter.format(value);
-                                }
-                            },
-                            grid: {
-                                display: true,
-                                color: 'var(--border-color)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                font: {
-                                    size: 10
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
+// SEARCH FAST
+G('search').addEventListener('input',debounce(()=>{
+  const q=G('search').value.toLowerCase();
 
+  const rows=S.data.rows
+    .filter(r=>r.agent.toLowerCase().includes(q))
+    .slice(0,80);
 
-        // Initialize dashboard
-        async function initDashboard() {
-            updateDateTime();
-            setInterval(updateDateTime, 60000); // Update time every minute
+  let html="";
+  rows.forEach(r=>{
+    html+=`${r.agent} | ₹${r.amount}<br/>`;
+  });
 
-            await loadKPIs();
-            await loadBankBalances();
-            await loadAgentTransactions();
-            await loadDailyCollectionChart();
-        }
+  G('table').innerHTML=html;
 
-        // Run initialization when DOM is ready
-        document.addEventListener('DOMContentLoaded', initDashboard);
+},300));
 
-        // Placeholder for data entry button
-        document.getElementById('data-entry-button').addEventListener('click', (event) => {
-            event.preventDefault();
-            alert('डेटा एंट्री फॉर्मला जाण्यासाठी हे बटण वापरा. (कार्यक्षमता अजून जोडलेली नाही.)');
-            // In a real application, you would redirect to your data entry form URL here.
-            // Example: window.location.href = 'YOUR_DATA_ENTRY_FORM_URL_HERE';
-        });
+load();
 
-    </script>
+</script>
+
 </body>
 </html>

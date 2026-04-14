@@ -3,149 +3,696 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<title>लोकपर्याय पतसंस्था — ERP</title>
+<title>लोकपर्याय पतसंस्था — ERP डॅशबोर्ड</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{
-  --bg:#eef2f9;--w:#fff;--b:#dde5f2;--tx:#1a2744;--mu:#64748b;
-  --br:#1d4ed8;--bl:#eff6ff;--gn:#059669;--gl:#d1fae5;
-  --rd:#dc2626;--rl:#fee2e2;--am:#d97706;--al:#fef3c7;
-  --sh:0 2px 8px rgba(29,78,216,.07),0 1px 3px rgba(0,0,0,.05);
+/* Base Reset & Global Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
-body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;min-height:100vh}
-button,input,select,textarea{font-family:inherit}
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-thumb{background:#c7d2ee;border-radius:99px}
-/* Header: Adjusted gradient for a slightly more professional look */
-.hdr{background:linear-gradient(120deg,#0a1630 0%,#152f75 55%,#1c53c0 100%);position:sticky;top:0;z-index:200;box-shadow:0 2px 20px rgba(0,0,0,.35)}
-.hdr-in{max-width:1500px;margin:0 auto;padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:62px;gap:10px}
-.logo{width:44px;height:44px;border-radius:11px;overflow:hidden;flex-shrink:0;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.2)}
-.logo img{width:40px;height:40px;object-fit:contain}
-.bname{font-size:15px;font-weight:900;color:#fff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bsub{font-size:10px;color:rgba(255,255,255,.6);margin-top:1px}
-.nav{display:flex;gap:3px}
-.nb{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;color:rgba(255,255,255,.72);background:transparent;transition:all .15s}
-.nb:hover,.nb.act{background:rgba(255,255,255,.18);color:#fff}
-.hb{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;background:rgba(255,255,255,.13);border-radius:9px;border:none}
-.hb span{width:20px;height:2px;background:#fff;border-radius:2px;display:block}
-.mn{display:none;background:#0c1a3a;border-top:1px solid rgba(255,255,255,.1);padding:8px 14px 12px}
-.mn.op{display:flex;flex-direction:column;gap:3px}
-.mn .nb{width:100%;padding:12px 14px;border-radius:10px}
-.sh{max-width:1500px;margin:0 auto;padding:14px}
-.vs{display:flex;flex-direction:column;gap:14px}
-.gone{display:none!important}
-.gk{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:12px}
-/* G1 class for single item in a row */
-.g1{display:grid;grid-template-columns:1fr;gap:14px;}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-/* g3 class removed as charts are removed */
-/* g4 for summary grid at bottom */
-.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-/* ga class removed as entry form is removed */
-.card{background:var(--w);border:1.5px solid var(--b);border-radius:18px;padding:18px;box-shadow:var(--sh)}
-.chd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:11px;border-bottom:1.5px solid var(--b);flex-wrap:wrap;gap:8px}
-.ctit{font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px}
-.cic{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
+
+:root {
+  /* Core Palette */
+  --bg: #f8faff; /* Lighter background for a fresh feel */
+  --w: #fff;
+  --tx: #1e293b; /* Darker text for better contrast */
+  --mu: #64748b; /* Muted text */
+
+  /* Primary Brand (Blue) */
+  --br: #2563eb; /* Stronger blue */
+  --bl: #eff6ff; /* Light blue */
+
+  /* Status Colors */
+  --gn: #10b981; /* Green for success */
+  --gl: #ecfdf5; /* Light green */
+  --rd: #ef4444; /* Red for error */
+  --rl: #fee2e2; /* Light red */
+  --am: #f59e0b; /* Amber for warning */
+  --al: #fffbeb; /* Light amber */
+
+  /* Greys */
+  --b: #e2e8f0; /* Border color - subtle grey */
+  --b2: #cbd5e1; /* Slightly darker border/separator */
+
+  /* Shadows */
+  --sh-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.03);
+  --sh-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --sh-lg: 0 10px 30px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.05);
+
+  /* Border Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; /* Prioritize Inter if available */
+  background: var(--bg);
+  color: var(--tx);
+  font-size: 15px; /* Slightly larger base font */
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 6px; /* Slightly wider scrollbar */
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* More neutral scrollbar */
+  border-radius: 99px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+
+/* Header: Sleeker, deeper gradient */
+.hdr {
+  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: var(--sh-md); /* More refined shadow */
+}
+.hdr-in {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 0 20px; /* Increased padding */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 68px; /* Slightly taller header */
+  gap: 15px;
+}
+.logo {
+  width: 48px; /* Slightly larger logo */
+  height: 48px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--sh-sm);
+}
+.logo img {
+  width: 44px; /* Slightly larger image */
+  height: 44px;
+  object-fit: contain;
+}
+.bname {
+  font-size: 16px; /* Slightly larger font */
+  font-weight: 800; /* Slightly less heavy */
+  color: #fff;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bsub {
+  font-size: 11px;
+  color: rgba(255,255,255,.65); /* More subtle subtext */
+  margin-top: 2px;
+}
+.nav {
+  display: flex;
+  gap: 6px;
+}
+.nb {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 18px; /* More padding */
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  color: rgba(255,255,255,.78);
+  background: transparent;
+  transition: all .2s ease; /* Smoother transition */
+}
+.nb:hover {
+  background: rgba(255,255,255,.15);
+  color: #fff;
+  transform: translateY(-1px); /* Subtle lift on hover */
+}
+.nb.act {
+  background: rgba(255,255,255,.25); /* More prominent active state */
+  color: #fff;
+  box-shadow: var(--sh-sm);
+}
+.hb {
+  display: none;
+  flex-direction: column;
+  gap: 6px; /* Slightly more space */
+  cursor: pointer;
+  padding: 10px; /* More padding */
+  background: rgba(255,255,255,.15);
+  border-radius: var(--radius-md);
+  border: none;
+  transition: background .2s;
+}
+.hb:hover { background: rgba(255,255,255,.25); }
+.hb span {
+  width: 22px; /* Slightly larger burger icon */
+  height: 2px;
+  background: #fff;
+  border-radius: 2px;
+  display: block;
+}
+.mn {
+  display: none;
+  background: #2b3648; /* Darker for mobile menu */
+  border-top: 1px solid rgba(255,255,255,.1);
+  padding: 10px 16px 14px;
+}
+.mn.op {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.mn .nb {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+}
+
+/* Section Wrapper & Grid Layouts */
+.sh {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 20px; /* Increased padding */
+}
+.vs {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Slightly more space between sections */
+}
+.gone { display: none !important; }
+
+.gk {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Min width increased */
+  gap: 16px; /* Increased gap */
+}
+.g1 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+.g2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.g4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); /* Slightly larger min-width */
+  gap: 12px; /* Increased gap */
+}
+
+/* Cards */
+.card {
+  background: var(--w);
+  border: 1px solid var(--b); /* Softer border */
+  border-radius: var(--radius-lg); /* Larger radius for a softer look */
+  padding: 22px; /* Increased padding */
+  box-shadow: var(--sh-sm); /* Subtle shadow */
+  transition: box-shadow .2s ease;
+}
+.card:hover {
+  box-shadow: var(--sh-md); /* Slightly more prominent shadow on hover */
+}
+.chd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px; /* More space */
+  padding-bottom: 14px; /* More space */
+  border-bottom: 1px solid var(--b); /* Softer separator */
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.ctit {
+  font-size: 16px; /* Larger title font */
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cic {
+  width: 34px; /* Slightly larger icon container */
+  height: 34px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+  box-shadow: var(--sh-sm); /* Subtle shadow for icons */
+}
+
 /* KPI Gradient Cards */
-.kpi{border-radius:18px;padding:18px 16px;color:#fff;cursor:pointer;position:relative;overflow:hidden;border:none;text-align:left;width:100%;transition:transform .14s,box-shadow .14s}
-.kpi:hover{transform:translateY(-4px);box-shadow:0 18px 50px rgba(0,0,0,.24)}
-.kpi:active{transform:translateY(0)}
-.kpi::after{content:'';position:absolute;bottom:-22px;right:-16px;width:95px;height:95px;border-radius:50%;background:rgba(255,255,255,.1)}
-.kpi::before{content:'';position:absolute;top:-16px;right:28px;width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.07)}
-.kpi-ic{font-size:28px;margin-bottom:12px;display:block}
-.kpi-val{font-size:22px;font-weight:900;line-height:1.1;letter-spacing:-.3px}
-.kpi-lbl{font-size:11px;font-weight:700;opacity:.88;margin-top:5px;line-height:1.3}
-.kpi-sub{font-size:10px;opacity:.72;margin-top:3px}
-.kpi-tag{position:absolute;bottom:10px;right:13px;font-size:9px;opacity:.65;font-weight:700}
-.kg{background:linear-gradient(135deg,#059669,#10b981);box-shadow:0 8px 26px rgba(5,150,105,.38)}
-.kb{background:linear-gradient(135deg,#1d4ed8,#3b82f6);box-shadow:0 8px 26px rgba(29,78,216,.38)}
-.kv{background:linear-gradient(135deg,#7c3aed,#a855f7);box-shadow:0 8px 26px rgba(124,58,237,.38)}
-.kt{background:linear-gradient(135deg,#0891b2,#22d3ee);box-shadow:0 8px 26px rgba(8,145,178,.38)}
-/* Removed kr, ks, ka, kx as their associated KPIs are removed */
-/* ko kept for bank balance */
-.ko{background:linear-gradient(135deg,#ea580c,#fb923c);box-shadow:0 8px 26px rgba(234,88,12,.35)}
-/* Range bar */
-.rbbar{background:var(--w);border:1.5px solid var(--b);border-radius:18px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;box-shadow:var(--sh)}
-.rbbar label{font-size:10px;font-weight:800;color:var(--mu);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
-.rbadge{display:inline-flex;align-items:center;gap:5px;background:var(--bl);color:#1e40af;border-radius:9px;padding:6px 12px;font-size:11px;font-weight:800}
-.qrow{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
-/* Buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:11px;padding:10px 16px;font-weight:800;font-size:13px;transition:opacity .12s,transform .12s;white-space:nowrap;cursor:pointer;line-height:1.2}
-.btn:hover{opacity:.88;transform:translateY(-1px)}.btn:active{transform:translateY(0);opacity:1}
-.btn-blue{background:#1d4ed8;color:#fff;box-shadow:0 4px 14px rgba(29,78,216,.3)}
-.btn-green{background:#059669;color:#fff;box-shadow:0 4px 14px rgba(5,150,105,.28)}
-.btn-red{background:#dc2626;color:#fff}
-.btn-violet{background:#7c3aed;color:#fff}
-.btn-print{background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;box-shadow:0 4px 14px rgba(15,118,110,.3)}
-.btn-ghost{background:var(--bl);color:#1e40af}
-.btn-pale{background:#f1f5f9;color:var(--tx)}
-.btn-sm{padding:8px 13px;font-size:12px;border-radius:9px}
-.btn-ico{width:34px;height:34px;padding:0;border-radius:9px;font-size:15px}
-/* Inputs */
-.inp{border:1.5px solid var(--b);border-radius:10px;padding:9px 12px;background:var(--w);color:var(--tx);transition:border-color .15s;font-size:14px;width:100%}
-.inp:focus{outline:none;border-color:#1d4ed8;box-shadow:0 0 0 3px rgba(29,78,216,.1)}
-.inpro{background:#f8faff;color:var(--mu)}
-textarea.inp{resize:vertical}
-.lbl{display:block;font-size:10px;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
-/* Pills */
-.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800}
-.pp{background:var(--gl);color:#065f46}.pa{background:var(--al);color:#78350f}
-.pr{background:var(--rl);color:#7f1d1d}.pbb{background:var(--bl);color:#1e3a8a}
-/* Tables */
-.tw{overflow-x:auto;border-radius:13px;border:1.5px solid var(--b)}
-.tw table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
-thead th{background:#f5f8ff;padding:9px 13px;font-size:10px;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;position:sticky;top:0;z-index:1}
-td{padding:9px 13px;border-top:1px solid #f1f5fb;white-space:nowrap}
-tbody tr:hover{background:#f5f8ff}
-.ttr{text-align:right}.ttb{font-weight:800}
-/* Modal */
-.ov{position:fixed;inset:0;background:rgba(12,26,58,.58);z-index:9000;display:none;align-items:center;justify-content:center;padding:12px;backdrop-filter:blur(5px)}
-.ov.on{display:flex}
-.mo{background:#fff;border-radius:22px;box-shadow:0 24px 80px rgba(0,0,0,.3);width:100%;max-width:820px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;animation:su .18s ease}
-@keyframes su{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.mhd{padding:17px 22px;border-bottom:1.5px solid var(--b);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.mbd{padding:17px 22px;overflow-y:auto;flex:1}
-.mst{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
-.ms{background:#f5f8ff;border:1.5px solid var(--b);border-radius:13px;padding:13px}
-.ms .sl{font-size:10px;font-weight:800;color:var(--mu);text-transform:uppercase}
-.ms .sv{font-size:19px;font-weight:900;margin-top:4px}
-/* Loader */
-.ldr{position:fixed;inset:0;background:rgba(238,242,249,.96);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-.ldr.on{display:flex}
-.sp{width:44px;height:44px;border-radius:50%;border:4px solid #dbeafe;border-top-color:#1d4ed8;animation:spin .75s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-/* Toast */
-.tst{position:fixed;bottom:18px;right:16px;z-index:9999;background:#0f172a;color:#fff;border-radius:12px;padding:12px 18px;font-size:13px;font-weight:700;box-shadow:0 8px 28px rgba(0,0,0,.25);opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none;max-width:310px}
-.tst.on{opacity:1;transform:translateY(0)}.tst.ok{background:#047857}.tst.er{background:#b91c1c}
-/* Skeleton */
-.sk{background:linear-gradient(90deg,rgba(255,255,255,.15) 25%,rgba(255,255,255,.3) 50%,rgba(255,255,255,.15) 75%);background-size:200% 100%;animation:sk 1.2s infinite;border-radius:8px;display:block}
-@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
-/* Charts */
-.ch{position:relative;height:210px}.ch2{position:relative;height:260px}
-/* Entry form related styles removed */
-/* Print modal */
-.pov{position:fixed;inset:0;background:rgba(12,26,58,.58);z-index:9100;display:none;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(5px)}
-.pov.on{display:flex}
-.pbox{background:#fff;border-radius:22px;width:100%;max-width:700px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.3);animation:su .18s ease}
-/* Responsive */
-@media(max-width:1024px){/* g3 was here, now not needed as it's removed */}
-@media(max-width:640px){
-  .nav{display:none}.hb{display:flex}
-  .g1,.g2{grid-template-columns:1fr} /* g1 added for responsiveness */
-  .gk{grid-template-columns:1fr 1fr}
-  .kpi-val{font-size:18px}
-  .sh{padding:10px}.card{padding:13px}.bname{font-size:13px}
+.kpi {
+  border-radius: var(--radius-lg);
+  padding: 20px 18px; /* Increased padding */
+  color: #fff;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border: none;
+  text-align: left;
+  width: 100%;
+  transition: transform .2s ease, box-shadow .2s ease;
 }
-@media(max-width:380px){.gk{grid-template-columns:1fr}}
+.kpi:hover {
+  transform: translateY(-6px); /* More pronounced lift */
+  box-shadow: var(--sh-lg); /* Deeper shadow on hover */
+}
+.kpi:active { transform: translateY(0); }
+.kpi::after, .kpi::before {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,.12); /* Slightly more visible overlay */
+}
+.kpi::after { bottom: -28px; right: -20px; width: 100px; height: 100px; } /* Larger */
+.kpi::before { top: -20px; right: 32px; width: 65px; height: 65px; } /* Larger */
+
+.kpi-ic {
+  font-size: 32px; /* Larger icon */
+  margin-bottom: 14px;
+  display: block;
+}
+.kpi-val {
+  font-size: 24px; /* Larger value */
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -.4px;
+}
+.kpi-lbl {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: .9;
+  margin-top: 6px;
+  line-height: 1.3;
+}
+.kpi-sub {
+  font-size: 11px;
+  opacity: .75;
+  margin-top: 4px;
+}
+.kpi-tag {
+  position: absolute;
+  bottom: 12px;
+  right: 15px;
+  font-size: 10px;
+  opacity: .7;
+  font-weight: 600;
+}
+/* KPI Gradient Backgrounds (refine gradients for a softer, pro look) */
+.kg { background: linear-gradient(135deg, #065f46, #10b981); box-shadow: var(--sh-md); } /* Darker green start */
+.kb { background: linear-gradient(135deg, #1e40af, #3b82f6); box-shadow: var(--sh-md); } /* Darker blue start */
+.kv { background: linear-gradient(135deg, #6d28d9, #a78bfa); box-shadow: var(--sh-md); } /* Darker violet start */
+.kt { background: linear-gradient(135deg, #0e7490, #22d3ee); box-shadow: var(--sh-md); } /* Darker teal start */
+.ko { background: linear-gradient(135deg, #c2410c, #fb923c); box-shadow: var(--sh-md); } /* Darker orange start */
+
+/* Range bar */
+.rbbar {
+  background: var(--w);
+  border: 1px solid var(--b);
+  border-radius: var(--radius-lg);
+  padding: 18px 22px; /* Increased padding */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px; /* Increased gap */
+  align-items: flex-end;
+  box-shadow: var(--sh-sm);
+}
+.rbbar label {
+  font-size: 11px; /* Slightly larger label */
+  font-weight: 700;
+  color: var(--mu);
+  display: block;
+  margin-bottom: 6px; /* More space */
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.rbadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bl);
+  color: var(--br);
+  border-radius: 99px; /* Pill shape */
+  padding: 8px 14px; /* More padding */
+  font-size: 12px;
+  font-weight: 700;
+}
+.qrow {
+  display: flex;
+  gap: 8px; /* More space between buttons */
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: none;
+  border-radius: var(--radius-md); /* Softer radius */
+  padding: 11px 18px; /* More padding */
+  font-weight: 700;
+  font-size: 14px;
+  transition: all .2s ease; /* Smoother transitions */
+  white-space: nowrap;
+  cursor: pointer;
+  line-height: 1.2;
+}
+.btn:hover { opacity: .9; transform: translateY(-2px); box-shadow: var(--sh-sm); }
+.btn:active { transform: translateY(0); opacity: 1; box-shadow: none; }
+.btn-blue { background: var(--br); color: #fff; box-shadow: var(--sh-sm); }
+.btn-green { background: var(--gn); color: #fff; box-shadow: var(--sh-sm); }
+.btn-red { background: var(--rd); color: #fff; box-shadow: var(--sh-sm); }
+.btn-violet { background: #7c3aed; color: #fff; box-shadow: var(--sh-sm); }
+.btn-print { background: linear-gradient(135deg,#0d9488,#2dd4bf); color:#fff; box-shadow: var(--sh-sm); } /* Teal gradient */
+.btn-ghost { background: var(--bl); color: var(--br); }
+.btn-pale { background: #f1f5f9; color: var(--tx); }
+.btn-sm { padding: 9px 15px; font-size: 13px; border-radius: var(--radius-sm); }
+.btn-ico { width: 38px; height: 38px; padding: 0; border-radius: var(--radius-md); font-size: 16px; }
+
+/* Inputs */
+.inp {
+  border: 1px solid var(--b2); /* Slightly darker border for clarity */
+  border-radius: var(--radius-md);
+  padding: 10px 14px; /* More padding */
+  background: var(--w);
+  color: var(--tx);
+  transition: border-color .2s ease, box-shadow .2s ease;
+  font-size: 15px;
+  width: 100%;
+}
+.inp:focus {
+  outline: none;
+  border-color: var(--br);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.15); /* Primary color glow */
+}
+.inpro { background: #f8faff; color: var(--mu); }
+textarea.inp { resize: vertical; min-height: 80px; }
+.lbl {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mu);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 6px;
+}
+
+/* Pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px; /* More padding */
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.pp { background: var(--gl); color: #065f46; }
+.pa { background: var(--al); color: #92400e; } /* Darker amber */
+.pr { background: var(--rl); color: #991b1b; } /* Darker red */
+.pbb { background: var(--bl); color: #1e3a8a; }
+
+/* Tables */
+.tw {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--b);
+}
+.tw table {
+  width: 100%;
+  border-collapse: separate; /* Use separate to control borders */
+  border-spacing: 0;
+  font-size: 14px;
+}
+thead th {
+  background: #f1f5f9; /* Lighter header background */
+  padding: 12px 16px; /* More padding */
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--mu);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: left; /* Default to left align */
+}
+thead th:first-child { border-top-left-radius: var(--radius-md); }
+thead th:last-child { border-top-right-radius: var(--radius-md); }
+
+td {
+  padding: 12px 16px; /* More padding */
+  border-top: 1px solid #f1f5f9; /* Lighter border */
+  white-space: nowrap;
+}
+tbody tr:hover { background: #f8faff; } /* Subtle hover */
+.ttr { text-align: right; }
+.ttb { font-weight: 700; } /* Use 700 for bold */
+
+/* Modal */
+.ov {
+  position: fixed;
+  inset: 0;
+  background: rgba(12,26,58,.65); /* Slightly darker backdrop */
+  z-index: 9000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px; /* Increased padding */
+  backdrop-filter: blur(6px); /* Slightly more blur */
+}
+.ov.on { display: flex; }
+.mo {
+  background: #fff;
+  border-radius: var(--radius-xl); /* Larger radius */
+  box-shadow: var(--sh-lg); /* More prominent shadow */
+  width: 100%;
+  max-width: 860px; /* Slightly wider modal */
+  max-height: 94vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: su .2s ease-out; /* Slightly faster, ease-out */
+}
+@keyframes su { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.mhd {
+  padding: 20px 24px; /* Increased padding */
+  border-bottom: 1px solid var(--b);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.mbd {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+.mst {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); /* Slightly larger min-width */
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.ms {
+  background: #f8faff; /* Lighter background */
+  border: 1px solid var(--b);
+  border-radius: var(--radius-md);
+  padding: 16px; /* More padding */
+}
+.ms .sl {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mu);
+  text-transform: uppercase;
+}
+.ms .sv {
+  font-size: 20px; /* Slightly larger value */
+  font-weight: 800;
+  margin-top: 6px;
+  line-height: 1.2;
+}
+
+/* Loader */
+.ldr {
+  position: fixed;
+  inset: 0;
+  background: rgba(238,242,249,.98); /* Less transparent */
+  z-index: 9999;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px; /* More space */
+}
+.ldr.on { display: flex; }
+.sp {
+  width: 48px; /* Larger spinner */
+  height: 48px;
+  border-radius: 50%;
+  border: 5px solid #dbeafe; /* Lighter border */
+  border-top-color: var(--br); /* Primary blue */
+  animation: spin .8s linear infinite; /* Slightly slower spin */
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Toast */
+.tst {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  background: #1f2937; /* Darker, more neutral background */
+  color: #fff;
+  border-radius: var(--radius-md);
+  padding: 14px 20px; /* More padding */
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--sh-md);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .25s ease, transform .25s ease;
+  pointer-events: none;
+  max-width: 320px;
+}
+.tst.on { opacity: 1; transform: translateY(0); }
+.tst.ok { background: var(--gn); }
+.tst.er { background: var(--rd); }
+
+/* Skeleton */
+.sk {
+  background: linear-gradient(90deg, rgba(241,245,249,.15) 25%, rgba(241,245,249,.3) 50%, rgba(241,245,249,.15) 75%); /* Lighter skeleton effect */
+  background-size: 200% 100%;
+  animation: sk 1.4s infinite; /* Slightly slower animation */
+  border-radius: var(--radius-sm);
+  display: block;
+}
+@keyframes sk { 0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Charts */
+.ch { position: relative; height: 220px; } /* Slightly taller */
+.ch2 { position: relative; height: 280px; } /* Slightly taller */
+
+/* Print modal */
+.pov {
+  position: fixed;
+  inset: 0;
+  background: rgba(12,26,58,.65);
+  z-index: 9100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(6px);
+}
+.pov.on { display: flex; }
+.pbox {
+  background: #fff;
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 740px; /* Wider print modal */
+  max-height: 94vh;
+  overflow-y: auto;
+  box-shadow: var(--sh-lg);
+  animation: su .2s ease-out;
+}
+@media print {
+  body * { visibility: hidden; }
+  .pov, .pbox, .pbox * { visibility: visible; }
+  .pbox {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    animation: none !important;
+  }
+}
+
+/* Responsive */
+@media(max-width:1024px){
+  .sh { padding: 16px; }
+  .hdr-in { padding: 0 16px; gap: 10px; }
+  .nb { padding: 8px 14px; font-size: 13px; gap: 6px; }
+}
+@media(max-width:768px){ /* Tablet breakpoint */
+  .g2 { grid-template-columns: 1fr; }
+  .gk { grid-template-columns: 1fr 1fr; }
+  .kpi-val { font-size: 20px; }
+  .card { padding: 18px; }
+  .ctit { font-size: 15px; }
+  .rbbar { padding: 16px 20px; gap: 12px; }
+  .qrow { gap: 6px; }
+  .btn { padding: 10px 16px; font-size: 13px; }
+  .inp { padding: 9px 12px; font-size: 14px; }
+  .tw table { font-size: 13px; }
+  thead th, td { padding: 10px 14px; }
+  .mhd { padding: 18px 22px; }
+  .mbd { padding: 18px 22px; }
+}
+@media(max-width:540px){ /* Mobile breakpoint */
+  .nav { display: none; }
+  .hb { display: flex; }
+  .gk { grid-template-columns: 1fr; }
+  .kpi-val { font-size: 20px; } /* Keep readable */
+  .kpi-ic { font-size: 28px; }
+  .kpi-lbl { font-size: 11px; }
+  .sh { padding: 12px; }
+  .card { padding: 16px; border-radius: var(--radius-md); }
+  .bname { font-size: 14px; }
+  .hdr-in { height: 62px; }
+  .logo { width: 44px; height: 44px; border-radius: var(--radius-md); }
+  .logo img { width: 40px; height: 40px; }
+  .rbbar { padding: 14px 18px; gap: 10px; }
+  .qrow { flex-direction: column; align-items: stretch; gap: 8px; }
+  .qrow button { width: 100%; }
+  .btn-ico { width: 36px; height: 36px; }
+  .ov { padding: 12px; }
+  .mo { border-radius: var(--radius-lg); }
+  .mst { grid-template-columns: 1fr; }
+  .pbox { border-radius: var(--radius-lg); }
+  .ctit { font-size: 14px; }
+  .cic { width: 30px; height: 30px; font-size: 15px; }
+  .tst { right: 12px; bottom: 12px; max-width: calc(100% - 24px); }
+}
 </style>
 </head>
 <body>
 
 <div id="ldr" class="ldr on">
   <div class="sp"></div>
-  <div style="font-weight:800;font-size:16px;color:var(--tx)">माहिती लोड होत आहे...</div>
-  <div style="font-size:12px;color:var(--mu)">कृपया थांबा</div>
+  <div style="font-weight:700;font-size:17px;color:var(--tx)">माहिती लोड होत आहे...</div>
+  <div style="font-size:13px;color:var(--mu)">कृपया थांबा</div>
 </div>
 <div id="tst" class="tst"></div>
 
@@ -153,9 +700,9 @@ tbody tr:hover{background:#f5f8ff}
 <div id="ov" class="ov" onclick="if(event.target===this)cmo()">
   <div class="mo">
     <div class="mhd">
-      <div id="mtt" style="font-size:17px;font-weight:900"></div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div id="mts" style="font-size:11px;color:var(--mu)"></div>
+      <div id="mtt" style="font-size:18px;font-weight:700"></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="mts" style="font-size:12px;color:var(--mu)"></div>
         <button class="btn btn-pale btn-ico" onclick="cmo()">✕</button>
       </div>
     </div>
@@ -166,21 +713,21 @@ tbody tr:hover{background:#f5f8ff}
 <!-- PRINT MODAL -->
 <div id="pov" class="pov" onclick="if(event.target===this)closePrint()">
   <div class="pbox">
-    <div style="padding:16px 22px;border-bottom:1.5px solid var(--b);display:flex;align-items:center;justify-content:space-between">
-      <div style="font-size:16px;font-weight:900">🖨 दैनंदिन अहवाल — प्रिंट / PDF</div>
-      <div style="display:flex;gap:8px">
+    <div style="padding:18px 24px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:17px;font-weight:700">🖨 दैनंदिन अहवाल — प्रिंट / PDF</div>
+      <div style="display:flex;gap:10px">
         <button class="btn btn-print btn-sm" onclick="doPrint()">🖨 प्रिंट / PDF काढा</button>
         <button class="btn btn-pale btn-ico" onclick="closePrint()">✕</button>
       </div>
     </div>
-    <div id="printContent" style="padding:22px 24px"></div>
+    <div id="printContent" style="padding:24px 28px"></div>
   </div>
 </div>
 
 <!-- HEADER -->
 <header class="hdr">
   <div class="hdr-in">
-    <div style="display:flex;align-items:center;gap:11px;min-width:0">
+    <div style="display:flex;align-items:center;gap:12px;min-width:0">
       <div class="logo">
         <img src="https://anikfin.com/ANIKDATA/Logo.png" alt="L" onerror="this.style.display='none'"/>
       </div>
@@ -191,21 +738,19 @@ tbody tr:hover{background:#f5f8ff}
     </div>
     <nav class="nav">
       <button id="navD" class="nb act" onclick="goTab('d')">📊 डॅशबोर्ड</button>
-      <!-- "नवीन नोंद" button removed -->
     </nav>
     <button class="hb" onclick="toggleMob()"><span></span><span></span><span></span></button>
   </div>
   <div id="mobMenu" class="mn">
     <button class="nb" onclick="goTab('d');closeMob()">📊 डॅशबोर्ड</button>
-    <!-- "नवीन नोंद" mobile button removed -->
   </div>
 </header>
 
 <!-- DASHBOARD -->
 <div id="secDash" class="sh vs">
   <div class="rbbar">
-    <div><label>📅 तारखेपासून</label><input id="fromDate" type="date" class="inp" style="width:148px"/></div>
-    <div><label>📅 तारखेपर्यंत</label><input id="toDate" type="date" class="inp" style="width:148px"/></div>
+    <div><label>📅 तारखेपासून</label><input id="fromDate" type="date" class="inp" style="width:160px"/></div>
+    <div><label>📅 तारखेपर्यंत</label><input id="toDate" type="date" class="inp" style="width:160px"/></div>
     <div>
       <label style="opacity:0;font-size:10px">.</label>
       <div class="qrow">
@@ -214,7 +759,6 @@ tbody tr:hover{background:#f5f8ff}
         <button class="btn btn-pale btn-sm" onclick="setQ(6)">मागील ७ दिवस</button>
         <button class="btn btn-pale btn-sm" onclick="setQ(29)">मागील ३० दिवस</button>
         <button class="btn btn-print btn-sm" onclick="openPrint()">🖨 समरी प्रिंट</button>
-
       </div>
     </div>
     <div style="margin-left:auto;align-self:flex-end"><div id="rb" class="rbadge">⏳ लोड होत आहे...</div></div>
@@ -222,28 +766,26 @@ tbody tr:hover{background:#f5f8ff}
 
   <div class="gk" id="kpiGrid"></div>
 
-  <!-- Charts: Re-structured after removing two charts -->
-  <div class="g1" id="cr1"> <!-- Changed from g3 to g1 as only one chart remains here -->
-    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#eff6ff">📊</span>उत्पादन — रक्कम</div></div><div class="ch"><canvas id="cPie"></canvas></div></div>
-    <!-- "उत्पादन — खाती" (cBar) and "खर्चाचे वर्गीकरण" (cExp) charts removed -->
+  <div class="g1" id="cr1">
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:var(--bl); color:var(--br);">📊</span>उत्पादन — रक्कम</div></div><div class="ch"><canvas id="cPie"></canvas></div></div>
   </div>
 
-  <div class="g1"> <!-- New row for Daily Collection Trend -->
-    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#eff6ff">📈</span>दैनंदिन जमा ट्रेंड</div></div><div class="ch2"><canvas id="cDailyTrend"></canvas></div></div>
+  <div class="g1">
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:var(--bl); color:var(--br);">📈</span>दैनंदिन जमा ट्रेंड</div></div><div class="ch2"><canvas id="cDailyTrend"></canvas></div></div>
   </div>
 
   <div class="g2">
-    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#eff6ff">🏆</span>एजंट निहाय रक्कम (Top 10)</div></div><div class="ch2"><canvas id="cAgA"></canvas></div></div>
-    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#f0fdf4">🪙</span>एजंट निहाय PIGMY (Top 10)</div></div><div class="ch2"><canvas id="cAgC"></canvas></div></div> <!-- Repurposed cAgC -->
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:var(--bl); color:var(--br);">🏆</span>एजंट निहाय रक्कम (Top 10)</div></div><div class="ch2"><canvas id="cAgA"></canvas></div></div>
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:var(--gl); color:var(--gn);">🪙</span>एजंट निहाय PIGMY (Top 10)</div></div><div class="ch2"><canvas id="cAgC"></canvas></div></div>
   </div>
 
   <div class="g2">
     <div class="card vs">
       <div class="chd">
-        <div class="ctit"><span class="cic" style="background:#eff6ff">📋</span>कलेक्शन तपशील</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <input id="srchBox" type="text" class="inp" style="width:152px;font-size:12px" placeholder="🔍 एजंट / खाते शोधा"/>
-          <select id="tFilt" class="inp" style="width:100px;font-size:12px">
+        <div class="ctit"><span class="cic" style="background:var(--bl); color:var(--br);">📋</span>कलेक्शन तपशील</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="srchBox" type="text" class="inp" style="width:180px;font-size:14px" placeholder="🔍 एजंट / खाते शोधा"/>
+          <select id="tFilt" class="inp" style="width:120px;font-size:14px">
             <option value="ALL">सर्व प्रकार</option>
             <option value="PIGMY">PIGMY</option>
             <option value="RD">RD</option>
@@ -251,17 +793,17 @@ tbody tr:hover{background:#f5f8ff}
           </select>
         </div>
       </div>
-      <div class="tw" style="max-height:290px;overflow-y:auto">
+      <div class="tw" style="max-height:320px;overflow-y:auto">
         <table><thead><tr><th>तारीख</th><th>प्रकार</th><th>एजंट नाव</th><th>खाते क्र.</th><th class="ttr">खाती</th><th class="ttr">रक्कम</th></tr></thead>
         <tbody id="tbC"></tbody></table>
       </div>
     </div>
     <div class="card vs">
       <div class="chd">
-        <div class="ctit"><span class="cic" style="background:#f0fdf4">👤</span>एजंट निहाय सारांश</div>
+        <div class="ctit"><span class="cic" style="background:var(--gl); color:var(--gn);">👤</span>एजंट निहाय सारांश</div>
         <button class="btn btn-ghost btn-sm" onclick="omo('agent','एजंट संपूर्ण तपशील')">विस्तार ↗</button>
       </div>
-      <div class="tw" style="max-height:290px;overflow-y:auto">
+      <div class="tw" style="max-height:320px;overflow-y:auto">
         <table><thead><tr><th>एजंट नाव</th><th class="ttr">खाती</th><th class="ttr">एकूण रक्कम</th><th class="ttr">PIGMY</th><th class="ttr">RD</th><th class="ttr">FD</th></tr></thead>
         <tbody id="tbA"></tbody></table>
       </div>
@@ -269,17 +811,14 @@ tbody tr:hover{background:#f5f8ff}
   </div>
 
   <div class="card">
-    <div class="chd"><div class="ctit"><span class="cic" style="background:#f0fdf4">📈</span>कालावधी सारांश</div></div> <!-- Removed sb span -->
+    <div class="chd"><div class="ctit"><span class="cic" style="background:var(--gl); color:var(--gn);">📈</span>कालावधी सारांश</div></div>
     <div id="sg" class="g4"></div>
   </div>
 </div>
 
-<!-- "नवीन नोंद" section removed entirely -->
-
 <script>
 // --- CONFIGURATION ---
-var API_READ = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNxyKMFXhN9_Z0G5puI5rGNDMIv9DT_VsGnZwjgSzGU9DDBdjNGwhO3msbo7LIwj9P6MzlaBEp8DlO/pub?gid=0&single=true&output=csv';
-// API_WRITE removed as "नवीन नोंद" feature is removed.
+var API_READ = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNxyKMFXhN9_Z0G5puI5rGNDMIv9DT_VsGnZwjgSzGU9DDBdjNGwhO3msbo7LIwj9P6MzlaBEp8Dl0/pub?gid=0&single=true&output=csv';
 
 var LK = 'lp_erp_v2_', // LocalStorage Key prefix
     MT = 60000,       // Medium-term cache (e.g., 1 minute for API calls)
@@ -599,8 +1138,6 @@ function rall(from,to){
       +sb+'<div class="kpi-tag">तपशील ↗</div></button>';
   }).join('');
   
-  // Removed match status line: G('sb').innerHTML=...
-
   // Summary fields for the bottom card, updated
   var sf=[
     ['कालावधी',rl],
@@ -610,7 +1147,7 @@ function rall(from,to){
     ['एकूण जमा',rupee(t.totalCollection)],
     ['बँक शिल्लक',rupee(t.bankBalance)]
   ];
-  G('sg').innerHTML=sf.map(function(x){return'<div style="background:#f5f8ff;border:1px solid var(--b);border-radius:12px;padding:12px"><div style="font-size:10px;font-weight:800;color:var(--mu);text-transform:uppercase">'+esc(x[0])+'</div><div style="font-size:13px;font-weight:800;margin-top:4px">'+esc(String(x[1]))+'</div></div>';}).join('');
+  G('sg').innerHTML=sf.map(function(x){return'<div style="background:#f8faff;border:1px solid var(--b);border-radius:var(--radius-md);padding:14px"><div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px">'+esc(x[0])+'</div><div style="font-size:15px;font-weight:700;margin-top:6px">'+esc(String(x[1]))+'</div></div>';}).join('');
   rc2(); ra(); rcharts();
 }
 
@@ -625,35 +1162,63 @@ function rc2(){
     var pc=r.type==='PIGMY'?'pp':r.type==='RD'?'pbb':'pa';
     return'<tr><td>'+esc(r.date)+'</td><td><span class="pill '+pc+'">'+esc(r.type)+'</span></td><td class="ttb">'+esc(r.agent||'-')+'</td><td>-</td><td class="ttr">0</td><td class="ttr ttb">'+rupee(r.amount)+'</td></tr>';
   }).join('');
-  if(rows.length){var tA=rows.reduce(function(a,b){return a+b.amount;},0);html+='<tr style="background:#f0fdf4;font-weight:900"><td colspan="4" style="color:#065f46">एकूण</td><td class="ttr">0</td><td class="ttr">'+rupee(tA)+'</td></tr>';}
-  G('tbC').innerHTML=html||'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--mu)">डेटा उपलब्ध नाही</td></tr>';
+  if(rows.length){var tA=rows.reduce(function(a,b){return a+b.amount;},0);html+='<tr style="background:#f0fdf4;font-weight:700;border-top:2px solid var(--b2);"><td colspan="4" style="color:#065f46">एकूण</td><td class="ttr">0</td><td class="ttr">'+rupee(tA)+'</td></tr>';}
+  G('tbC').innerHTML=html||'<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--mu)">डेटा उपलब्ध नाही</td></tr>';
 }
 
 function ra(){
   var rows=(S.data&&S.data.agentWise)||[];
   G('tbA').innerHTML=rows.length?rows.map(function(r){
-    return'<tr><td class="ttb">'+esc(r.agent)+'</td><td class="ttr">0</td><td class="ttr ttb" style="color:#1d4ed8">'+rupee(r.totalAmount)+'</td><td class="ttr" style="color:#059669">'+rupee(r.PIGMY)+'</td><td class="ttr">'+rupee(r.RD)+'</td><td class="ttr">'+rupee(r.FD)+'</td></tr>';
-    }).join(''):'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--mu)">डेटा उपलब्ध नाही</td></tr>';
+    return'<tr><td class="ttb">'+esc(r.agent)+'</td><td class="ttr">0</td><td class="ttr ttb" style="color:var(--br)">'+rupee(r.totalAmount)+'</td><td class="ttr" style="color:var(--gn)">'+rupee(r.PIGMY)+'</td><td class="ttr">'+rupee(r.RD)+'</td><td class="ttr">'+rupee(r.FD)+'</td></tr>';
+    }).join(''):'<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--mu)">डेटा उपलब्ध नाही</td></tr>';
 }
 
-var CL=['#059669','#1d4ed8','#7c3aed','#d97706','#dc2626','#0891b2','#ea580c','#6366f1'];
+var CL=['#10b981','#2563eb','#7c3aed','#f59e0b','#ef4444','#0e7490','#c2410c','#6366f1'];
 function mc(id,cfg){if(S.ch[id])S.ch[id].destroy();S.ch[id]=new Chart(G(id).getContext('2d'),cfg);}
-function co(x){return Object.assign({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},animation:{duration:380}},x||{});}
+function co(x){return Object.assign({
+  responsive:true,
+  maintainAspectRatio:false,
+  plugins:{
+    legend:{display:false},
+    tooltip:{
+      titleFont:{size:14,weight:'700'},
+      bodyFont:{size:13},
+      padding:10,
+      cornerRadius:8
+    }
+  },
+  animation:{duration:450,easing:'easeOutCubic'}, // Smoother animation
+  scales:{
+    x:{
+      ticks:{font:{size:11,weight:'600'},color:document.documentElement.style.getPropertyValue('--mu')||'#64748b'},
+      grid:{color:document.documentElement.style.getPropertyValue('--b')||'#e2e8f0',borderColor:document.documentElement.style.getPropertyValue('--b')||'#e2e8f0'}
+    },
+    y:{
+      ticks:{font:{size:11,weight:'600'},color:document.documentElement.style.getPropertyValue('--mu')||'#64748b',callback:function(v){return rupee(v);}},
+      grid:{color:document.documentElement.style.getPropertyValue('--b')||'#e2e8f0',borderColor:document.documentElement.style.getPropertyValue('--b')||'#e2e8f0'}
+    }
+  }
+},x||{});}
 
 function rcharts(){
   if(typeof Chart==='undefined'){setTimeout(function(){S.data&&rcharts();},800);return;}
+  
+  // Set global Chart.js defaults
+  Chart.defaults.font.family = 'Inter, system-ui, -apple-system, "Segoe UI", sans-serif';
+  Chart.defaults.color = document.documentElement.style.getPropertyValue('--tx') || '#1e293b';
+
   var pw=(S.data&&S.data.productWise)||[],
       aw=((S.data&&S.data.agentWise)||[]).slice(0,10),
       dc=(S.data&&S.data.dailyCollections)||[]; // Daily collections for trend chart
 
   // Product Wise Amount Pie Chart
-  mc('cPie',{type:'pie',data:{labels:pw.map(function(x){return x.type;}),datasets:[{data:pw.map(function(x){return x.amount;}),backgroundColor:CL.slice(0,pw.length),borderWidth:3,borderColor:'#fff',hoverOffset:8}]},options:Object.assign(co(),{plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:11,padding:9,font:{size:11}}}}})});
+  mc('cPie',{type:'pie',data:{labels:pw.map(function(x){return x.type;}),datasets:[{data:pw.map(function(x){return x.amount;}),backgroundColor:CL.slice(0,pw.length),borderWidth:4,borderColor:'#fff',hoverOffset:10}]},options:Object.assign(co(),{plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:12,padding:10,font:{size:12,weight:'600'}}}}})});
   
   // Agent Wise Amount Bar Chart
-  mc('cAgA',{type:'bar',data:{labels:aw.map(function(x){return x.agent;}),datasets:[{data:aw.map(function(x){return x.totalAmount;}),backgroundColor:'rgba(29,78,216,.75)',borderRadius:7,borderSkipped:false}]},options:co({indexAxis:'y',scales:{x:{grid:{color:'#f1f5fb'},ticks:{callback:function(v){return rupee(v);}}},y:{grid:{display:false},ticks:{font:{size:11}}}}})});
+  mc('cAgA',{type:'bar',data:{labels:aw.map(function(x){return x.agent;}),datasets:[{data:aw.map(function(x){return x.totalAmount;}),backgroundColor:'rgba(37,99,235,.8)',borderRadius:8,borderSkipped:false}]},options:co({indexAxis:'y',scales:{x:{grid:{color:document.documentElement.style.getPropertyValue('--b')||'#e2e8f0'},ticks:{callback:function(v){return rupee(v);}}},y:{grid:{display:false},ticks:{font:{size:12}}}}})});
   
   // Repurposed cAgC: Agent Wise PIGMY Collection
-  mc('cAgC',{type:'bar',data:{labels:aw.map(function(x){return x.agent;}),datasets:[{data:aw.map(function(x){return x.PIGMY;}),backgroundColor:'rgba(5,150,105,.72)',borderRadius:7,borderSkipped:false}]},options:co({indexAxis:'y',scales:{x:{grid:{color:'#f1f5fb'},ticks:{callback:function(v){return rupee(v);}}},y:{grid:{display:false},ticks:{font:{size:11}}}}})});
+  mc('cAgC',{type:'bar',data:{labels:aw.map(function(x){return x.agent;}),datasets:[{data:aw.map(function(x){return x.PIGMY;}),backgroundColor:'rgba(16,185,129,.8)',borderRadius:8,borderSkipped:false}]},options:co({indexAxis:'y',scales:{x:{grid:{color:document.documentElement.style.getPropertyValue('--b')||'#e2e8f0'},ticks:{callback:function(v){return rupee(v);}}},y:{grid:{display:false},ticks:{font:{size:12}}}}})});
 
   // New: Daily Collection Trend Line Chart
   mc('cDailyTrend', {
@@ -663,18 +1228,21 @@ function rcharts(){
           datasets: [{
               label: 'एकूण जमा',
               data: dc.map(x => x.amount),
-              borderColor: '#1d4ed8',
-              backgroundColor: 'rgba(29,78,216,.1)',
+              borderColor: 'var(--br)',
+              backgroundColor: 'rgba(37,99,235,.1)',
               fill: true,
-              tension: 0.3,
-              pointRadius: 3,
-              pointBackgroundColor: '#1d4ed8'
+              tension: 0.4,
+              pointRadius: 4,
+              pointBackgroundColor: 'var(--br)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              pointHoverRadius: 6
           }]
       },
       options: co({
           scales: {
               x: { grid: { display: false } },
-              y: { grid: { color: '#f1f5fb' }, ticks: { callback: function(v){return rupee(v);}} }
+              y: { grid: { color: document.documentElement.style.getPropertyValue('--b')||'#e2e8f0' }, ticks: { callback: function(v){return rupee(v);}} }
           },
           plugins: {
               legend: { display: false },
@@ -693,17 +1261,17 @@ function omo(kind,title){
     var tf={pigmy:'PIGMY',rd:'RD',fd:'FD',all:'ALL'}[kind];
     var fil=tf==='ALL'?d.rows:d.rows.filter(function(r){return r.type===tf;});
     var tot=fil.reduce(function(a,b){return a+b.amount;},0);
-    html='<div class="mst"><div class="ms"><div class="sl">नोंदी</div><div class="sv">'+fil.length+'</div></div><div class="ms"><div class="sl">खाती</div><div class="sv">0</div></div><div class="ms"><div class="sl">एकूण रक्कम</div><div class="sv" style="color:#1d4ed8">'+rupee(tot)+'</div></div></div>'
+    html='<div class="mst"><div class="ms"><div class="sl">नोंदी</div><div class="sv">'+fil.length+'</div></div><div class="ms"><div class="sl">खाती</div><div class="sv">0</div></div><div class="ms"><div class="sl">एकूण रक्कम</div><div class="sv" style="color:var(--br)">'+rupee(tot)+'</div></div></div>'
       +'<div class="tw"><table><thead><tr><th>तारीख</th><th>प्रकार</th><th>एजंट नाव</th><th>खाते क्र.</th><th class="ttr">खाती</th><th class="ttr">रक्कम</th></tr></thead><tbody>'
       +fil.map(function(r){var pc=r.type==='PIGMY'?'pp':r.type==='RD'?'pbb':'pa';return'<tr><td>'+esc(r.date)+'</td><td><span class="pill '+pc+'">'+esc(r.type)+'</span></td><td class="ttb">'+esc(r.agent||'-')+'</td><td>-</td><td class="ttr">0</td><td class="ttr ttb">'+rupee(r.amount)+'</td></tr>';}).join('')
       +'</tbody></table></div>';
   }else if(kind==='agent'){
-    html='<div class="mst"><div class="ms"><div class="sl">एजंट</div><div class="sv">'+d.agentWise.length+'</div></div><div class="ms"><div class="sl">एकूण संकलन</div><div class="sv" style="color:#1d4ed8">'+rupee(t.totalCollection)+'</div></div></div>'
+    html='<div class="mst"><div class="ms"><div class="sl">एजंट</div><div class="sv">'+d.agentWise.length+'</div></div><div class="ms"><div class="sl">एकूण संकलन</div><div class="sv" style="color:var(--br)">'+rupee(t.totalCollection)+'</div></div></div>'
       +'<div class="tw"><table><thead><tr><th>एजंट नाव</th><th class="ttr">खाती</th><th class="ttr">एकूण रक्कम</th><th class="ttr">PIGMY</th><th class="ttr">RD</th><th class="ttr">FD</th></tr></thead><tbody>'
-      +d.agentWise.map(function(x){return'<tr><td class="ttb">'+esc(x.agent)+'</td><td class="ttr">0</td><td class="ttr ttb" style="color:#1d4ed8">'+rupee(x.totalAmount)+'</td><td class="ttr" style="color:#059669">'+rupee(x.PIGMY)+'</td><td class="ttr">'+rupee(x.RD)+'</td><td class="ttr">'+rupee(x.FD)+'</td></tr>';}).join('')
+      +d.agentWise.map(function(x){return'<tr><td class="ttb">'+esc(x.agent)+'</td><td class="ttr">0</td><td class="ttr ttb" style="color:var(--br)">'+rupee(x.totalAmount)+'</td><td class="ttr" style="color:var(--gn)">'+rupee(x.PIGMY)+'</td><td class="ttr">'+rupee(x.RD)+'</td><td class="ttr">'+rupee(x.FD)+'</td></tr>';}).join('')
       +'</tbody></table></div>';
   }else if(kind==='sum'){ // 'sum' kind for overall summary (simplified)
-    html='<div class="mst"><div class="ms"><div class="sl">एकूण जमा</div><div class="sv" style="color:#1d4ed8">'+rupee(t.totalCollection)+'</div></div><div class="ms"><div class="sl">बँक शिल्लक</div><div class="sv">'+rupee(t.bankBalance)+'</div></div></div>'
+    html='<div class="mst"><div class="ms"><div class="sl">एकूण जमा</div><div class="sv" style="color:var(--br)">'+rupee(t.totalCollection)+'</div></div><div class="ms"><div class="sl">बँक शिल्लक</div><div class="sv">'+rupee(t.bankBalance)+'</div></div></div>'
       +'<div class="tw"><table><thead><tr><th>क्षेत्र</th><th>मूल्य</th></tr></thead><tbody>'
       +[['PIGMY रक्कम',rupee(t.pigmyAmount)],['RD रक्कम',rupee(t.rdAmount)],['FD रक्कम',rupee(t.fdAmount)],['एकूण जमा',rupee(t.totalCollection)],['बँक शिल्लक',rupee(t.bankBalance)]].map(function(r){return'<tr><td class="ttb">'+r[0]+'</td><td>'+esc(String(r[1]))+'</td></tr>';}).join('')
       +'</tbody></table></div>';
@@ -717,8 +1285,8 @@ function openPrint(){
   var d=S.data; if(!d){toast('⚠ आधी डेटा लोड करा','er');return;}
   var t=d.totals,from=G('fromDate').value||td(),to=G('toDate').value||td();
   var is1=(from===to),rl=is1?from:from+' ते '+to;
-  var now=new Date(),timeStr=now.getHours()+':'+z(now.getMinutes());
-  var aRows=d.agentWise.map(function(x){return'<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:7px 10px;font-weight:700">'+esc(x.agent)+'</td><td style="padding:7px 10px;text-align:right">0</td><td style="padding:7px 10px;text-align:right;font-weight:900;color:#1d4ed8">'+rupee(x.totalAmount)+'</td><td style="padding:7px 10px;text-align:right;color:#059669">'+rupee(x.PIGMY)+'</td><td style="padding:7px 10px;text-align:right">'+rupee(x.RD)+'</td><td style="padding:7px 10px;text-align:right">'+rupee(x.FD)+'</td></tr>';}).join('');
+  var now=new Date(),timeStr=z(now.getHours())+':'+z(now.getMinutes());
+  var aRows=d.agentWise.map(function(x){return'<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:8px 12px;font-weight:700">'+esc(x.agent)+'</td><td style="padding:8px 12px;text-align:right">0</td><td style="padding:8px 12px;text-align:right;font-weight:900;color:#2563eb">'+rupee(x.totalAmount)+'</td><td style="padding:8px 12px;text-align:right;color:#10b981">'+rupee(x.PIGMY)+'</td><td style="padding:8px 12px;text-align:right">'+rupee(x.RD)+'</td><td style="padding:8px 12px;text-align:right">'+rupee(x.FD)+'</td></tr>';}).join('');
   
   // Print summary fields, updated
   var sf=[
@@ -728,19 +1296,19 @@ function openPrint(){
     ['एकूण जमा',rupee(t.totalCollection),''],
     ['बँक शिल्लक',rupee(t.bankBalance),'']
   ];
-  var html='<div style="font-family:system-ui,sans-serif;color:#1a2744">'
-    +'<div style="text-align:center;border-bottom:3px solid #1d4ed8;padding-bottom:16px;margin-bottom:20px">'
-    +'<img src="https://anikfin.com/ANIKDATA/Logo.png" style="width:54px;height:54px;object-fit:contain;margin-bottom:8px" onerror="this.style.display=\'none\'"/>'
-    +'<div style="font-size:19px;font-weight:900">लोकपर्याय जिल्हा सहकारी पतसंस्था</div>'
-    +'<div style="font-size:12px;color:#64748b;margin-top:3px">म.हासेगांव &nbsp;|&nbsp; दैनंदिन बँकिंग ERP</div>'
-    +'<div style="font-size:14px;font-weight:800;color:#1d4ed8;margin-top:8px">दैनंदिन अहवाल — '+esc(rl)+'</div>'
-    +'<div style="font-size:11px;color:#94a3b8;margin-top:3px">मुद्रण वेळ: '+timeStr+' | '+td()+'</div>'
+  var html='<div style="font-family:system-ui,sans-serif;color:#1e293b">'
+    +'<div style="text-align:center;border-bottom:3px solid #2563eb;padding-bottom:18px;margin-bottom:24px">'
+    +'<img src="https://anikfin.com/ANIKDATA/Logo.png" style="width:58px;height:58px;object-fit:contain;margin-bottom:10px" onerror="this.style.display=\'none\'"/>'
+    +'<div style="font-size:20px;font-weight:800">लोकपर्याय जिल्हा सहकारी पतसंस्था</div>'
+    +'<div style="font-size:13px;color:#64748b;margin-top:4px">म.हासेगांव &nbsp;|&nbsp; दैनंदिन बँकिंग ERP</div>'
+    +'<div style="font-size:15px;font-weight:700;color:#2563eb;margin-top:10px">दैनंदिन अहवाल — '+esc(rl)+'</div>'
+    +'<div style="font-size:12px;color:#94a3b8;margin-top:4px">मुद्रण वेळ: '+timeStr+' | '+td()+'</div>'
     +'</div>'
-    +'<div style="margin-bottom:20px"><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;border-bottom:1px solid #e2e8f0;padding-bottom:6px">आर्थिक सारांश</div>'
-    +sf.map(function(r,i){return'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-radius:9px;background:'+(i%2===0?'#f5f8ff':'#fff')+';margin-bottom:4px"><div style="font-weight:700;color:#64748b">'+r[0]+(r[2]?'<span style="font-size:11px;margin-left:8px;color:#94a3b8">'+r[2]+'</span>':'')+'</div><div style="font-weight:900;font-size:15px">'+esc(r[1])+'</div></div>';}).join('')
+    +'<div style="margin-bottom:24px"><div style="font-size:12px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;border-bottom:1px solid #e2e8f0;padding-bottom:8px">आर्थिक सारांश</div>'
+    +sf.map(function(r,i){return'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 15px;border-radius:10px;background:'+(i%2===0?'#f8faff':'#fff')+';margin-bottom:5px"><div style="font-weight:600;color:#64748b">'+r[0]+(r[2]?'<span style="font-size:11px;margin-left:10px;color:#94a3b8">'+r[2]+'</span>':'')+'</div><div style="font-weight:800;font-size:16px">'+esc(r[1])+'</div></div>';}).join('')
     +'</div>'
-    +(d.agentWise.length?'<div><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;border-bottom:1px solid #e2e8f0;padding-bottom:6px">एजंट निहाय सारांश</div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#f5f8ff"><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">एजंट नाव</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">खाती</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">एकूण</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">PIGMY</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">RD</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">FD</th></tr></thead><tbody>'+aRows+'</tbody></table></div>':'')
-    +'<div style="text-align:center;margin-top:20px;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px">लोकपर्याय पतसंस्था ERP — '+td()+'</div>'
+    +(d.agentWise.length?'<div><div style="font-size:12px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;border-bottom:1px solid #e2e8f0;padding-bottom:8px">एजंट निहाय सारांश</div><table style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr style="background:#f1f5f9"><th style="padding:9px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase">एजंट नाव</th><th style="padding:9px 12px;text-align:right;font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase">खाती</th><th style="padding:9px 12px;text-align:right;font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase">एकूण</th><th style="padding:9px 12px;text-align:right;font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase">PIGMY</th><th style="padding:9px 12px;text-align:right;font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase">RD</th><th style="padding:9px 12px;text-align:right;font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase">FD</th></tr></thead><tbody>'+aRows+'</tbody></table></div>':'')
+    +'<div style="text-align:center;margin-top:24px;font-size:12px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:14px">लोकपर्याय पतसंस्था ERP — '+td()+'</div>'
     +'</div>';
   G('printContent').innerHTML=html; G('pov').classList.add('on');
 }
@@ -748,37 +1316,29 @@ function closePrint(){G('pov').classList.remove('on');}
 function doPrint(){
   var c=G('printContent').innerHTML;
   var w=window.open('','_blank','width=820,height=900');
-  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>दैनंदिन अहवाल</title><style>body{font-family:system-ui,sans-serif;padding:20px;color:#1a2744}table{width:100%;border-collapse:collapse}@media print{body{padding:10px}}</style></head><body>'+c+'<script>window.onload=function(){window.print();}<\/script></body></html>');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>दैनंदिन अहवाल</title><style>body{font-family:system-ui,sans-serif;padding:20px;color:#1a2744}table{width:100%;border-collapse:collapse;border-spacing:0}th,td{border:1px solid #eee;padding:8px}@media print{body{padding:10px}}</style></head><body>'+c+'<script>window.onload=function(){window.print();}<\/script></body></html>');
   w.document.close();
 }
 
 /* Debug */
 function showDbg(){var r=S.fullRawData;if(!r){alert('डेटा अद्याप नाही');return;}var i={totalRows:r.length,firstRow:r[0]||'empty',fromDate:G('fromDate').value,toDate:G('toDate').value,currentDataRows:S.data&&S.data.rows&&S.data.rows.length||0};console.log('[DEBUG]',i, S.data);alert(JSON.stringify(i,null,2));}
 
-// Entry form related functions removed
-
-// applyGrid function removed, relying on CSS media queries for responsiveness
-// window.addEventListener('resize',applyGrid);
-
 function init(){
   setTimeout(hideLdr,12000); // Hide loader if initial load takes too long (fallback)
   var t=td(); G('fromDate').value=t; G('toDate').value=t;
-  // rsf(false); // Removed, as entry form is gone
-  // applyGrid(); // Removed
   G('srchBox').addEventListener('input',dbn(rc2,180));
   G('tFilt').addEventListener('change',rc2);
   G('fromDate').addEventListener('change',function(){loadData(true);});
   G('toDate').addEventListener('change',function(){loadData(true);});
   
   // Display skeleton while loading
-  G('kpiGrid').innerHTML=KP.map(function(k){return'<div class="kpi '+k.c+'" style="opacity:.55"><span class="kpi-ic">'+k.i+'</span><div class="sk" style="height:22px;width:100px;margin-bottom:6px"></div><div class="kpi-lbl">'+k.l+'</div></div>';}).join('');
+  G('kpiGrid').innerHTML=KP.map(function(k){return'<div class="kpi '+k.c+'" style="opacity:.65; pointer-events:none;"><span class="kpi-ic"><span class="sk" style="width:30px;height:30px;border-radius:9px;margin-bottom:0"></span></span><div class="sk" style="height:24px;width:120px;margin-bottom:8px"></div><div class="kpi-lbl"><span class="sk" style="height:12px;width:80px;"></span></div></div>';}).join('');
   
   loadData(false)
     .then(() => {
         if (typeof Chart === 'undefined') {
             setTimeout(() => S.data && rcharts(), 1000);
         }
-        // onED(); // Removed as entry form is gone
     })
     .catch(e => {
         console.error('Initial load failed:', e);

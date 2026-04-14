@@ -1,463 +1,961 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="mr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agent Collection Summary from Text Input</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            color: #0056b3;
-            margin-bottom: 25px;
-        }
-
-        .input-section {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .input-section textarea {
-            width: 98%; /* Adjust as needed */
-            max-width: 100%;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            resize: vertical;
-            font-family: monospace;
-            font-size: 0.9em;
-            background-color: #fcfcfc;
-            height: 250px; /* Default height */
-            padding: 10px;
-        }
-
-        .input-section button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.2s ease;
-            margin: 5px; /* Added margin for buttons */
-        }
-
-        .input-section button:hover {
-            background-color: #0056b3;
-        }
-
-        .report-info {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 0.9em;
-            color: #555;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #007bff;
-            color: white;
-            font-weight: bold;
-        }
-
-        tbody tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        tbody tr:hover {
-            background-color: #e9e9e9;
-        }
-
-        tfoot {
-            font-weight: bold;
-            background-color: #f0f0f0;
-        }
-
-        tfoot td {
-            background-color: #e2e6ea;
-            color: #0056b3;
-            border-top: 2px solid #007bff;
-        }
-
-        .text-right {
-            text-align: right;
-        }
-
-        .error-message {
-            color: red;
-            text-align: center;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-        .success-message {
-            color: green;
-            text-align: center;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-        #collectionTable {
-            display: none; /* Hide table until data is loaded */
-        }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>लोकपर्याय पतसंस्था — ERP</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#eef2f9;--w:#fff;--b:#dde5f2;--tx:#1a2744;--mu:#64748b;
+  --br:#1d4ed8;--bl:#eff6ff;--gn:#059669;--gl:#d1fae5;
+  --rd:#dc2626;--rl:#fee2e2;--am:#d97706;--al:#fef3c7;
+  --sh:0 2px 8px rgba(29,78,216,.07),0 1px 3px rgba(0,0,0,.05);
+}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;min-height:100vh}
+button,input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:#c7d2ee;border-radius:99px}
+.hdr{background:linear-gradient(120deg,#0c1a3a 0%,#1a3a8a 55%,#2563eb 100%);position:sticky;top:0;z-index:200;box-shadow:0 2px 20px rgba(0,0,0,.35)}
+.hdr-in{max-width:1500px;margin:0 auto;padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:62px;gap:10px}
+.logo{width:44px;height:44px;border-radius:11px;overflow:hidden;flex-shrink:0;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.logo img{width:40px;height:40px;object-fit:contain}
+.bname{font-size:15px;font-weight:900;color:#fff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bsub{font-size:10px;color:rgba(255,255,255,.6);margin-top:1px}
+.nav{display:flex;gap:3px}
+.nb{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;color:rgba(255,255,255,.72);background:transparent;transition:all .15s}
+.nb:hover,.nb.act{background:rgba(255,255,255,.18);color:#fff}
+.hb{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;background:rgba(255,255,255,.13);border-radius:9px;border:none}
+.hb span{width:20px;height:2px;background:#fff;border-radius:2px;display:block}
+.mn{display:none;background:#0c1a3a;border-top:1px solid rgba(255,255,255,.1);padding:8px 14px 12px}
+.mn.op{display:flex;flex-direction:column;gap:3px}
+.mn .nb{width:100%;padding:12px 14px;border-radius:10px}
+.sh{max-width:1500px;margin:0 auto;padding:14px}
+.vs{display:flex;flex-direction:column;gap:14px}
+.gone{display:none!important}
+.gk{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.ga{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
+.card{background:var(--w);border:1.5px solid var(--b);border-radius:18px;padding:18px;box-shadow:var(--sh)}
+.chd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:11px;border-bottom:1.5px solid var(--b);flex-wrap:wrap;gap:8px}
+.ctit{font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px}
+.cic{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
+/* KPI Gradient Cards */
+.kpi{border-radius:18px;padding:18px 16px;color:#fff;cursor:pointer;position:relative;overflow:hidden;border:none;text-align:left;width:100%;transition:transform .14s,box-shadow .14s}
+.kpi:hover{transform:translateY(-4px);box-shadow:0 18px 50px rgba(0,0,0,.24)}
+.kpi:active{transform:translateY(0)}
+.kpi::after{content:'';position:absolute;bottom:-22px;right:-16px;width:95px;height:95px;border-radius:50%;background:rgba(255,255,255,.1)}
+.kpi::before{content:'';position:absolute;top:-16px;right:28px;width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.07)}
+.kpi-ic{font-size:28px;margin-bottom:12px;display:block}
+.kpi-val{font-size:22px;font-weight:900;line-height:1.1;letter-spacing:-.3px}
+.kpi-lbl{font-size:11px;font-weight:700;opacity:.88;margin-top:5px;line-height:1.3}
+.kpi-sub{font-size:10px;opacity:.72;margin-top:3px}
+.kpi-tag{position:absolute;bottom:10px;right:13px;font-size:9px;opacity:.65;font-weight:700}
+.kg{background:linear-gradient(135deg,#059669,#10b981);box-shadow:0 8px 26px rgba(5,150,105,.38)}
+.kb{background:linear-gradient(135deg,#1d4ed8,#3b82f6);box-shadow:0 8px 26px rgba(29,78,216,.38)}
+.kv{background:linear-gradient(135deg,#7c3aed,#a855f7);box-shadow:0 8px 26px rgba(124,58,237,.38)}
+.kt{background:linear-gradient(135deg,#0891b2,#22d3ee);box-shadow:0 8px 26px rgba(8,145,178,.38)}
+.kr{background:linear-gradient(135deg,#dc2626,#f87171);box-shadow:0 8px 26px rgba(220,38,38,.32)}
+.ks{background:linear-gradient(135deg,#334155,#64748b);box-shadow:0 8px 26px rgba(51,65,85,.32)}
+.ka{background:linear-gradient(135deg,#d97706,#fbbf24);box-shadow:0 8px 26px rgba(217,119,6,.38)}
+.ko{background:linear-gradient(135deg,#ea580c,#fb923c);box-shadow:0 8px 26px rgba(234,88,12,.35)}
+.kx{background:linear-gradient(135deg,#be185d,#f472b6);box-shadow:0 8px 26px rgba(190,24,93,.35)}
+/* Range bar */
+.rbbar{background:var(--w);border:1.5px solid var(--b);border-radius:18px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;box-shadow:var(--sh)}
+.rbbar label{font-size:10px;font-weight:800;color:var(--mu);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.rbadge{display:inline-flex;align-items:center;gap:5px;background:var(--bl);color:#1e40af;border-radius:9px;padding:6px 12px;font-size:11px;font-weight:800}
+.qrow{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:11px;padding:10px 16px;font-weight:800;font-size:13px;transition:opacity .12s,transform .12s;white-space:nowrap;cursor:pointer;line-height:1.2}
+.btn:hover{opacity:.88;transform:translateY(-1px)}.btn:active{transform:translateY(0);opacity:1}
+.btn-blue{background:#1d4ed8;color:#fff;box-shadow:0 4px 14px rgba(29,78,216,.3)}
+.btn-green{background:#059669;color:#fff;box-shadow:0 4px 14px rgba(5,150,105,.28)}
+.btn-red{background:#dc2626;color:#fff}
+.btn-violet{background:#7c3aed;color:#fff}
+.btn-print{background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;box-shadow:0 4px 14px rgba(15,118,110,.3)}
+.btn-ghost{background:var(--bl);color:#1e40af}
+.btn-pale{background:#f1f5f9;color:var(--tx)}
+.btn-sm{padding:8px 13px;font-size:12px;border-radius:9px}
+.btn-ico{width:34px;height:34px;padding:0;border-radius:9px;font-size:15px}
+/* Inputs */
+.inp{border:1.5px solid var(--b);border-radius:10px;padding:9px 12px;background:var(--w);color:var(--tx);transition:border-color .15s;font-size:14px;width:100%}
+.inp:focus{outline:none;border-color:#1d4ed8;box-shadow:0 0 0 3px rgba(29,78,216,.1)}
+.inpro{background:#f8faff;color:var(--mu)}
+textarea.inp{resize:vertical}
+.lbl{display:block;font-size:10px;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+/* Pills */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800}
+.pp{background:var(--gl);color:#065f46}.pa{background:var(--al);color:#78350f}
+.pr{background:var(--rl);color:#7f1d1d}.pbb{background:var(--bl);color:#1e3a8a}
+/* Tables */
+.tw{overflow-x:auto;border-radius:13px;border:1.5px solid var(--b)}
+.tw table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+thead th{background:#f5f8ff;padding:9px 13px;font-size:10px;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;position:sticky;top:0;z-index:1}
+td{padding:9px 13px;border-top:1px solid #f1f5fb;white-space:nowrap}
+tbody tr:hover{background:#f5f8ff}
+.ttr{text-align:right}.ttb{font-weight:800}
+/* Modal */
+.ov{position:fixed;inset:0;background:rgba(12,26,58,.58);z-index:9000;display:none;align-items:center;justify-content:center;padding:12px;backdrop-filter:blur(5px)}
+.ov.on{display:flex}
+.mo{background:#fff;border-radius:22px;box-shadow:0 24px 80px rgba(0,0,0,.3);width:100%;max-width:820px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;animation:su .18s ease}
+@keyframes su{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.mhd{padding:17px 22px;border-bottom:1.5px solid var(--b);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.mbd{padding:17px 22px;overflow-y:auto;flex:1}
+.mst{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.ms{background:#f5f8ff;border:1.5px solid var(--b);border-radius:13px;padding:13px}
+.ms .sl{font-size:10px;font-weight:800;color:var(--mu);text-transform:uppercase}
+.ms .sv{font-size:19px;font-weight:900;margin-top:4px}
+/* Loader */
+.ldr{position:fixed;inset:0;background:rgba(238,242,249,.96);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.ldr.on{display:flex}
+.sp{width:44px;height:44px;border-radius:50%;border:4px solid #dbeafe;border-top-color:#1d4ed8;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Toast */
+.tst{position:fixed;bottom:18px;right:16px;z-index:9999;background:#0f172a;color:#fff;border-radius:12px;padding:12px 18px;font-size:13px;font-weight:700;box-shadow:0 8px 28px rgba(0,0,0,.25);opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none;max-width:310px}
+.tst.on{opacity:1;transform:translateY(0)}.tst.ok{background:#047857}.tst.er{background:#b91c1c}
+/* Skeleton */
+.sk{background:linear-gradient(90deg,rgba(255,255,255,.15) 25%,rgba(255,255,255,.3) 50%,rgba(255,255,255,.15) 75%);background-size:200% 100%;animation:sk 1.2s infinite;border-radius:8px;display:block}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+/* Charts */
+.ch{position:relative;height:210px}.ch2{position:relative;height:260px}
+/* Entry form */
+.ecol{background:#fff;border:1.5px solid var(--b);border-radius:15px;padding:14px}
+.erow{background:#fff;border:1.5px solid var(--b);border-radius:12px;padding:12px;margin-bottom:8px}
+.ss{position:sticky;bottom:10px;z-index:40;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border:1.5px solid var(--b);border-radius:14px;padding:12px}
+/* Print modal */
+.pov{position:fixed;inset:0;background:rgba(12,26,58,.58);z-index:9100;display:none;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(5px)}
+.pov.on{display:flex}
+.pbox{background:#fff;border-radius:22px;width:100%;max-width:700px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.3);animation:su .18s ease}
+/* Responsive */
+@media(max-width:1024px){.g3{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){
+  .nav{display:none}.hb{display:flex}
+  .g2,.g3{grid-template-columns:1fr}
+  .gk{grid-template-columns:1fr 1fr}
+  .kpi-val{font-size:18px}
+  .sh{padding:10px}.card{padding:13px}.bname{font-size:13px}
+}
+@media(max-width:380px){.gk{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Agent Collection Summary from Text Input</h1>
-        <div class="input-section">
-            <label for="reportTextInput">Paste your summary report text below:</label><br>
-            <textarea id="reportTextInput" placeholder="Paste text like:
-Kubera
-Dhansanchay
-LOKPARYAY
-KUBER RD
-Total
-SHENDAGE BALAJI
-CHANDAR
-49500.00 0.00 49500.00
-NIKITA SUNIL
-CHANDANSHIVE
-0.00 3500.00 3500.00
-... (The document total line must start with 'एकूण' or 'एककण' and end with three amounts, e.g., 'एकूण 12345.00 67890.00 80235.00')" rows="10"></textarea><br>
-            <button id="convertButton">Convert to Table</button>
-            <button id="saveToSheetButton" disabled>Save to Google Sheet</button>
-        </div>
-        <div class="error-message" id="errorMessage"></div>
-        <div class="success-message" id="successMessage"></div>
 
-        <div class="report-info" id="reportInfoContainer">
-            <!-- This div will be used to extract the collected date for the Google Sheet -->
-            Transaction Date: 09.03.2026 To 12.04.2026 | Report Date: 14.04.2026
-        </div>
+<div id="ldr" class="ldr on">
+  <div class="sp"></div>
+  <div style="font-weight:800;font-size:16px;color:var(--tx)">माहिती लोड होत आहे...</div>
+  <div style="font-size:12px;color:var(--mu)">कृपया थांबा</div>
+</div>
+<div id="tst" class="tst"></div>
 
-        <table id="collectionTable">
-            <thead>
-                <tr>
-                    <th>Agent Name</th>
-                    <th class="text-right">Kubera Dhansanchay Yojana Amount</th>
-                    <th class="text-right">LOKPARYAY KUBER RD Saving Scheme Amount</th>
-                    <th class="text-right">Total Amount Collected</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Data rows will be inserted here by JavaScript -->
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td><strong>Total (as per document)</strong></td>
-                    <td id="kuberaTotal" class="text-right"></td>
-                    <td id="lokparyayTotal" class="text-right"></td>
-                    <td id="grandTotal" class="text-right"></td>
-                </tr>
-            </tfoot>
-        </table>
+<!-- KPI MODAL -->
+<div id="ov" class="ov" onclick="if(event.target===this)cmo()">
+  <div class="mo">
+    <div class="mhd">
+      <div id="mtt" style="font-size:17px;font-weight:900"></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div id="mts" style="font-size:11px;color:var(--mu)"></div>
+        <button class="btn btn-pale btn-ico" onclick="cmo()">✕</button>
+      </div>
     </div>
+    <div id="mbd" class="mbd"></div>
+  </div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const reportTextInput = document.getElementById('reportTextInput');
-            const convertButton = document.getElementById('convertButton');
-            const saveToSheetButton = document.getElementById('saveToSheetButton');
-            const tbody = document.querySelector('#collectionTable tbody');
-            const kuberaTotalCell = document.getElementById('kuberaTotal');
-            const lokparyayTotalCell = document.getElementById('lokparyayTotal');
-            const grandTotalCell = document.getElementById('grandTotal');
-            const errorMessageDiv = document.getElementById('errorMessage');
-            const successMessageDiv = document.getElementById('successMessage');
-            const collectionTable = document.getElementById('collectionTable');
-            const reportInfoContainer = document.getElementById('reportInfoContainer');
+<!-- PRINT MODAL -->
+<div id="pov" class="pov" onclick="if(event.target===this)closePrint()">
+  <div class="pbox">
+    <div style="padding:16px 22px;border-bottom:1.5px solid var(--b);display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:16px;font-weight:900">🖨 दैनंदिन अहवाल — प्रिंट / PDF</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-print btn-sm" onclick="doPrint()">🖨 प्रिंट / PDF काढा</button>
+        <button class="btn btn-pale btn-ico" onclick="closePrint()">✕</button>
+      </div>
+    </div>
+    <div id="printContent" style="padding:22px 24px"></div>
+  </div>
+</div>
 
-            // --- IMPORTANT: Paste your deployed Google Apps Script Web App URL here ---
-            // This URL should end with /exec
-            const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxFMj1E70NyK68O6vpQudf4UMh-nUaFpY02fcP1aNIiXnJthNR2S-deCrFzyZ2-6QQ/exec'; // Your provided URL
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-in">
+    <div style="display:flex;align-items:center;gap:11px;min-width:0">
+      <div class="logo">
+        <img src="https://anikfin.com/ANIKDATA/Logo.png" alt="L" onerror="this.style.display='none'"/>
+      </div>
+      <div style="min-width:0">
+        <div class="bname">लोकपर्याय जिल्हा सहकारी पतसंस्था</div>
+        <div class="bsub">म.हासेगांव &nbsp;|&nbsp; दैनंदिन बँकिंग ERP</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <button id="navD" class="nb act" onclick="goTab('d')">📊 डॅशबोर्ड</button>
+      <button id="navE" class="nb" onclick="goTab('e');onED()">➕ नवीन नोंद</button>
+    </nav>
+    <button class="hb" onclick="toggleMob()"><span></span><span></span><span></span></button>
+  </div>
+  <div id="mobMenu" class="mn">
+    <button class="nb" onclick="goTab('d');closeMob()">📊 डॅशबोर्ड</button>
+    <button class="nb" onclick="goTab('e');onED();closeMob()">➕ नवीन नोंद</button>
+  </div>
+</header>
 
-            // Store parsed data globally for access by the save button
-            let currentReportData = {
-                agents: [], // Array of agent objects for saving
-                collectedDate: "Unknown Date" // Date extracted from the report info
-            };
+<!-- DASHBOARD -->
+<div id="secDash" class="sh vs">
+  <div class="rbbar">
+    <div><label>📅 तारखेपासून</label><input id="fromDate" type="date" class="inp" style="width:148px"/></div>
+    <div><label>📅 तारखेपर्यंत</label><input id="toDate" type="date" class="inp" style="width:148px"/></div>
+    <div>
+      <label style="opacity:0;font-size:10px">.</label>
+      <div class="qrow">
+        <button class="btn btn-blue btn-sm" onclick="loadData(true)">🔄 रिफ्रेश</button>
+        <button class="btn btn-pale btn-sm" onclick="setQ(0)">आजचा दिवस</button>
+        <button class="btn btn-pale btn-sm" onclick="setQ(6)">मागील ७ दिवस</button>
+        <button class="btn btn-pale btn-sm" onclick="setQ(29)">मागील ३० दिवस</button>
+        <button class="btn btn-print btn-sm" onclick="openPrint()">🖨 समरी प्रिंट</button>
+        <button class="btn btn-pale btn-ico btn-sm" onclick="showDbg()" title="Debug">🐛</button>
+      </div>
+    </div>
+    <div style="margin-left:auto;align-self:flex-end"><div id="rb" class="rbadge">⏳ लोड होत आहे...</div></div>
+  </div>
 
-            // Function to format currency (removed currency symbol)
-            const formatCurrency = (amount) => {
-                if (typeof amount !== 'number') {
-                    amount = parseFloat(amount);
-                }
-                // Format as a decimal number with two fixed decimal places
-                return amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            };
+  <div class="gk" id="kpiGrid"></div>
 
-            // Function to format date from DD.MM.YYYY to DD Month YYYY (e.g., 12.04.2026 -> 12 April 2026)
-            const formatDateForSheet = (dateString_DD_MM_YYYY) => {
-                if (!dateString_DD_MM_YYYY || !/^\d{2}\.\d{2}\.\d{4}$/.test(dateString_DD_MM_YYYY)) {
-                    return "Invalid Date";
-                }
-                const [day, month, year] = dateString_DD_MM_YYYY.split('.');
-                const dateObj = new Date(year, month - 1, day); // Month is 0-indexed
-                const options = { day: 'numeric', month: 'long', year: 'numeric' }; // Use 'numeric' for full year
-                return dateObj.toLocaleDateString('en-IN', options);
-            };
+  <div class="g3" id="cr1">
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#eff6ff">📊</span>उत्पादन — रक्कम</div></div><div class="ch"><canvas id="cPie"></canvas></div></div>
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#f0fdf4">📦</span>उत्पादन — खाती</div></div><div class="ch"><canvas id="cBar"></canvas></div></div>
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#fff7ed">💸</span>खर्चाचे वर्गीकरण</div></div><div class="ch"><canvas id="cExp"></canvas></div></div>
+  </div>
 
-            // Function to clear table, messages, and reset save button
-            const clearReport = () => {
-                tbody.innerHTML = '';
-                kuberaTotalCell.textContent = '';
-                lokparyayTotalCell.textContent = '';
-                grandTotalCell.textContent = '';
-                errorMessageDiv.textContent = '';
-                successMessageDiv.textContent = ''; // Clear success message
-                collectionTable.style.display = 'none';
-                saveToSheetButton.disabled = true; // Disable save button
-                currentReportData = { agents: [], collectedDate: "Unknown Date" }; // Reset stored data
-            };
+  <div class="g2">
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#eff6ff">🏆</span>एजंट निहाय रक्कम (Top 10)</div></div><div class="ch2"><canvas id="cAgA"></canvas></div></div>
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#f0fdf4">👥</span>एजंट निहाय खाती (Top 10)</div></div><div class="ch2"><canvas id="cAgC"></canvas></div></div>
+  </div>
 
-            // Function to parse the text content
-            const parseReportText = (text) => {
-                const lines = text.split('\n');
-                const agentData = []; // For displaying
-                let footerTotals = { kubera: 0, lokparyay: 0, grand: 0 };
-                let currentAgentNameParts = []; // To accumulate lines for multi-line agent names
+  <div class="g2">
+    <div class="card vs">
+      <div class="chd">
+        <div class="ctit"><span class="cic" style="background:#eff6ff">📋</span>कलेक्शन तपशील</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <input id="srchBox" type="text" class="inp" style="width:152px;font-size:12px" placeholder="🔍 एजंट / खाते शोधा"/>
+          <select id="tFilt" class="inp" style="width:100px;font-size:12px">
+            <option value="ALL">सर्व प्रकार</option>
+            <option value="PIGMY">PIGMY</option>
+            <option value="RD">RD</option>
+            <!-- FD option is included for consistency with entry form, but will show 0 from CSV -->
+            <option value="FD">FD</option> 
+          </select>
+        </div>
+      </div>
+      <div class="tw" style="max-height:290px;overflow-y:auto">
+        <table><thead><tr><th>तारीख</th><th>प्रकार</th><th>एजंट नाव</th><th>खाते क्र.</th><th class="ttr">खाती</th><th class="ttr">रक्कम</th></tr></thead>
+        <tbody id="tbC"></tbody></table>
+      </div>
+    </div>
+    <div class="card vs">
+      <div class="chd">
+        <div class="ctit"><span class="cic" style="background:#f0fdf4">👤</span>एजंट निहाय सारांश</div>
+        <button class="btn btn-ghost btn-sm" onclick="omo('agent','एजंट संपूर्ण तपशील')">विस्तार ↗</button>
+      </div>
+      <div class="tw" style="max-height:290px;overflow-y:auto">
+        <table><thead><tr><th>एजंट नाव</th><th class="ttr">खाती</th><th class="ttr">एकूण रक्कम</th><th class="ttr">PIGMY</th><th class="ttr">RD</th><th class="ttr">FD</th></tr></thead>
+        <tbody id="tbA"></tbody></table>
+      </div>
+    </div>
+  </div>
 
-                // Regex to find three amounts at the end of a line, with optional text before them.
-                const dataLineRegex = /^(.*?)(\d+\.\d{2})\s+(\d+\.\d{2})\s+(\d+\.\d{2})$/;
+  <div class="card">
+    <div class="chd"><div class="ctit"><span class="cic" style="background:#f0fdf4">📈</span>कालावधी सारांश</div><span id="sb"></span></div>
+    <div id="sg" class="g4"></div>
+  </div>
+</div>
 
-                // Regex for the total line "एकूण" (or "एककण")
-                const totalLineRegex = /(एकूण|एककण)\s+(\d+\.\d{2})\s+(\d+\.\d{2})\s+(\d+\.\d{2})$/;
+<!-- ENTRY -->
+<div id="secEntry" class="sh gone vs">
+  <div class="card vs" style="border-top:5px solid #059669">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:20px;font-weight:900">नवीन जमा नोंद</div>
+        <div style="font-size:12px;color:var(--mu);margin-top:3px">PIGMY / RD / FD जमा आणि खर्च नोंदवा</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="setET()">📅 आजची तारीख</button>
+        <button class="btn btn-pale btn-sm" onclick="rsf()">🗑 रीसेट</button>
+      </div>
+    </div>
+    <div class="ga">
+      <div><label class="lbl">दिनांक</label><input id="eDate" type="date" class="inp" onchange="onED()"/></div>
+      <div><label class="lbl">Opening शिल्लक (₹)</label><input id="eOp" type="number" class="inp" placeholder="0" oninput="rc()"/></div>
+      <div><label class="lbl">System शिल्लक (₹)</label><input id="eSy" type="number" class="inp inpro" readonly/></div>
+      <div><label class="lbl">प्रत्यक्ष बँक शिल्लक (₹)</label><input id="eAc" type="number" class="inp" placeholder="0" oninput="rc()"/></div>
+    </div>
+    <div class="g3">
+      <div class="ecol" style="border-top:4px solid #059669">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <b style="color:#065f46;font-size:13px">🐷 PIGMY संकलन</b>
+          <button class="btn btn-green btn-sm" onclick="ar('P')">+ जोडा</button>
+        </div>
+        <div id="rP" class="vs"></div>
+      </div>
+      <div class="ecol" style="border-top:4px solid #1d4ed8">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <b style="color:#1e3a8a;font-size:13px">📈 RD संकलन</b>
+          <button class="btn btn-blue btn-sm" onclick="ar('R')">+ जोडा</button>
+        </div>
+        <div id="rR" class="vs"></div>
+      </div>
+      <div class="ecol" style="border-top:4px solid #7c3aed">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <b style="color:#4c1d95;font-size:13px">🏦 FD संकलन</b>
+          <button class="btn btn-violet btn-sm" onclick="ar('F')">+ जोडा</button>
+        </div>
+        <div id="rF" class="vs"></div>
+      </div>
+    </div>
+    <div class="ecol" style="border-top:4px solid #dc2626">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <b style="color:#991b1b;font-size:13px">🧾 खर्च तपशील</b>
+        <button class="btn btn-red btn-sm" onclick="ae()">+ जोडा</button>
+      </div>
+      <div id="rE" class="vs"></div>
+    </div>
+    <div class="ga">
+      <div><label class="lbl">एकूण जमा</label><input id="eTc" type="number" class="inp inpro" readonly/></div>
+      <div><label class="lbl">एकूण खर्च</label><input id="eTe" type="number" class="inp inpro" readonly/></div>
+      <div><label class="lbl">फरक</label><input id="eDf" type="number" class="inp inpro" readonly/></div>
+      <div><label class="lbl">जुळणी स्थिती</label><div id="eMt" class="inp inpro" style="display:flex;align-items:center;min-height:42px">N/A</div></div>
+    </div>
+    <div class="g2">
+      <div><label class="lbl">जुळणी नसल्यास कारण</label><textarea id="eMi" class="inp" rows="3" placeholder="फरक असल्यास कारण लिहा..."></textarea></div>
+      <div class="card" style="background:#f8faff;border:none;padding:14px;font-size:12px;color:var(--mu);line-height:2">
+        <b style="color:#1d4ed8;display:block;margin-bottom:6px">💡 त्वरित तपासणी</b>
+        Opening + जमा − खर्च = System शिल्लक<br/>
+        प्रत्यक्ष ≠ System → कारण नोंदवा<br/>
+        सेव्ह केल्यावर पुढील Opening आपोआप
+      </div>
+    </div>
+    <div class="ss">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <button class="btn btn-green" onclick="sub()">💾 सेव्ह करा</button>
+        <button class="btn btn-ghost" onclick="prv()">👁 Preview</button>
+        <button class="btn btn-pale" onclick="goTab('d');loadData(true)">← डॅशबोर्ड</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-                // Explicit list of known header lines to ignore at the beginning
-                const headerLinesToIgnore = [
-                    "Kubera", "Dhansanchay", "LOKPARYAY", "KUBER RD", "Total"
-                ].map(h => h.toLowerCase()); // Convert to lower case for case-insensitive matching
+<script>
+// --- CONFIGURATION ---
+var API_READ = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNxyKMFXhN9_Z0G5puI5rGNDMIv9DT_VsGnZwjgSzGU9DDBdjNGwhO3msbo7LIwj9P6MzlaBEp8DlO/pub?output=csv';
+var API_WRITE = 'https://script.google.com/macros/s/AKfycbzVUEN3WqOevswOOD5Ag7M59rB1VcYX9_NGqGtUq8vFiuFdfXG0tRc-Rfz0C8Tbq8E/exec'; // Your Google Apps Script URL for submissions
 
-                for (let i = 0; i < lines.length; i++) {
-                    const line = lines[i].trim();
+var LK = 'lp_erp_v2_', // LocalStorage Key prefix
+    MT = 60000,       // Medium-term cache (e.g., 1 minute for API calls)
+    LT = 300000;      // Long-term cache (e.g., 5 minutes for full CSV data)
 
-                    if (!line) continue; // Skip empty lines
+// --- UTILITY FUNCTIONS ---
+function G(i) { return document.getElementById(i); }
+function td() { var d = new Date(); return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate()); }
+function z(n) { return String(n).padStart(2,'0'); }
+function num(v) { if(v==null||v==='')return 0; var n=Number(String(v).replace(/,/g,'')); return isFinite(n)?n:0; }
+function rupee(v) { return '₹'+num(v).toLocaleString('en-IN'); }
+function esc(s) {
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+}
+function dbn(fn,ms){var t;return function(){clearTimeout(t);t=setTimeout(fn,ms||300);};}
 
-                    // Skip explicit header lines if they appear at the very beginning
-                    // or before any actual agent data has been collected.
-                    if (agentData.length === 0 && headerLinesToIgnore.includes(line.toLowerCase())) {
-                        continue;
-                    }
+function nd(v) {
+    if (!v) return '';
+    const s = String(v).trim();
 
-                    const totalMatch = line.match(totalLineRegex);
-                    if (totalMatch) {
-                        // If there were pending name parts before the total line, process them
-                        if (currentAgentNameParts.length > 0) {
-                            console.warn("Unprocessed agent name parts found before total line:", currentAgentNameParts.join(' '));
-                            currentAgentNameParts = []; // Clear them as they're likely not a full agent
-                        }
-                        footerTotals = {
-                            kubera: parseFloat(totalMatch[2]),
-                            lokparyay: parseFloat(totalMatch[3]),
-                            grand: parseFloat(totalMatch[4])
-                        };
-                        continue; // Move to the next line after processing totals
-                    }
+    // Try parsing "DD Month YY" (e.g., "31 March 26")
+    const monthMap = {
+        'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'may': '05', 'jun': '06',
+        'jul': '07', 'aug': '08', 'sep': '09', 'oct': '10', 'nov': '11', 'dec': '12'
+    };
+    const monthRegex = /(\d{1,2})\s*([a-zA-Z]+)\s*(\d{2})/;
+    const match = s.toLowerCase().match(monthRegex);
+    if (match) {
+        let day = z(parseInt(match[1], 10));
+        let month = monthMap[match[2].substring(0, 3)];
+        let year = parseInt(match[3], 10);
+        if (year < 100) year += (year < 70 ? 2000 : 1900); // Assume 20xx for < 70, 19xx for >= 70
+        if (day && month && year) {
+            return `${year}-${month}-${day}`;
+        }
+    }
 
-                    const dataMatch = line.match(dataLineRegex);
-                    if (dataMatch) {
-                        // This line contains the amounts for an agent.
-                        // Any text before the amounts on THIS line is also part of the agent name.
-                        const namePartOnThisLine = dataMatch[1].trim();
-                        if (namePartOnThisLine) {
-                            currentAgentNameParts.push(namePartOnThisLine);
-                        }
-                        const fullAgentName = currentAgentNameParts.join(' ').trim();
-
-                        if (fullAgentName) {
-                            agentData.push({
-                                agentName: fullAgentName,
-                                kuberaAmount: parseFloat(dataMatch[2]),
-                                lokparyayAmount: parseFloat(dataMatch[3]),
-                                totalCollected: parseFloat(dataMatch[4])
-                            });
-                        } else {
-                            console.warn("Skipping data line due to empty agent name after combining:", line);
-                        }
-                        currentAgentNameParts = []; // Reset for the next agent
-                    } else {
-                        // This line does not contain the amounts, so it must be part of an agent's name.
-                        currentAgentNameParts.push(line);
-                    }
-                }
-
-                if (agentData.length === 0 || footerTotals.grand === 0) {
-                    throw new Error("No valid agent data or totals found in the text area. Please ensure the 'एकूण' line (or 'एककण') with three amounts is present at the end and the data format is correct.");
-                }
-
-                return { agentData, footerTotals };
-            };
-
-            // Function to display the parsed data and prepare for saving
-            const displayReport = (data) => {
-                clearReport(); // Clear any previous report
-                const { agentData, footerTotals } = data;
-
-                // --- Prepare data for saving to Google Sheet ---
-                currentReportData.agents = agentData.map(agent => ({
-                    name: agent.agentName,
-                    kubera: agent.kuberaAmount, // Renamed for consistency with backend
-                    lokparyay: agent.lokparyayAmount, // Renamed for consistency with backend
-                    total: agent.totalCollected // Renamed for consistency with backend
-                }));
-
-                // Extract and format collected date from the hardcoded report info
-                const reportInfoText = reportInfoContainer.textContent;
-                let extractedDate_DD_MM_YYYY = "Unknown Date";
-
-                // Prioritize "Report Date:"
-                const reportDateMatch = reportInfoText.match(/Report Date:\s*(\d{2}\.\d{2}\.\d{4})/);
-                if (reportDateMatch && reportDateMatch[1]) {
-                    extractedDate_DD_MM_YYYY = reportDateMatch[1];
-                } else {
-                    // Fallback: try to get the "To" date
-                    const dateToMatch = reportInfoText.match(/To\s+(\d{2}\.\d{2}\.\d{4})/);
-                    if (dateToMatch && dateToMatch[1]) {
-                        extractedDate_DD_MM_YYYY = dateToMatch[1];
-                    } else {
-                        // Fallback: try to get the first date after "Transaction Date:"
-                        const transactionDateMatch = reportInfoText.match(/Transaction Date:\s*(\d{2}\.\d{2}\.\d{4})/);
-                        if (transactionDateMatch && transactionDateMatch[1]) {
-                            extractedDate_DD_MM_YYYY = transactionDateMatch[1];
-                        }
-                    }
-                }
-                currentReportData.collectedDate = formatDateForSheet(extractedDate_DD_MM_YYYY);
+    // Handle Google Sheets date serial number (unlikely in CSV directly, but kept)
+    if (typeof v === 'number' && Math.abs(v) > 1000 && Math.abs(v) < 100000) {
+        var e = new Date(Date.UTC(1899, 11, 30)); e.setUTCDate(e.getUTCDate() + Math.round(v));
+        return e.getUTCFullYear() + '-' + z(e.getUTCMonth() + 1) + '-' + z(e.getUTCDate());
+    }
+    // Handle YYYY-MM-DDTHH:MM:SS (ISO)
+    if (/^\d{4}-\d{2}-\d{2}T/.test(s)) { var d = new Date(s); return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
+    // Handle YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    // Handle DD/MM/YYYY
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) { var p = s.split('/'); return p[2] + '-' + p[1] + '-' + p[0]; }
+    
+    // Fallback: try parsing as generic date, then slice if invalid
+    var d2 = new Date(s);
+    if (isNaN(d2.getTime())) return s.slice(0, 10); // Return first 10 chars if completely unparseable
+    return d2.getFullYear() + '-' + z(d2.getMonth() + 1) + '-' + z(d2.getDate());
+}
 
 
-                // --- Display data in the HTML table ---
-                agentData.forEach(agent => {
-                    const row = tbody.insertRow();
-                    const agentNameCell = row.insertCell();
-                    agentNameCell.textContent = agent.agentName;
+// --- GLOBAL STATE & CACHING ---
+var S={
+  ag:[],        // Agent names for dropdowns
+  data:null,    // Aggregated data for dashboard
+  fullRawData:null, // Full parsed CSV data (array of objects)
+  ch:{},        // Chart.js instances
+  mem:new Map() // In-memory cache for API calls
+};
+var _tt; // Toast timeout
 
-                    const kuberaAmountCell = row.insertCell();
-                    kuberaAmountCell.textContent = formatCurrency(agent.kuberaAmount);
-                    kuberaAmountCell.classList.add('text-right');
+function toast(m,t,ms){var el=G('tst');el.textContent=m;el.className='tst on'+(t==='ok'?' ok':t==='er'?' er':'');clearTimeout(_tt);_tt=setTimeout(function(){el.classList.remove('on');},ms||2800);}
+function hideLdr(){G('ldr').classList.remove('on');}
 
-                    const lokparyayAmountCell = row.insertCell();
-                    lokparyayAmountCell.textContent = formatCurrency(agent.lokparyayAmount);
-                    lokparyayAmountCell.classList.add('text-right');
+function lsG(k){try{var r=localStorage.getItem(LK+k);if(!r)return null;var o=JSON.parse(r);if(Date.now()-o.ts>LT){localStorage.removeItem(LK+k);return null;}return o.d;}catch(e){return null;}}
+function lsS(k,d){try{localStorage.setItem(LK+k,JSON.stringify({ts:Date.now(),d:d}));}catch(e){}}
+function clr(){S.mem.clear();try{Object.keys(localStorage).filter(function(k){return k.indexOf(LK)===0;}).forEach(function(k){localStorage.removeItem(k);});}catch(e){}}
 
-                    const totalCollectedCell = row.insertCell();
-                    totalCollectedCell.textContent = formatCurrency(agent.totalCollected);
-                    totalCollectedCell.classList.add('text-right');
-                });
+/**
+ * Basic CSV parser. Assumes first row is header, comma-separated values.
+ * Handles simple string values and trims whitespace.
+ * @param {string} csvText - The raw CSV string.
+ * @returns {Array<Object>} An array of objects, where each object represents a row.
+ */
+function parseCSV(csvText) {
+    const lines = csvText.trim().split('\n');
+    if (lines.length <= 1) return []; // Only header or empty
 
-                // Populate the totals in the footer
-                kuberaTotalCell.textContent = formatCurrency(footerTotals.kubera);
-                lokparyayTotalCell.textContent = formatCurrency(footerTotals.lokparyay);
-                grandTotalCell.textContent = formatCurrency(footerTotals.grand);
+    const headers = lines[0].split(',').map(h => h.trim());
+    const data = [];
 
-                collectionTable.style.display = 'table'; // Show the table
-                saveToSheetButton.disabled = false; // Enable save button after successful display
-            };
+    for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',');
+        // Simple check: if a row has too few values, it's likely malformed or empty at the end.
+        // Adjust for expected number of columns if values are less.
+        if (values.length < headers.length) {
+            console.warn('Malformed CSV row (fewer columns than headers):', lines[i]);
+            // Attempt to pad with empty strings for missing columns
+            while (values.length < headers.length) {
+                values.push('');
+            }
+        }
+        if (values.length > headers.length) {
+             console.warn('Malformed CSV row (more columns than headers), truncating:', lines[i]);
+             values.splice(headers.length); // Truncate excess columns
+        }
 
-            // Function to send data to Google Sheet
-            const saveToGoogleSheet = async () => {
-                errorMessageDiv.textContent = '';
-                successMessageDiv.textContent = '';
-                saveToSheetButton.disabled = true; // Disable to prevent multiple clicks
 
-                if (GAS_WEB_APP_URL === 'YOUR_DEPLOYED_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' || !GAS_WEB_APP_URL || !GAS_WEB_APP_URL.endsWith('/exec')) {
-                    errorMessageDiv.textContent = "ERROR: Please update 'GAS_WEB_APP_URL' in the script with your deployed Apps Script URL (it should end with /exec).";
-                    saveToSheetButton.disabled = false;
-                    return;
-                }
-
-                if (currentReportData.agents.length === 0) {
-                    errorMessageDiv.textContent = "No data to save. Please parse a report first.";
-                    saveToSheetButton.disabled = false;
-                    return;
-                }
-
-                try {
-                    const response = await fetch(GAS_WEB_APP_URL, {
-                        method: 'POST', // Crucial for CORS with Apps Script
-                        mode: 'cors',  // Explicitly set CORS mode
-                        headers: {
-                            'Content-Type': 'application/json' // Tell the server we're sending JSON
-                        },
-                        body: JSON.stringify({
-                            date: currentReportData.collectedDate, // Matches 'collectedDate' in client and 'date' in server expectation
-                            agents: currentReportData.agents // Matches 'agents' in client and server expectation
-                        })
-                    });
-
-                    if (!response.ok) {
-                        // If the server responded with an HTTP error status (e.g., 400, 500)
-                        const errorDetails = await response.text(); // Try to get text, or response.json() if you expect JSON errors
-                        throw new Error(`Server responded with status ${response.status}: ${errorDetails}`);
-                    }
-
-                    const result = await response.json(); // Assuming Apps Script will return JSON
-
-                    if (result.status === 'success') {
-                        successMessageDiv.textContent = `Successfully saved ${result.rowsAdded} rows to Google Sheet.`; // Use result.rowsAdded from server
-                    } else {
-                        errorMessageDiv.textContent = `Error from Google Sheet: ${result.message || 'Unknown error from server.'}`;
-                    }
-
-                } catch (error) {
-                    errorMessageDiv.textContent = `Fetch error: ${error.message}. Check browser console for more details.`;
-                    console.error("Fetch error:", error);
-                } finally {
-                    // Re-enable button only if data was available to be sent
-                    if (currentReportData.agents.length > 0) {
-                         saveToSheetButton.disabled = false;
-                    }
-                }
-            };
-
-            // Event listener for the Convert button
-            convertButton.addEventListener('click', function() {
-                clearReport(); // Clear previous output
-                const textContent = reportTextInput.value.trim();
-
-                if (!textContent) {
-                    errorMessageDiv.textContent = "Please paste some text into the area above.";
-                    return;
-                }
-
-                try {
-                    const parsedData = parseReportText(textContent);
-                    displayReport(parsedData);
-                } catch (error) {
-                    errorMessageDiv.textContent = `Error parsing text: ${error.message}`;
-                    console.error("Parsing error:", error);
-                }
-            });
-
-            // Event listener for the Save to Google Sheet button
-            saveToSheetButton.addEventListener('click', saveToGoogleSheet);
+        const row = {};
+        headers.forEach((header, index) => {
+            row[header] = values[index] ? values[index].trim() : '';
         });
-    </script>
+        data.push(row);
+    }
+    return data;
+}
+
+/**
+ * Fetches data from a URL, caches it. For CSV, it parses the data.
+ * @param {string} url - The URL to fetch.
+ * @param {boolean} force - Whether to bypass cache.
+ * @param {boolean} isCSV - True if URL points to a CSV, false for JSON.
+ * @returns {Promise<any>} The fetched and parsed data.
+ */
+async function apf(url, force, isCSV = false) {
+    const ck = url.replace(API_READ, '').replace(API_WRITE, ''); // Use base URL for cache key
+    const now = Date.now();
+
+    // Check in-memory cache
+    const m = S.mem.get(ck);
+    if (!force && m && now - m.ts < MT) {
+        return m.d;
+    }
+
+    // Check localStorage cache (only for CSV for long-term)
+    if (isCSV && !force) {
+        const ls = lsG(ck);
+        if (ls) {
+            S.mem.set(ck, { ts: now, d: ls });
+            return ls;
+        }
+    }
+
+    const res = await fetch(url + (url.indexOf('?') >= 0 ? '&' : '?') + '_t=' + now);
+    if (!res.ok) {
+        throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
+    }
+
+    let data;
+    if (isCSV) {
+        const csvText = await res.text();
+        data = parseCSV(csvText);
+    } else {
+        const txt = await res.text();
+        try {
+            data = JSON.parse(txt);
+        } catch (e) {
+            throw new Error('JSON Parse error: ' + txt.slice(0, 100));
+        }
+    }
+
+    S.mem.set(ck, { ts: now, d: data });
+    if (isCSV) { // Only store large CSV in localStorage
+        lsS(ck, data);
+    }
+    return data;
+}
+
+
+function goTab(t){G('secDash').classList.toggle('gone',t!=='d');G('secEntry').classList.toggle('gone',t!=='e');G('navD').classList.toggle('act',t==='d');G('navE').classList.toggle('act',t==='e');}
+function toggleMob(){G('mobMenu').classList.toggle('op');}
+function closeMob(){G('mobMenu').classList.remove('op');}
+
+function setQ(days){
+  var to=new Date(),from=new Date();from.setDate(from.getDate()-days);
+  function f(d){return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());}
+  G('fromDate').value=f(from); G('toDate').value=f(to); loadData(true);
+}
+
+// --- DATA LOADING & AGGREGATION ---
+async function loadData(force){
+  const fromDateStr = G('fromDate').value || td();
+  const toDateStr = G('toDate').value || td();
+  G('rb').innerHTML='⏳ माहिती गोळा करत आहे...';
+
+  try {
+    // 1. Fetch full CSV data (only once or when forced/expired cache)
+    if (!S.fullRawData || force) {
+      G('rb').innerHTML='⏳ पूर्ण डेटा डाउनलोड करत आहे...';
+      S.fullRawData = await apf(API_READ, force, true);
+    }
+
+    // 2. Aggregate data for the selected date range
+    G('rb').innerHTML='⏳ डेटा विश्लेषण करत आहे...';
+    S.data = aggregateDataForRange(S.fullRawData, fromDateStr, toDateStr);
+    
+    // 3. Populate agent names for entry form (if not already done)
+    if (S.ag.length === 0) {
+        const uniqueAgents = new Set();
+        S.fullRawData.forEach(row => {
+            if (row['Agent Name']) {
+                uniqueAgents.add(row['Agent Name'].trim());
+            }
+        });
+        S.ag = Array.from(uniqueAgents).sort();
+        popSel(); // Update agent dropdowns on entry form
+    }
+
+    rall(fromDateStr, toDateStr); // Render dashboard
+  } catch(e){
+    console.error('Error loading data:', e);
+    toast('❌ डेटा लोड करताना त्रुटी: '+e.message,'er',5000);
+    G('rb').innerHTML='⚠ त्रुटी';
+  }finally{hideLdr();}
+}
+
+/**
+ * Aggregates raw CSV data for a specific date range, adapting to the user's provided CSV columns.
+ * @param {Array<Object>} fullData - The entire parsed CSV data.
+ * @param {string} fromDateStr - Start date for aggregation (YYYY-MM-DD).
+ * @param {string} toDateStr - End date for aggregation (YYYY-MM-DD).
+ * @returns {Object} Aggregated dashboard data.
+ */
+function aggregateDataForRange(fullData, fromDateStr, toDateStr) {
+    const fromDate = new Date(fromDateStr);
+    const toDate = new Date(toDateStr);
+    
+    let collections = [];
+    let expenses = []; // Not available in current CSV, will remain empty
+    let agentWiseMap = {};
+    let productWiseMap = {};
+
+    // Default values for missing summary data
+    let currentOpeningBalance = 0;
+    let currentSystemBalance = 0;
+    let currentActualBankBalance = 0;
+    let currentDifference = 0;
+    let currentMatchStatus = 'N/A';
+    let currentMismatchReason = '';
+
+    fullData.forEach(row => {
+        const rowDateStr = nd(row['Date']);
+        if (!rowDateStr) return; // Skip rows without a valid date
+        const rowDate = new Date(rowDateStr);
+        
+        // Process only rows within the selected date range for collections
+        if (rowDate >= fromDate && rowDate <= toDate) {
+            const agent = String(row['Agent Name'] || '-').trim();
+            let totalRowCollection = 0; // Sum of PIGMY + RD for this row
+
+            // --- PIGMY Collections ---
+            const pigmyAmount = num(row['Kubera Dhansanchay Yojana Amount']);
+            if (pigmyAmount > 0) {
+                const type = 'PIGMY';
+                collections.push({
+                    date: rowDateStr, type, agent,
+                    accountNo: '-', // Not available in CSV
+                    customer: '-',  // Not available in CSV
+                    amount: pigmyAmount, count: 0 // Count not available in CSV
+                });
+                if (!productWiseMap[type]) productWiseMap[type] = { type, amount: 0, count: 0 };
+                productWiseMap[type].amount += pigmyAmount;
+                // Count remains 0 as per CSV limitations
+                totalRowCollection += pigmyAmount;
+            }
+
+            // --- RD Collections ---
+            const rdAmount = num(row['LOKPARYAY KUBER RD Saving Scheme Amount']);
+            if (rdAmount > 0) {
+                const type = 'RD';
+                collections.push({
+                    date: rowDateStr, type, agent,
+                    accountNo: '-', // Not available in CSV
+                    customer: '-',  // Not available in CSV
+                    amount: rdAmount, count: 0 // Count not available in CSV
+                });
+                if (!productWiseMap[type]) productWiseMap[type] = { type, amount: 0, count: 0 };
+                productWiseMap[type].amount += rdAmount;
+                // Count remains 0 as per CSV limitations
+                totalRowCollection += rdAmount;
+            }
+
+            // Update agent-wise totals
+            if (totalRowCollection > 0) {
+                if (!agentWiseMap[agent]) {
+                    agentWiseMap[agent] = { agent, totalAmount: 0, totalCount: 0, PIGMY: 0, RD: 0, FD: 0 };
+                }
+                agentWiseMap[agent].totalAmount += totalRowCollection;
+                // Total count will also be 0 as individual collection counts are 0
+                
+                // Add to specific product types for agent summary
+                if (pigmyAmount > 0) agentWiseMap[agent]['PIGMY'] += pigmyAmount;
+                if (rdAmount > 0) agentWiseMap[agent]['RD'] += rdAmount;
+            }
+        }
+    });
+
+    const totalCollection = collections.reduce((sum, r) => sum + r.amount, 0);
+    const totalExpense = 0; // No expense data in current CSV
+
+    return {
+        totals: {
+            pigmyAmount: productWiseMap['PIGMY'] ? productWiseMap['PIGMY'].amount : 0,
+            pigmyCount: 0, // Not available in CSV
+            rdAmount: productWiseMap['RD'] ? productWiseMap['RD'].amount : 0,
+            rdCount: 0,    // Not available in CSV
+            fdAmount: 0,   // Not available in CSV
+            fdCount: 0,    // Not available in CSV
+            totalCollection,
+            totalExpense,
+            openingBalance: currentOpeningBalance,
+            systemBalance: currentSystemBalance,
+            actualBankBalance: currentActualBankBalance,
+            difference: currentDifference,
+            matchStatus: currentMatchStatus,
+            mismatchReason: currentMismatchReason
+        },
+        rows: collections,
+        expenses: expenses, // Will be empty
+        productWise: Object.values(productWiseMap),
+        agentWise: Object.values(agentWiseMap).sort((a, b) => b.totalAmount - a.totalAmount)
+    };
+}
+
+
+var KP=[
+  {k:'pigmyAmount', s:'pigmyCount', l:'PIGMY जमा',            c:'kg',m:'pigmy',i:'🐷'},
+  {k:'rdAmount',    s:'rdCount',    l:'RD जमा',               c:'kb',m:'rd',   i:'📈'},
+  {k:'fdAmount',    s:'fdCount',    l:'FD जमा',               c:'kv',m:'fd',   i:'🏦'},
+  {k:'totalCollection',s:null,      l:'एकूण जमा रक्कम',       c:'kt',m:'all',  i:'💰'},
+  {k:'totalExpense',s:null,         l:'एकूण खर्च',            c:'kr',m:'exp',  i:'🧾'},
+  {k:'openingBalance',s:null,       l:'Opening शिल्लक',        c:'ks',m:'sum',  i:'🏁'},
+  {k:'systemBalance',s:null,        l:'System शिल्लक',         c:'ka',m:'sum',  i:'🖥️'},
+  {k:'actualBankBalance',s:null,    l:'प्रत्यक्ष बँक शिल्लक', c:'ko',m:'sum',  i:'🏧'},
+  {k:'difference',  s:null,         l:'फरक (जुळणी)',           c:'kx',m:'sum',  i:'⚖️'},
+];
+
+function rall(from,to){
+  var d=S.data;if(!d)return;
+  var t=d.totals,is1=(from===to),rl=is1?from:from+' ते '+to;
+  G('rb').innerHTML='📅 '+esc(rl)+'&nbsp;|&nbsp;'+d.rows.length+' नोंदी';
+  G('kpiGrid').innerHTML=KP.map(function(k){
+    var v=rupee(t[k.k]||0);
+    // Display 'खाती: 0' if no account count data is available for PIGMY/RD
+    var sb = (k.k === 'pigmyAmount' || k.k === 'rdAmount') ? '<div class="kpi-sub">खाती: 0</div>' : '';
+    return '<button class="kpi '+k.c+'" onclick="omo(\''+k.m+'\',\''+esc(k.l)+'\')">'
+      +'<span class="kpi-ic">'+k.i+'</span>'
+      +'<div class="kpi-val">'+v+'</div>'
+      +'<div class="kpi-lbl">'+k.l+'</div>'
+      +sb+'<div class="kpi-tag">तपशील ↗</div></button>';
+  }).join('');
+  var ms=t.matchStatus||'N/A';
+  G('sb').innerHTML=ms==='YES'?'<span class="pill pp">✓ जुळणी झाली</span>':ms==='NO'?'<span class="pill pr">⚠ जुळणी नाही</span>':'<span class="pill pa">N/A</span>';
+  
+  // Adapt summary fields to available data
+  var sf=[
+    ['कालावधी',rl],
+    ['PIGMY रक्कम',rupee(t.pigmyAmount)],
+    ['RD रक्कम',rupee(t.rdAmount)],
+    ['FD रक्कम',rupee(t.fdAmount)], // Will be 0
+    ['एकूण जमा',rupee(t.totalCollection)],
+    ['एकूण खर्च',rupee(t.totalExpense)], // Will be 0
+    ['Opening शिल्लक',rupee(t.openingBalance)], // Will be 0
+    ['System शिल्लक',rupee(t.systemBalance)],   // Will be 0
+    ['प्रत्यक्ष शिल्लक',rupee(t.actualBankBalance)], // Will be 0
+    ['फरक',rupee(t.difference)], // Will be 0
+    ['जुळणी नाही कारण',t.mismatchReason||'-'] // Will be empty
+  ];
+  G('sg').innerHTML=sf.map(function(x){return'<div style="background:#f5f8ff;border:1px solid var(--b);border-radius:12px;padding:12px"><div style="font-size:10px;font-weight:800;color:var(--mu);text-transform:uppercase">'+esc(x[0])+'</div><div style="font-size:13px;font-weight:800;margin-top:4px">'+esc(String(x[1]))+'</div></div>';}).join('');
+  rc2(); ra(); rcharts();
+}
+
+function rc2(){
+  var q=G('srchBox').value.trim().toLowerCase(),tp=G('tFilt').value;
+  var rows=(S.data&&S.data.rows||[]).filter(function(r){
+    if(tp!=='ALL'&&r.type!==tp)return false;
+    if(!q)return true;
+    // Search only available fields
+    return[r.agent,r.type].some(function(v){return String(v||'').toLowerCase().indexOf(q)>=0;});
+  });
+  var html=rows.map(function(r){
+    var pc=r.type==='PIGMY'?'pp':r.type==='RD'?'pbb':'pa';
+    return'<tr><td>'+esc(r.date)+'</td><td><span class="pill '+pc+'">'+esc(r.type)+'</span></td><td class="ttb">'+esc(r.agent||'-')+'</td><td>-</td><td class="ttr">0</td><td class="ttr ttb">'+rupee(r.amount)+'</td></tr>';
+  }).join('');
+  if(rows.length){var tA=rows.reduce(function(a,b){return a+b.amount;},0);html+='<tr style="background:#f0fdf4;font-weight:900"><td colspan="4" style="color:#065f46">एकूण</td><td class="ttr">0</td><td class="ttr">'+rupee(tA)+'</td></tr>';}
+  G('tbC').innerHTML=html||'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--mu)">डेटा उपलब्ध नाही</td></tr>';
+}
+
+function ra(){
+  var rows=(S.data&&S.data.agentWise)||[];
+  G('tbA').innerHTML=rows.length?rows.map(function(r){
+    return'<tr><td class="ttb">'+esc(r.agent)+'</td><td class="ttr">0</td><td class="ttr ttb" style="color:#1d4ed8">'+rupee(r.totalAmount)+'</td><td class="ttr" style="color:#059669">'+rupee(r.PIGMY)+'</td><td class="ttr">'+rupee(r.RD)+'</td><td class="ttr">'+rupee(r.FD)+'</td></tr>';
+    }).join(''):'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--mu)">डेटा उपलब्ध नाही</td></tr>';
+}
+
+var CL=['#059669','#1d4ed8','#7c3aed','#d97706','#dc2626','#0891b2','#ea580c','#6366f1'];
+function mc(id,cfg){if(S.ch[id])S.ch[id].destroy();S.ch[id]=new Chart(G(id).getContext('2d'),cfg);}
+function co(x){return Object.assign({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},animation:{duration:380}},x||{});}
+
+function rcharts(){
+  if(typeof Chart==='undefined'){setTimeout(function(){S.data&&rcharts();},800);return;}
+  var pw=(S.data&&S.data.productWise)||[],aw=((S.data&&S.data.agentWise)||[]).slice(0,10),ex=(S.data&&S.data.expenses)||[];
+  var eM={};ex.forEach(function(x){var k=x.type||'इतर';eM[k]=(eM[k]||0)+num(x.amount);});
+
+  // Product Wise Amount Pie Chart
+  mc('cPie',{type:'pie',data:{labels:pw.map(function(x){return x.type;}),datasets:[{data:pw.map(function(x){return x.amount;}),backgroundColor:CL.slice(0,pw.length),borderWidth:3,borderColor:'#fff',hoverOffset:8}]},options:Object.assign(co(),{plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:11,padding:9,font:{size:11}}}}})});
+  
+  // Product Wise Accounts Bar Chart (will show 0 for counts)
+  mc('cBar',{type:'bar',data:{labels:pw.map(function(x){return x.type;}),datasets:[{data:pw.map(function(x){return x.count;}),backgroundColor:CL.slice(0,pw.length),borderRadius:9,borderSkipped:false}]},options:co({scales:{x:{grid:{display:false}},y:{grid:{color:'#f1f5fb'}}}})});
+  
+  // Expense Classification Doughnut Chart (will be empty/default if no expense data)
+  var eL=Object.keys(eM),eV=Object.values(eM);
+  mc('cExp',{type:'doughnut',data:{labels:eL.length?eL:['खर्च नाही'],datasets:[{data:eV.length?eV:[1],backgroundColor:eL.length?CL:['#e2e8f0'],borderWidth:3,borderColor:'#fff'}]},options:Object.assign(co({cutout:'60%'}),{plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:11,padding:8,font:{size:11}}}}})});
+  
+  // Agent Wise Amount Bar Chart
+  mc('cAgA',{type:'bar',data:{labels:aw.map(function(x){return x.agent;}),datasets:[{data:aw.map(function(x){return x.totalAmount;}),backgroundColor:'rgba(29,78,216,.75)',borderRadius:7,borderSkipped:false}]},options:co({indexAxis:'y',scales:{x:{grid:{color:'#f1f5fb'},ticks:{callback:function(v){return rupee(v);}}},y:{grid:{display:false},ticks:{font:{size:11}}}}})});
+  
+  // Agent Wise Accounts Bar Chart (will show 0 for counts)
+  mc('cAgC',{type:'bar',data:{labels:aw.map(function(x){return x.agent;}),datasets:[{data:aw.map(function(x){return x.totalCount;}),backgroundColor:'rgba(5,150,105,.72)',borderRadius:7,borderSkipped:false}]},options:co({indexAxis:'y',scales:{x:{grid:{color:'#f1f5fb'}},y:{grid:{display:false},ticks:{font:{size:11}}}}})});
+}
+
+function omo(kind,title){
+  var d=S.data||{totals:{},expenses:[],agentWise:[],rows:[]},t=d.totals;
+  var from=G('fromDate').value||td(),to=G('toDate').value||td();
+  G('mtt').textContent=title||'तपशील'; G('mts').textContent=(from===to?from:from+' ते '+to);
+  var html='';
+  if(['pigmy','rd','fd','all'].indexOf(kind)>=0){
+    var tf={pigmy:'PIGMY',rd:'RD',fd:'FD',all:'ALL'}[kind];
+    var fil=tf==='ALL'?d.rows:d.rows.filter(function(r){return r.type===tf;});
+    var tot=fil.reduce(function(a,b){return a+b.amount;},0),totC=0; // Count will be 0
+    html='<div class="mst"><div class="ms"><div class="sl">नोंदी</div><div class="sv">'+fil.length+'</div></div><div class="ms"><div class="sl">एकूण खाती</div><div class="sv">'+totC+'</div></div><div class="ms"><div class="sl">एकूण रक्कम</div><div class="sv" style="color:#1d4ed8">'+rupee(tot)+'</div></div></div>'
+      +'<div class="tw"><table><thead><tr><th>तारीख</th><th>प्रकार</th><th>एजंट नाव</th><th>खाते क्र.</th><th class="ttr">खाती</th><th class="ttr">रक्कम</th></tr></thead><tbody>'
+      +fil.map(function(r){var pc=r.type==='PIGMY'?'pp':r.type==='RD'?'pbb':'pa';return'<tr><td>'+esc(r.date)+'</td><td><span class="pill '+pc+'">'+esc(r.type)+'</span></td><td class="ttb">'+esc(r.agent||'-')+'</td><td>-</td><td class="ttr">0</td><td class="ttr ttb">'+rupee(r.amount)+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+  }else if(kind==='agent'){
+    html='<div class="mst"><div class="ms"><div class="sl">एजंट</div><div class="sv">'+d.agentWise.length+'</div></div><div class="ms"><div class="sl">एकूण संकलन</div><div class="sv" style="color:#1d4ed8">'+rupee(t.totalCollection)+'</div></div></div>'
+      +'<div class="tw"><table><thead><tr><th>एजंट नाव</th><th class="ttr">खाती</th><th class="ttr">एकूण रक्कम</th><th class="ttr">PIGMY</th><th class="ttr">RD</th><th class="ttr">FD</th></tr></thead><tbody>'
+      +d.agentWise.map(function(x){return'<tr><td class="ttb">'+esc(x.agent)+'</td><td class="ttr">0</td><td class="ttr ttb" style="color:#1d4ed8">'+rupee(x.totalAmount)+'</td><td class="ttr" style="color:#059669">'+rupee(x.PIGMY)+'</td><td class="ttr">'+rupee(x.RD)+'</td><td class="ttr">'+rupee(x.FD)+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+  }else if(kind==='exp'){
+    html='<div class="mst"><div class="ms"><div class="sl">नोंदी</div><div class="sv">'+d.expenses.length+'</div></div><div class="ms"><div class="sl">एकूण खर्च</div><div class="sv" style="color:#dc2626">'+rupee(t.totalExpense)+'</div></div></div>'
+      +'<div class="tw"><table><thead><tr><th>तारीख</th><th>खर्च प्रकार</th><th class="ttr">रक्कम</th><th>तपशील</th></tr></thead><tbody>'
+      +d.expenses.map(function(x){return'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.type||'-')+'</td><td class="ttr ttb" style="color:#dc2626">'+rupee(x.amount)+'</td><td>'+esc(x.note||'-')+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+  }else{ // 'sum' kind for overall summary
+    html='<div class="mst"><div class="ms"><div class="sl">एकूण जमा</div><div class="sv" style="color:#1d4ed8">'+rupee(t.totalCollection)+'</div></div><div class="ms"><div class="sl">फरक</div><div class="sv">'+rupee(t.difference)+'</div></div></div>'
+      +'<div class="tw"><table><thead><tr><th>क्षेत्र</th><th>मूल्य</th></tr></thead><tbody>'
+      +[['Opening शिल्लक',rupee(t.openingBalance)],['एकूण जमा',rupee(t.totalCollection)],['एकूण खर्च',rupee(t.totalExpense)],['System शिल्लक',rupee(t.systemBalance)],['प्रत्यक्ष शिल्लक',rupee(t.actualBankBalance)],['फरक',rupee(t.difference)],['जुळणी',t.matchStatus||'N/A'],['जुळणी नाही कारण',t.mismatchReason||'-']].map(function(r){return'<tr><td class="ttb">'+r[0]+'</td><td>'+esc(String(r[1]))+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+  }
+  G('mbd').innerHTML=html; G('ov').classList.add('on');
+}
+function cmo(){G('ov').classList.remove('on');}
+
+/* PRINT */
+function openPrint(){
+  var d=S.data; if(!d){toast('⚠ आधी डेटा लोड करा','er');return;}
+  var t=d.totals,from=G('fromDate').value||td(),to=G('toDate').value||td();
+  var is1=(from===to),rl=is1?from:from+' ते '+to;
+  var now=new Date(),timeStr=now.getHours()+':'+z(now.getMinutes());
+  var aRows=d.agentWise.map(function(x){return'<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:7px 10px;font-weight:700">'+esc(x.agent)+'</td><td style="padding:7px 10px;text-align:right">0</td><td style="padding:7px 10px;text-align:right;font-weight:900;color:#1d4ed8">'+rupee(x.totalAmount)+'</td><td style="padding:7px 10px;text-align:right;color:#059669">'+rupee(x.PIGMY)+'</td><td style="padding:7px 10px;text-align:right">'+rupee(x.RD)+'</td><td style="padding:7px 10px;text-align:right">'+rupee(x.FD)+'</td></tr>';}).join('');
+  var sf=[['PIGMY संकलन',rupee(t.pigmyAmount),'खाती: 0'],['RD संकलन',rupee(t.rdAmount),'खाती: 0'],['FD संकलन',rupee(t.fdAmount),'खाती: 0'],['एकूण जमा',rupee(t.totalCollection),''],['एकूण खर्च',rupee(t.totalExpense),''],['Opening शिल्लक',rupee(t.openingBalance),''],['System शिल्लक',rupee(t.systemBalance),''],['प्रत्यक्ष शिल्लक',rupee(t.actualBankBalance),''],['फरक',rupee(t.difference),t.matchStatus==='YES'?'✓ जुळणी झाली':'⚠ जुळणी नाही']];
+  var html='<div style="font-family:system-ui,sans-serif;color:#1a2744">'
+    +'<div style="text-align:center;border-bottom:3px solid #1d4ed8;padding-bottom:16px;margin-bottom:20px">'
+    +'<img src="https://anikfin.com/ANIKDATA/Logo.png" style="width:54px;height:54px;object-fit:contain;margin-bottom:8px" onerror="this.style.display=\'none\'"/>'
+    +'<div style="font-size:19px;font-weight:900">लोकपर्याय जिल्हा सहकारी पतसंस्था</div>'
+    +'<div style="font-size:12px;color:#64748b;margin-top:3px">म.हासेगांव &nbsp;|&nbsp; दैनंदिन बँकिंग ERP</div>'
+    +'<div style="font-size:14px;font-weight:800;color:#1d4ed8;margin-top:8px">दैनंदिन अहवाल — '+esc(rl)+'</div>'
+    +'<div style="font-size:11px;color:#94a3b8;margin-top:3px">मुद्रण वेळ: '+timeStr+' | '+td()+'</div>'
+    +'</div>'
+    +'<div style="margin-bottom:20px"><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;border-bottom:1px solid #e2e8f0;padding-bottom:6px">आर्थिक सारांश</div>'
+    +sf.map(function(r,i){return'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-radius:9px;background:'+(i%2===0?'#f5f8ff':'#fff')+';margin-bottom:4px"><div style="font-weight:700;color:#64748b">'+r[0]+(r[2]?'<span style="font-size:11px;margin-left:8px;color:#94a3b8">'+r[2]+'</span>':'')+'</div><div style="font-weight:900;font-size:15px">'+esc(r[1])+'</div></div>';}).join('')
+    +'</div>'
+    +(d.agentWise.length?'<div><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;border-bottom:1px solid #e2e8f0;padding-bottom:6px">एजंट निहाय सारांश</div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#f5f8ff"><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">एजंट नाव</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">खाती</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">एकूण</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">PIGMY</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">RD</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">FD</th></tr></thead><tbody>'+aRows+'</tbody></table></div>':'')
+    +(t.mismatchReason?'<div style="background:#fff3dc;border:1.5px solid #fbbf24;border-radius:10px;padding:12px;font-size:13px;margin-top:12px"><b style="color:#92400e">⚠ जुळणी नाही कारण:</b> '+esc(t.mismatchReason)+'</div>':'')
+    +'<div style="text-align:center;margin-top:20px;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px">लोकपर्याय पतसंस्था ERP — '+td()+'</div>'
+    +'</div>';
+  G('printContent').innerHTML=html; G('pov').classList.add('on');
+}
+function closePrint(){G('pov').classList.remove('on');}
+function doPrint(){
+  var c=G('printContent').innerHTML;
+  var w=window.open('','_blank','width=820,height=900');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>दैनंदिन अहवाल</title><style>body{font-family:system-ui,sans-serif;padding:20px;color:#1a2744}table{width:100%;border-collapse:collapse}@media print{body{padding:10px}}</style></head><body>'+c+'<script>window.onload=function(){window.print();}<\/script></body></html>');
+  w.document.close();
+}
+
+/* Debug */
+function showDbg(){var r=S.fullRawData;if(!r){alert('डेटा अद्याप नाही');return;}var i={totalRows:r.length,firstRow:r[0]||'empty',fromDate:G('fromDate').value,toDate:G('toDate').value,currentDataRows:S.data&&S.data.rows&&S.data.rows.length||0};console.log('[DEBUG]',i, S.data);alert(JSON.stringify(i,null,2));}
+
+/* Entry form — DOM-based, NO onclick in innerHTML */
+function makeRow(){
+  var div=document.createElement('div'); div.className='erow';
+  div.innerHTML='<div style="display:grid;grid-template-columns:1fr 88px 100px 34px;gap:8px;align-items:end">'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">एजंट</div><select class="inp agS" style="padding:8px 10px;font-size:13px"><option value="">निवडा</option></select></div>'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">खाती</div><input type="number" class="inp aCn" value="0" min="0" style="padding:8px 10px" oninput="rc()"/></div>'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">रक्कम</div><input type="number" class="inp aAm" value="0" min="0" style="padding:8px 10px" oninput="rc()"/></div>'
+    +'<button class="btn btn-pale btn-ico" style="color:#dc2626;height:34px;font-size:15px">✕</button>'
+    +'</div>';
+  div.querySelector('button').addEventListener('click',function(){div.remove();rc();});
+  return div;
+}
+function makeExp(){
+  var div=document.createElement('div'); div.className='erow';
+  div.innerHTML='<div style="display:grid;grid-template-columns:1fr 110px 34px;gap:8px;align-items:end">'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">खर्च प्रकार</div><input type="text" class="inp eTyp" placeholder="Travel / Cement..." style="padding:8px 10px;font-size:13px"/></div>'
+    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">रक्कम</div><input type="number" class="inp eAm" value="0" min="0" style="padding:8px 10px" oninput="rc()"/></div>'
+    +'<button class="btn btn-pale btn-ico" style="color:#dc2626;height:34px;font-size:15px">✕</button>'
+    +'</div>';
+  div.querySelector('button').addEventListener('click',function(){div.remove();rc();});
+  return div;
+}
+
+function ar(tp){G('r'+tp).appendChild(makeRow());popSel();}
+function ae(){G('rE').appendChild(makeExp());}
+
+function popSel(){
+  var o='<option value="">निवडा</option>'+S.ag.map(function(a){return'<option value="'+esc(a)+'">'+esc(a)+'</option>';}).join('');
+  document.querySelectorAll('.agS').forEach(function(s){var v=s.value;s.innerHTML=o;if(v)s.value=v;});
+}
+
+// Opening balance for the entry form will be 0 as it's not in the CSV
+async function onED(){
+  var date = G('eDate').value;
+  if (!date || !S.fullRawData) {
+      G('eOp').value = 0; // Default to 0 if no data or date
+      rc();
+      return;
+  }
+  // The CSV doesn't contain an 'Opening Balance' column.
+  // So, for now, the opening balance for the entry form will always be 0.
+  // If you need actual opening balances, your Google Sheet or API_WRITE script
+  // would need to manage and provide this data explicitly.
+  G('eOp').value = 0; 
+  rc(); // Recalculate totals
+}
+
+
+function rc(){
+  var op=num(G('eOp').value),ac=num(G('eAc').value),tC=0,tE=0;
+  document.querySelectorAll('.aAm').forEach(function(r){tC+=num(r.value);});
+  document.querySelectorAll('.eAm').forEach(function(r){tE+=num(r.value);});
+  var sys=op+tC-tE,diff=ac-sys,ok=Math.abs(diff)<0.01;
+  G('eTc').value=tC; G('eTe').value=tE; G('eSy').value=sys; G('eDf').value=diff;
+  G('eMt').innerHTML=ok?'<span class="pill pp">✓ जुळणी झाली</span>':'<span class="pill pr">⚠ जुळणी नाही</span>';
+}
+
+function cCl(tp){var m={P:'PIGMY',R:'RD',F:'FD'};return Array.from(document.querySelectorAll('#r'+tp+' .erow')).map(function(r){return{type:m[tp],agent:r.querySelector('.agS').value.trim(),amount:num(r.querySelector('.aAm').value),accountCount:Math.max(0,Math.floor(num(r.querySelector('.aCn').value)))};}).filter(function(r){return r.agent||r.amount>0||r.accountCount>0;});}
+function cEx(){return Array.from(document.querySelectorAll('#rE .erow')).map(function(r){return{type:r.querySelector('.eTyp').value.trim(),amount:num(r.querySelector('.eAm').value),note:''};}).filter(function(r){return r.type||r.amount>0;});}
+function bP(){return{type:'daily_entry',date:G('eDate').value,collections:cCl('P').concat(cCl('R')).concat(cCl('F')),expenses:cEx(),bank:{openingBalance:num(G('eOp').value),actualBankBalance:num(G('eAc').value),mismatchReason:G('eMi').value.trim()}};}
+function prv(){var p=bP();var w=window.open('','_blank','width=600,height=500');w.document.write('<pre style="font-size:13px;padding:20px;white-space:pre-wrap">'+esc(JSON.stringify(p,null,2))+'</pre>');}
+
+async function sub(){
+  var p=bP();
+  if(!p.date){toast('दिनांक आवश्यक आहे','er');return;}
+  if(!p.collections.length&&!p.expenses.length&&!num(p.bank.actualBankBalance)){toast('किमान काही डेटा भरा','er');return;}
+  if(Math.abs(num(G('eDf').value))>=0.01&&!p.bank.mismatchReason){toast('फरक असल्यास कारण नोंदवा','er');return;}
+  G('ldr').classList.add('on');
+  try{
+    // Submit data to your Google Apps Script for writing
+    var res=await fetch(API_WRITE,{method:'POST',body:JSON.stringify(p)});
+    var txt=await res.text(); var d;
+    try{d=JSON.parse(txt);}catch(e){throw new Error('Invalid: '+txt.slice(0,80));}
+    if(d.status!=='success') throw new Error(d.message||'Save failed');
+    
+    // If submission is successful, clear relevant caches to force reload dashboard data
+    clr(); // Clear all caches
+    toast('✅ यशस्वीरित्या सेव्ह झाले!','ok',3000);
+    rsf(false); await onED();
+    G('fromDate').value=p.date; G('toDate').value=p.date;
+    await loadData(true); // Force reload dashboard from CSV to include new entry
+    goTab('d');
+  }catch(e){toast('❌ '+(e.message.includes('Save failed') ? 'सेव्ह करण्यात त्रुटी: ' : '')+e.message,'er',5000);}
+  finally{hideLdr();}
+}
+
+function setET(){G('eDate').value=td();onED();}
+function rsf(rd){G('rP').innerHTML='';G('rR').innerHTML='';G('rF').innerHTML='';G('rE').innerHTML='';ar('P');ar('R');ar('F');ae();if(rd!==false)G('eDate').value=td();G('eAc').value='';G('eMi').value='';rc();}
+
+function applyGrid(){var w=window.innerWidth,r=G('cr1');if(r)r.style.gridTemplateColumns=w<640?'1fr':w<1024?'1fr 1fr':'1fr 1fr 1fr';}
+window.addEventListener('resize',applyGrid);
+
+function init(){
+  setTimeout(hideLdr,12000); // Hide loader if initial load takes too long (fallback)
+  var t=td(); G('fromDate').value=t; G('toDate').value=t; G('eDate').value=t;
+  rsf(false); applyGrid();
+  G('srchBox').addEventListener('input',dbn(rc2,180));
+  G('tFilt').addEventListener('change',rc2);
+  G('fromDate').addEventListener('change',function(){loadData(true);});
+  G('toDate').addEventListener('change',function(){loadData(true);});
+  
+  // Display skeleton while loading
+  G('kpiGrid').innerHTML=KP.map(function(k){return'<div class="kpi '+k.c+'" style="opacity:.55"><span class="kpi-ic">'+k.i+'</span><div class="sk" style="height:22px;width:100px;margin-bottom:6px"></div><div class="kpi-lbl">'+k.l+'</div></div>';}).join('');
+  
+  loadData(false)
+    .then(() => {
+        if (typeof Chart === 'undefined') {
+            // If Chart.js isn't loaded yet, try again after a delay
+            setTimeout(() => S.data && rcharts(), 1000);
+        }
+        onED(); // Update opening balance for today (will be 0 from CSV)
+    })
+    .catch(e => {
+        console.error('Initial load failed:', e);
+        hideLdr();
+        toast('❌ प्रारंभिक डेटा लोड करताना त्रुटी: ' + e.message, 'er', 8000);
+    });
+}
+document.addEventListener('DOMContentLoaded',init);
+</script>
 </body>
 </html>

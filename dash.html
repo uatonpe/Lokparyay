@@ -183,20 +183,19 @@
             }
         }
     </style>
-
-    <!-- PDF.js library for PDF parsing -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <!-- PDF.js library is NOT needed for CSV. Removed to reduce file size. -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
-    </script>
+    </script> -->
 </head>
 <body>
     <div class="container">
         <h1>लोक पर्याय पतसंस्था - दैनिक संकलन डॅशबोर्ड</h1>
 
         <div class="upload-section">
-            <label for="pdfUpload">दैनिक संकलन रिपोर्ट अपलोड करा (PDF):</label>
-            <input type="file" id="pdfUpload" accept=".pdf">
+            <label for="csvUpload">दैनिक संकलन रिपोर्ट अपलोड करा (CSV):</label>
+            <input type="file" id="csvUpload" accept=".csv">
             <button id="saveToSheetBtn" style="background-color: #28a745; margin-left: 10px;">डेटा शीटमध्ये सेव्ह करा</button>
             <p id="uploadStatus" class="status"></p>
         </div>
@@ -210,8 +209,9 @@
                 <button id="filterAll">सर्व डेटा</button>
             </div>
             <div class="summary-info">
-                <p><strong>एजेंटचे नाव:</strong> <span id="displayAgentName">N/A</span></p>
-                <p><strong>योजना:</strong> <span id="displayGLHead">N/A</span></p>
+                <!-- Agent Name and GL Head will be populated from CSV data if it's consistent across the file -->
+                <p><strong>एकूण एजंट:</strong> <span id="displayAgentCount">0</span></p>
+                <p><strong>एकूण योजना:</strong> <span id="displayGLHeadCount">0</span></p>
                 <p><strong>डेटाची श्रेणी:</strong> <span id="dataDateRange"></span></p>
                 <p><strong>एकूण संकलन रक्कम:</strong> <span id="totalCollection">0.00</span></p>
                 <p><strong>एकूण नोंदी:</strong> <span id="totalEntries">0</span></p>
@@ -232,7 +232,7 @@
                 </thead>
                 <tbody>
                     <!-- Data will be inserted here by JavaScript -->
-                    <tr><td colspan="6">कृपया PDF रिपोर्ट अपलोड करा किंवा डेटा लोड होण्याची प्रतीक्षा करा.</td></tr>
+                    <tr><td colspan="6">कृपया CSV रिपोर्ट अपलोड करा किंवा डेटा लोड होण्याची प्रतीक्षा करा.</td></tr>
                 </tbody>
             </table>
         </div>
@@ -241,21 +241,19 @@
     <!-- In-line JavaScript for all-in-one file -->
     <script>
         // *** Google Apps Script API URL (Replace with your deployed API URL) ***
-        const GOOGLE_APPS_SCRIPT_API_URL = 'https://script.google.com/macros/s/AKfycbzkF6WGzroAgke9FIg0kmpaNo7pZQ10-MZCc1oGWInDb-Ot-34Er105xmropIdP0JI/exec';
+        const GOOGLE_APPS_SCRIPT_API_URL = 'https://script.google.com/macros/s/AKfycbw3gPdUMKZRm1KR56JeKUvXNUU_77OYfe_1d59Wgi14RTxvpIYH6ygj7VUixWcpe9I/exec';
 
-        let parsedCollectionData = []; // Stores parsed data from the currently uploaded PDF (before saving)
+        let parsedCollectionData = []; // Stores parsed data from the currently uploaded CSV (before saving)
         let allSheetData = []; // Stores all data fetched from Google Sheet (after saving)
-        let currentAgentName = 'N/A'; // To store the agent name from the PDF header
-        let currentGLHead = 'N/A'; // To store the GL Head from the PDF header
-
-        const pdfUploadInput = document.getElementById('pdfUpload');
+        
+        const csvUploadInput = document.getElementById('csvUpload'); // Changed to csvUpload
         const uploadStatus = document.getElementById('uploadStatus');
         const collectionTableBody = document.querySelector('#collectionTable tbody');
         const totalCollectionSpan = document.getElementById('totalCollection');
         const totalEntriesSpan = document.getElementById('totalEntries');
         const dataDateRangeSpan = document.getElementById('dataDateRange');
-        const displayAgentNameSpan = document.getElementById('displayAgentName');
-        const displayGLHeadSpan = document.getElementById('displayGLHead');
+        const displayAgentCountSpan = document.getElementById('displayAgentCount'); // Changed to count
+        const displayGLHeadCountSpan = document.getElementById('displayGLHeadCount'); // Changed to count
         const saveToSheetBtn = document.getElementById('saveToSheetBtn');
 
         const filterTodayBtn = document.getElementById('filterToday');
@@ -282,106 +280,165 @@
             const year = date.getFullYear();
             return `${day}.${month}.${year}`;
         }
-
-        // Main PDF parsing logic
-        async function parsePdf(file) {
-            uploadStatus.textContent = 'PDF वाचत आहे... कृपया प्रतीक्षा करा.';
+        
+        // CSV Parsing Logic
+        async function parseCsv(file) {
+            uploadStatus.textContent = 'CSV वाचत आहे... कृपया प्रतीक्षा करा.';
             parsedCollectionData = []; // Reset parsed data for new upload
-            currentAgentName = 'N/A';
-            currentGLHead = 'N/A';
-            displayAgentNameSpan.textContent = 'N/A';
-            displayGLHeadSpan.textContent = 'N/A';
+            let tempAgentName = 'N/A';
+            let tempGLHead = 'N/A';
 
             const reader = new FileReader();
-            reader.onload = async function() {
-                try {
-                    const typedArray = new Uint8Array(this.result);
-                    const pdf = await pdfjsLib.getDocument(typedArray).promise;
-                    const numPages = pdf.numPages;
-                    let rawText = '';
+            reader.onload = async function(event) {
+                const csvText = event.target.result;
+                const lines = csvText.split('\n');
 
-                    for (let i = 1; i <= numPages; i++) {
-                        const page = await pdf.getPage(i);
-                        const textContent = await page.getTextContent();
-                        rawText += textContent.items.map(item => item.str).join('\n'); // Join with newline for better line-by-line processing
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+
+                    // Split CSV line by comma, respecting quoted fields
+                    // A simple split(',') might break if values contain commas, so a basic CSV parser logic
+                    const values = [];
+                    let inQuote = false;
+                    let currentValue = "";
+                    for (let j = 0; j < line.length; j++) {
+                        const char = line[j];
+                        if (char === '"') {
+                            inQuote = !inQuote;
+                            // If it's a quote and the next char is also a quote, it's an escaped quote
+                            if (inQuote && line[j + 1] === '"') {
+                                currentValue += '"';
+                                j++; // Skip the next quote
+                            }
+                        } else if (char === ',' && !inQuote) {
+                            values.push(currentValue.trim());
+                            currentValue = "";
+                        } else {
+                            currentValue += char;
+                        }
+                    }
+                    values.push(currentValue.trim()); // Add the last value
+
+                    // From your CSV example:
+                    // "Daily Collection","Trasaction Date :  ","19.03.2026","To   ","14.04.2026","GL Head :","Kubera Dhansanchay Yojana","Agent Name :","SHENDAGE  BALAJI CHANDAR","Agent No. :",1,"Agent Branch No. :",1,"Transaction Date","A/C No.","A/C Holder","Collection Date","Collection Amount","19.03.2026","Total :",200,"Total :",191400,"Print Date :","Peocit Software Solutions","14.04.2026","Print By : ","vstodkar"," Page No.  1 / 1"
+                    // The structure is very flat and repeats headers. This needs careful parsing.
+
+                    // Check if it's a header line that specifies Agent Name or GL Head
+                    if (values[5] === "GL Head :" && values[7] === "Agent Name :") {
+                        tempGLHead = values[6] ? values[6].replace(/"/g, '') : 'N/A';
+                        tempAgentName = values[8] ? values[8].replace(/"/g, '') : 'N/A';
                     }
 
-                    // --- Extract Agent Name and GL Head from the first few lines ---
-                    const lines = rawText.split('\n');
-                    for (const line of lines) {
-                        const agentNameMatch = line.match(/Agent Name:\s*(.+?)\s*Agent No\.:/);
-                        if (agentNameMatch && agentNameMatch[1]) {
-                            currentAgentName = agentNameMatch[1].trim();
-                        }
-                        const glHeadMatch = line.match(/GL Head:\s*(.+?)\s*Agent Name:/);
-                        if (glHeadMatch && glHeadMatch[1]) {
-                            currentGLHead = glHeadMatch[1].trim();
-                        }
-                        if (currentAgentName !== 'N/A' && currentGLHead !== 'N/A') break; // Found both, no need to search more
-                    }
-
-                    displayAgentNameSpan.textContent = currentAgentName;
-                    displayGLHeadSpan.textContent = currentGLHead;
-
-                    let tempTransactionDate = ''; // To capture the Transaction Date header
-
-                    // Regex to capture the Transaction Date header
-                    const transactionDatePattern = /^\s*(\d{2}\.\d{2}\.\d{4})\s*$/; // Ex: "25.03.2026" on its own line
-
-                    // Regex to capture data row: A/C No. (5 digits) + A/C Holder + Collection Date (DD.MM.YYYY) + Collection Amount (float/int with commas)
-                    // The A/C Holder part is tricky due to varying lengths and potential spaces.
-                    // This is an attempt to be more flexible. It captures anything between A/C No and Collection Date.
-                    const dataRowPattern = /^\s*(\d{5})\s+([A-Za-z0-9\s\.\-]+?)\s+(\d{2}\.\d{2}\.\d{4})\s+([\d,]+\.\d{2})\s*$/;
-                    
-                    for (const line of lines) {
-                        const cleanLine = line.trim();
-
-                        if (cleanLine.includes("Transaction Date") && cleanLine.includes("Collection Amount")) continue; // Skip table header lines
-                        if (cleanLine.includes("Total :")) continue; // Skip total lines from PDF (if present on data-like lines)
-
-                        // Check for Transaction Date header
-                        const transDateMatch = cleanLine.match(transactionDatePattern);
-                        if (transDateMatch) {
-                            tempTransactionDate = transDateMatch[1];
-                            continue;
-                        }
-
-                        // Check for data row
-                        const dataMatch = cleanLine.match(dataRowPattern);
-                        if (dataMatch && tempTransactionDate) { // Ensure a transaction date was found before processing data
+                    // Check if it's a line specifying a Transaction Date (group header in PDF)
+                    // The Transaction Date is the 19th item in your header-like lines
+                    let currentTransactionDate = values[19];
+                    if (currentTransactionDate && currentTransactionDate.match(/^\d{2}\.\d{2}\.\d{4}$/)) {
+                        // This seems to be the transaction date line for a group of records
+                        // The actual data records follow these lines
+                        // We need to parse records from a specific pattern which appears right after these headers
+                        // The next lines in the CSV are just repeats of the main header, until the actual data starts.
+                        // This CSV is structured in a very redundant way, with each data row containing all headers.
+                        
+                        // We need to specifically identify the data rows.
+                        // In your original PDF, data rows were: A/C No, A/C Holder, Collection Date, Collection Amount
+                        // In this CSV, these would be at indices 15, 16, 17, 18.
+                        
+                        const acNo = values[15] ? values[15].replace(/"/g, '') : '';
+                        const acHolder = values[16] ? values[16].replace(/"/g, '') : '';
+                        const collectionDate = values[17] ? values[17].replace(/"/g, '') : '';
+                        const collectionAmount = values[18] ? parseFloat(values[18].replace(/,/g, '').replace(/"/g, '')) : 0;
+                        
+                        // Filter out actual header rows and total rows that might match the pattern
+                        if (acNo && acHolder && collectionDate && !isNaN(collectionAmount) &&
+                            acNo !== "A/C No." && acHolder !== "A/C Holder" && collectionDate !== "Collection Date" &&
+                            !line.includes("Total :") && !line.includes("Print Date :")) {
+                            
                             parsedCollectionData.push({
-                                agentName: currentAgentName,
-                                glHead: currentGLHead,
-                                transactionDate: tempTransactionDate, // Use the last captured transaction date
-                                acNo: dataMatch[1],
-                                acHolder: dataMatch[2].trim(),
-                                collectionDate: dataMatch[3],
-                                collectionAmount: parseFloat(dataMatch[4].replace(/,/g, ''))
+                                agentName: tempAgentName,
+                                glHead: tempGLHead,
+                                transactionDate: currentTransactionDate, // Use the detected transaction date
+                                acNo: acNo,
+                                acHolder: acHolder,
+                                collectionDate: collectionDate,
+                                collectionAmount: collectionAmount
                             });
                         }
-                    }
+                    } else if (values[15] && values[16] && values[17] && values[18]) {
+                        // This handles lines where the Transaction Date (values[19]) is empty
+                        // but it's an actual data record. We need to infer the Transaction Date 
+                        // from the previous valid transaction date.
+                        // However, given the CSV structure, each line already contains its own "Transaction Date" equivalent
+                        // which is at index 19 (your sample PDF had it as a group header)
 
-                    if (parsedCollectionData.length > 0) {
-                        uploadStatus.textContent = `PDF यशस्वीरित्या वाचले. एकूण ${parsedCollectionData.length} नोंदी आढळल्या. डेटा शीटमध्ये सेव्ह करण्यासाठी 'डेटा शीटमध्ये सेव्ह करा' बटणावर क्लिक करा.`;
-                        renderDashboard(parsedCollectionData); // Show parsed data temporarily
-                        saveToSheetBtn.style.display = 'inline-block'; // Show save button
-                    } else {
-                        uploadStatus.textContent = 'PDF वाचले, परंतु कोणताही डेटा आढळला नाही. कृपया रिपोर्टची रचना तपासा.';
-                        renderDashboard([]);
-                        saveToSheetBtn.style.display = 'none';
-                    }
+                        // Let's re-evaluate based on the provided CSV:
+                        // The "Transaction Date" column in the data table is at index 14
+                        // The "A/C No" is at index 15
+                        // The "A/C Holder" is at index 16
+                        // The "Collection Date" is at index 17
+                        // The "Collection Amount" is at index 18
 
-                } catch (error) {
-                    console.error('PDF वाचताना किंवा प्रक्रिया करताना त्रुटी:', error);
-                    uploadStatus.textContent = 'PDF वाचताना किंवा प्रक्रिया करताना त्रुटी आली. कृपया वैध PDF फाइल अपलोड करा.';
+                        // The 19th item in the array `values[19]` is the *grouping* Transaction Date, e.g., "19.03.2026"
+                        // This grouping transaction date changes only when a new group starts.
+                        // The actual "Transaction Date" for a record (values[14]) is not always present in your PDF.
+
+                        // Let's use values[19] as the TransactionDate for grouping and parsing data entries.
+                        // This makes the parsing logic much simpler for your CSV.
+                        
+                        // Data from CSV:
+                        // Agent Name (values[8]), GL Head (values[6]), Transaction Date (values[19]), 
+                        // A/C No. (values[15]), A/C Holder (values[16]), Collection Date (values[17]), Collection Amount (values[18])
+
+                        const agentNameFromCsv = values[8] ? values[8].replace(/"/g, '').trim() : 'N/A';
+                        const glHeadFromCsv = values[6] ? values[6].replace(/"/g, '').trim() : 'N/A';
+                        const transactionDateFromCsv = values[19] ? values[19].replace(/"/g, '').trim() : 'N/A'; // Grouping date
+                        const acNoFromCsv = values[15] ? values[15].replace(/"/g, '').trim() : '';
+                        const acHolderFromCsv = values[16] ? values[16].replace(/"/g, '').trim() : '';
+                        const collectionDateFromCsv = values[17] ? values[17].replace(/"/g, '').trim() : '';
+                        const collectionAmountFromCsv = values[18] ? parseFloat(values[18].replace(/,/g, '').replace(/"/g, '')) : 0;
+                        
+                        // Let's use the actual Transaction Date from column 14 if it exists, otherwise fallback to the grouping date.
+                        // Your PDF shows a "Transaction Date" column (leftmost in the table).
+                        // In your CSV sample, values[14] is "Transaction Date" (the header), but in actual data rows, it's empty.
+                        // So, we MUST rely on values[19] as the effective "Transaction Date" for grouping in the dashboard.
+                        // And values[17] is the "Collection Date".
+
+                        // Ensure it's an actual data row and not a header or total line
+                        if (acNoFromCsv && acHolderFromCsv && collectionDateFromCsv && !isNaN(collectionAmountFromCsv) &&
+                            acNoFromCsv !== "A/C No." && acHolderFromCsv !== "A/C Holder" && collectionDateFromCsv !== "Collection Date" &&
+                            !line.includes("Total :") && !line.includes("Print Date :")) {
+
+                            parsedCollectionData.push({
+                                agentName: agentNameFromCsv,
+                                glHead: glHeadFromCsv,
+                                transactionDate: transactionDateFromCsv, // This is the grouping date from CSV structure
+                                acNo: acNoFromCsv,
+                                acHolder: acHolderFromCsv,
+                                collectionDate: collectionDateFromCsv,
+                                collectionAmount: collectionAmountFromCsv
+                            });
+                            // Update current agent/gl head if they change in the CSV (though your CSV repeats them)
+                            tempAgentName = agentNameFromCsv;
+                            tempGLHead = glHeadFromCsv;
+                        }
+                    }
+                }
+
+                if (parsedCollectionData.length > 0) {
+                    uploadStatus.textContent = `CSV यशस्वीरित्या वाचले. एकूण ${parsedCollectionData.length} नोंदी आढळल्या. डेटा शीटमध्ये सेव्ह करण्यासाठी 'डेटा शीटमध्ये सेव्ह करा' बटणावर क्लिक करा.`;
+                    renderDashboard(parsedCollectionData); // Show parsed data temporarily
+                    saveToSheetBtn.style.display = 'inline-block'; // Show save button
+                } else {
+                    uploadStatus.textContent = 'CSV वाचले, परंतु कोणताही डेटा आढळला नाही. कृपया रिपोर्टची रचना तपासा.';
                     renderDashboard([]);
                     saveToSheetBtn.style.display = 'none';
                 }
+
             };
-            reader.readAsArrayBuffer(file);
+            reader.readAsText(file); // Read as text for CSV
         }
 
-        // Function to save data to Google Sheet via Apps Script API
+        // Function to save data to Google Sheet via Apps Script
         async function saveParsedDataToSheet() {
             if (parsedCollectionData.length === 0) {
                 uploadStatus.textContent = 'सेव्ह करण्यासाठी कोणताही डेटा नाही.';
@@ -396,8 +453,8 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        agentName: currentAgentName,
-                        glHead: currentGLHead,
+                        agentName: parsedCollectionData[0].agentName, // Assuming agentName and glHead are consistent for a single uploaded CSV
+                        glHead: parsedCollectionData[0].glHead,
                         collectionEntries: parsedCollectionData
                     }),
                 });
@@ -407,7 +464,7 @@
                 if (result.success) {
                     uploadStatus.textContent = `डेटा यशस्वीरित्या सेव्ह झाला: ${result.message}`;
                     parsedCollectionData = []; // Clear parsed data after saving
-                    pdfUploadInput.value = ''; // Clear file input
+                    csvUploadInput.value = ''; // Clear file input
                     saveToSheetBtn.style.display = 'none';
                     await fetchAndRenderData(); // Fetch and render data from sheet after saving
                 } else {
@@ -441,7 +498,7 @@
                 }
                 applyFilter('currentMonth'); // Default filter after loading all data
             } catch (error) {
-                uploadStatus.textContent = `Google Apps Script API मध्ये डेटा लोड करताना त्रुटी: ${error.message}`;
+                uploadStatus.textContent = `Google Apps Script API मध्ये डेटा लोड करताना त्रुții: ${error.message}`;
                 console.error("API Error:", error);
                 renderDashboard([]);
             }
@@ -453,6 +510,8 @@
             let totalAmount = 0;
             let minDate = null;
             let maxDate = null;
+            const uniqueAgents = new Set();
+            const uniqueGLHeads = new Set();
 
             if (dataToDisplay.length === 0) {
                 collectionTableBody.innerHTML = '<tr><td colspan="6">या फिल्टरसाठी कोणताही डेटा उपलब्ध नाही.</td></tr>';
@@ -461,6 +520,9 @@
                 const dailySummary = {}; // Key: "YYYY-MM-DD_AgentName_GLHead"
 
                 dataToDisplay.forEach(item => {
+                    uniqueAgents.add(item.agentName);
+                    uniqueGLHeads.add(item.glHead);
+
                     const colDate = parseDate(item.collectionDate);
                     const dateKey = colDate ? formatDate(colDate) : 'UnknownDate'; // Use formatted date for grouping
                     const groupKey = `${dateKey}_${item.agentName}_${item.glHead}`;
@@ -475,7 +537,7 @@
                             totalCollection: 0
                         };
                     }
-                    dailySummary[groupKey].transactionDates.add(item.transactionDate);
+                    dailySummary[groupKey].transactionDates.add(item.transactionDate); // Keep track of multiple transaction dates for a single collection date
                     dailySummary[groupKey].acNos.add(item.acNo);
                     dailySummary[groupKey].totalCollection += item.collectionAmount;
 
@@ -505,6 +567,9 @@
 
             totalCollectionSpan.textContent = totalAmount.toFixed(2);
             totalEntriesSpan.textContent = dataToDisplay.length; // Still counts raw entries for consistency
+
+            displayAgentCountSpan.textContent = uniqueAgents.size; // Update agent count
+            displayGLHeadCountSpan.textContent = uniqueGLHeads.size; // Update GL Head count
 
             if (minDate && maxDate) {
                 dataDateRangeSpan.textContent = `${formatDate(minDate)} ते ${formatDate(maxDate)}`;
@@ -575,12 +640,12 @@
         }
 
         // Event Listeners
-        pdfUploadInput.addEventListener('change', (event) => {
+        csvUploadInput.addEventListener('change', (event) => { // Changed to csvUploadInput
             const file = event.target.files[0];
             if (file) {
-                parsePdf(file);
+                parseCsv(file); // Call parseCsv for CSV files
             } else {
-                uploadStatus.textContent = 'कृपया एक PDF फाइल निवडा.';
+                uploadStatus.textContent = 'कृपया एक CSV फाइल निवडा.';
                 renderDashboard([]);
                 saveToSheetBtn.style.display = 'none';
             }

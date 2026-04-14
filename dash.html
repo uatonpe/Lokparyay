@@ -426,8 +426,9 @@ function lsS(k,d){try{localStorage.setItem(LK+k,JSON.stringify({ts:Date.now(),d:
 function clr(){S.mem.clear();try{Object.keys(localStorage).filter(function(k){return k.indexOf(LK)===0;}).forEach(function(k){localStorage.removeItem(k);});}catch(e){}}
 
 /**
- * Basic CSV parser. Assumes first row is header, comma-separated values.
- * Handles simple string values and trims whitespace.
+ * Robust CSV parser. Assumes first row is header. Handles comma-separated values
+ * and fields enclosed in double quotes (e.g., "value, with comma").
+ * Does not handle escaped quotes within quoted fields (e.g., "value ""with"" quotes").
  * @param {string} csvText - The raw CSV string.
  * @returns {Array<Object>} An array of objects, where each object represents a row.
  */
@@ -435,34 +436,48 @@ function parseCSV(csvText) {
     const lines = csvText.trim().split('\n');
     if (lines.length <= 1) return []; // Only header or empty
 
-    const headers = lines[0].split(',').map(h => h.trim());
+    // Regex to split by comma only if it's not inside double quotes.
+    // It looks for a comma followed by an even number of quotes until the end of the line.
+    const splitRegex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+
+    // Process headers: trim and remove surrounding quotes
+    const headers = lines[0].split(splitRegex).map(h => h.trim().replace(/^"|"$/g, ''));
+
     const data = [];
 
     for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',');
-        // Simple check: if a row has too few values, it's likely malformed or empty at the end.
-        // Adjust for expected number of columns if values are less.
-        if (values.length < headers.length) {
-            console.warn('Malformed CSV row (fewer columns than headers):', lines[i]);
-            // Attempt to pad with empty strings for missing columns
-            while (values.length < headers.length) {
-                values.push('');
-            }
-        }
-        if (values.length > headers.length) {
-             console.warn('Malformed CSV row (more columns than headers), truncating:', lines[i]);
-             values.splice(headers.length); // Truncate excess columns
-        }
+        const line = lines[i];
+        if (!line.trim()) continue; // Skip empty lines
 
+        const values = line.split(splitRegex).map(v => v.trim());
+
+        // Handle cases where a line might have fewer or more columns than headers
+        if (values.length < headers.length) {
+            console.warn('Malformed CSV row (fewer columns than headers), padding:', line);
+            while (values.length < headers.length) {
+                values.push(''); // Pad with empty strings
+            }
+        } else if (values.length > headers.length) {
+            console.warn('Malformed CSV row (more columns than headers), truncating:', line);
+            values.splice(headers.length); // Truncate excess columns
+        }
 
         const row = {};
         headers.forEach((header, index) => {
-            row[header] = values[index] ? values[index].trim() : '';
+            let value = values[index] || '';
+            // Remove surrounding quotes from the value if present
+            if (value.startsWith('"') && value.endsWith('"')) {
+                value = value.substring(1, value.length - 1);
+                // Handle escaped double quotes (e.g., "" becomes ") if they were present inside quotes
+                value = value.replace(/""/g, '"');
+            }
+            row[header] = value;
         });
         data.push(row);
     }
     return data;
 }
+
 
 /**
  * Fetches data from a URL, caches it. For CSV, it parses the data.
@@ -573,13 +588,14 @@ async function loadData(force){
 function aggregateDataForRange(fullData, fromDateStr, toDateStr) {
     const fromDate = new Date(fromDateStr);
     const toDate = new Date(toDateStr);
-    
+    toDate.setHours(23, 59, 59, 999); // Include the entire 'toDate' day
+
     let collections = [];
     let expenses = []; // Not available in current CSV, will remain empty
     let agentWiseMap = {};
     let productWiseMap = {};
 
-    // Default values for missing summary data
+    // Default values for missing summary data (as they are not in the provided CSV)
     let currentOpeningBalance = 0;
     let currentSystemBalance = 0;
     let currentActualBankBalance = 0;

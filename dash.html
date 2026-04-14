@@ -184,18 +184,19 @@ CHANDANSHIVE
         document.addEventListener('DOMContentLoaded', function() {
             const reportTextInput = document.getElementById('reportTextInput');
             const convertButton = document.getElementById('convertButton');
-            const saveToSheetButton = document.getElementById('saveToSheetButton'); // New button reference
+            const saveToSheetButton = document.getElementById('saveToSheetButton');
             const tbody = document.querySelector('#collectionTable tbody');
             const kuberaTotalCell = document.getElementById('kuberaTotal');
             const lokparyayTotalCell = document.getElementById('lokparyayTotal');
             const grandTotalCell = document.getElementById('grandTotal');
             const errorMessageDiv = document.getElementById('errorMessage');
-            const successMessageDiv = document.getElementById('successMessage'); // New success message div
+            const successMessageDiv = document.getElementById('successMessage');
             const collectionTable = document.getElementById('collectionTable');
-            const reportInfoContainer = document.getElementById('reportInfoContainer'); // To extract date
+            const reportInfoContainer = document.getElementById('reportInfoContainer');
 
             // --- IMPORTANT: Paste your deployed Google Apps Script Web App URL here ---
-            const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzewZX1y58tuTpp_-FuF6IaK1sVv3kJuwpOT56Wwzntof-fm5-Kl3hteA3PaeA3LNI/exec'; // e.g., 'https://script.google.com/macros/s/AKfycbw.../exec'
+            // This URL should end with /exec
+            const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzewZX1y58tuTpp_-FuF6Ia1sVv3kJuwpOT56Wwzntof-fm5-Kl3hteA3PaeA3LNI/exec'; // Your provided URL
 
             // Store parsed data globally for access by the save button
             let currentReportData = {
@@ -212,14 +213,14 @@ CHANDANSHIVE
                 return amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             };
 
-            // Function to format date from DD.MM.YYYY to DD Month YY (e.g., 12.04.2026 -> 12 April 26)
+            // Function to format date from DD.MM.YYYY to DD Month YYYY (e.g., 12.04.2026 -> 12 April 2026)
             const formatDateForSheet = (dateString_DD_MM_YYYY) => {
                 if (!dateString_DD_MM_YYYY || !/^\d{2}\.\d{2}\.\d{4}$/.test(dateString_DD_MM_YYYY)) {
                     return "Invalid Date";
                 }
                 const [day, month, year] = dateString_DD_MM_YYYY.split('.');
                 const dateObj = new Date(year, month - 1, day); // Month is 0-indexed
-                const options = { day: 'numeric', month: 'long', year: '2-digit' };
+                const options = { day: 'numeric', month: 'long', year: 'numeric' }; // Use 'numeric' for full year
                 return dateObj.toLocaleDateString('en-IN', options);
             };
 
@@ -322,24 +323,30 @@ CHANDANSHIVE
                 // --- Prepare data for saving to Google Sheet ---
                 currentReportData.agents = agentData.map(agent => ({
                     name: agent.agentName,
-                    kuberaAmount: agent.kuberaAmount,
-                    lokparyayAmount: agent.lokparyayAmount,
-                    totalAmount: agent.totalCollected
+                    kubera: agent.kuberaAmount, // Renamed for consistency with backend
+                    lokparyay: agent.lokparyayAmount, // Renamed for consistency with backend
+                    total: agent.totalCollected // Renamed for consistency with backend
                 }));
 
                 // Extract and format collected date from the hardcoded report info
                 const reportInfoText = reportInfoContainer.textContent;
                 let extractedDate_DD_MM_YYYY = "Unknown Date";
 
-                // Try to get the "To" date
-                const dateToMatch = reportInfoText.match(/To\s+(\d{2}\.\d{2}\.\d{4})/);
-                if (dateToMatch && dateToMatch[1]) {
-                    extractedDate_DD_MM_YYYY = dateToMatch[1];
+                // Prioritize "Report Date:"
+                const reportDateMatch = reportInfoText.match(/Report Date:\s*(\d{2}\.\d{2}\.\d{4})/);
+                if (reportDateMatch && reportDateMatch[1]) {
+                    extractedDate_DD_MM_YYYY = reportDateMatch[1];
                 } else {
-                    // Fallback: try to get the first date after "Transaction Date:"
-                    const transactionDateMatch = reportInfoText.match(/Transaction Date:\s*(\d{2}\.\d{2}\.\d{4})/);
-                    if (transactionDateMatch && transactionDateMatch[1]) {
-                        extractedDate_DD_MM_YYYY = transactionDateMatch[1];
+                    // Fallback: try to get the "To" date
+                    const dateToMatch = reportInfoText.match(/To\s+(\d{2}\.\d{2}\.\d{4})/);
+                    if (dateToMatch && dateToMatch[1]) {
+                        extractedDate_DD_MM_YYYY = dateToMatch[1];
+                    } else {
+                        // Fallback: try to get the first date after "Transaction Date:"
+                        const transactionDateMatch = reportInfoText.match(/Transaction Date:\s*(\d{2}\.\d{2}\.\d{4})/);
+                        if (transactionDateMatch && transactionDateMatch[1]) {
+                            extractedDate_DD_MM_YYYY = transactionDateMatch[1];
+                        }
                     }
                 }
                 currentReportData.collectedDate = formatDateForSheet(extractedDate_DD_MM_YYYY);
@@ -379,8 +386,8 @@ CHANDANSHIVE
                 successMessageDiv.textContent = '';
                 saveToSheetButton.disabled = true; // Disable to prevent multiple clicks
 
-                if (GAS_WEB_APP_URL === 'YOUR_DEPLOYED_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' || !GAS_WEB_APP_URL) {
-                    errorMessageDiv.textContent = "ERROR: Please update 'GAS_WEB_APP_URL' in the script with your deployed Apps Script URL.";
+                if (GAS_WEB_APP_URL === 'YOUR_DEPLOYED_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' || !GAS_WEB_APP_URL || !GAS_WEB_APP_URL.endsWith('/exec')) {
+                    errorMessageDiv.textContent = "ERROR: Please update 'GAS_WEB_APP_URL' in the script with your deployed Apps Script URL (it should end with /exec).";
                     saveToSheetButton.disabled = false;
                     return;
                 }
@@ -393,26 +400,33 @@ CHANDANSHIVE
 
                 try {
                     const response = await fetch(GAS_WEB_APP_URL, {
-                        method: 'POST',
-                        mode: 'cors', // Required for cross-origin requests
+                        method: 'POST', // Crucial for CORS with Apps Script
+                        mode: 'cors',  // Explicitly set CORS mode
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json' // Tell the server we're sending JSON
                         },
                         body: JSON.stringify({
-                            agentsData: currentReportData.agents,
-                            collectedDate: currentReportData.collectedDate
+                            date: currentReportData.collectedDate, // Matches 'collectedDate' in client and 'date' in server expectation
+                            agents: currentReportData.agents // Matches 'agents' in client and server expectation
                         })
                     });
 
-                    const result = await response.json();
+                    if (!response.ok) {
+                        // If the server responded with an HTTP error status (e.g., 400, 500)
+                        const errorDetails = await response.text(); // Try to get text, or response.json() if you expect JSON errors
+                        throw new Error(`Server responded with status ${response.status}: ${errorDetails}`);
+                    }
+
+                    const result = await response.json(); // Assuming Apps Script will return JSON
 
                     if (result.status === 'success') {
-                        successMessageDiv.textContent = `Successfully saved ${result.message}`;
+                        successMessageDiv.textContent = `Successfully saved ${result.rowsAdded} rows to Google Sheet.`; // Use result.rowsAdded from server
                     } else {
-                        errorMessageDiv.textContent = `Failed to save to Google Sheet: ${result.message}`;
+                        errorMessageDiv.textContent = `Error from Google Sheet: ${result.message || 'Unknown error from server.'}`;
                     }
+
                 } catch (error) {
-                    errorMessageDiv.textContent = `Error sending data to Google Sheet: ${error.message}. Check browser console for details.`;
+                    errorMessageDiv.textContent = `Fetch error: ${error.message}. Check browser console for more details.`;
                     console.error("Fetch error:", error);
                 } finally {
                     // Re-enable button only if data was available to be sent

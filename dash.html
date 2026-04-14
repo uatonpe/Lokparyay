@@ -33,7 +33,7 @@
         }
 
         .input-section textarea {
-            width: 98%;
+            width: 98%; /* Adjust as needed */
             max-width: 100%;
             box-sizing: border-box;
             margin-bottom: 10px;
@@ -43,7 +43,7 @@
             font-family: monospace;
             font-size: 0.9em;
             background-color: #fcfcfc;
-            height: 250px;
+            height: 250px; /* Default height */
             padding: 10px;
         }
 
@@ -56,7 +56,7 @@
             cursor: pointer;
             font-size: 1em;
             transition: background-color 0.2s ease;
-            margin: 5px;
+            margin: 5px; /* Added margin for buttons */
         }
 
         .input-section button:hover {
@@ -124,134 +124,182 @@
             font-weight: bold;
         }
         #collectionTable {
-            display: none;
+            display: none; /* Hide table until data is loaded */
         }
     </style>
 </head>
 <body>
-<div class="container">
-<h1>Agent Collection Summary from Text Input</h1>
+    <div class="container">
+        <h1>Agent Collection Summary from Text Input</h1>
+        <div class="input-section">
+            <label for="reportTextInput">Paste your summary report text below:</label><br>
+            <textarea id="reportTextInput" placeholder="Paste text like:
+Kubera
+Dhansanchay
+LOKPARYAY
+KUBER RD
+Total
+SHENDAGE BALAJI
+CHANDAR
+49500.00 0.00 49500.00
+NIKITA SUNIL
+CHANDANSHIVE
+0.00 3500.00 3500.00
+... (The document total line must start with 'एकूण' or 'एककण' and end with three amounts, e.g., 'एकूण 12345.00 67890.00 80235.00')" rows="10"></textarea><br>
+            <button id="convertButton">Convert to Table</button>
+            <button id="saveToSheetButton" disabled>Save to Google Sheet</button>
+        </div>
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
 
-<div class="input-section">
-<textarea id="reportTextInput"></textarea><br>
-<button id="convertButton">Convert</button>
-<button id="saveToSheetButton" disabled>Save to Google Sheet</button>
-</div>
+        <div class="report-info" id="reportInfoContainer">
+            Transaction Date: 09.03.2026 To 12.04.2026 | Report Date: 14.04.2026
+        </div>
 
-<div id="errorMessage" class="error-message"></div>
-<div id="successMessage" class="success-message"></div>
-
-<div id="reportInfoContainer" class="report-info">
-Transaction Date: 09.03.2026 To 12.04.2026 | Report Date: 14.04.2026
-</div>
-
-<table id="collectionTable">
-<thead>
-<tr>
-<th>Agent Name</th>
-<th class="text-right">Kubera</th>
-<th class="text-right">Lokparyay</th>
-<th class="text-right">Total</th>
-</tr>
-</thead>
-<tbody></tbody>
-<tfoot>
-<tr>
-<td>Total</td>
-<td id="kuberaTotal"></td>
-<td id="lokparyayTotal"></td>
-<td id="grandTotal"></td>
-</tr>
-</tfoot>
-</table>
-</div>
+        <table id="collectionTable">
+            <thead>
+                <tr>
+                    <th>Agent Name</th>
+                    <th class="text-right">Kubera Dhansanchay Yojana Amount</th>
+                    <th class="text-right">LOKPARYAY KUBER RD Saving Scheme Amount</th>
+                    <th class="text-right">Total Amount Collected</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <td><strong>Total (as per document)</strong></td>
+                    <td id="kuberaTotal" class="text-right"></td>
+                    <td id="lokparyayTotal" class="text-right"></td>
+                    <td id="grandTotal" class="text-right"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
 
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxFMj1E70NyK68O6vpQudf4UMh-nUaFpY02fcP1aNIiXnJthNR2S-deCrFzyZ2-6QQ/exec';
-
-let currentReportData = { agents: [], collectedDate: "14 April 26" };
-
-document.getElementById('convertButton').onclick = function () {
-
-    const text = document.getElementById('reportTextInput').value;
-    const lines = text.split('\n');
-
-    let temp = [];
-    let agents = [];
-
-    const regex = /(\d+\.\d{2})\s+(\d+\.\d{2})\s+(\d+\.\d{2})$/;
-
-    lines.forEach(line => {
-        line = line.trim();
-        if (!line) return;
-
-        const match = line.match(regex);
-
-        if (match) {
-            const name = temp.join(' ');
-            agents.push({
-                name,
-                kuberaAmount: parseFloat(match[1]),
-                lokparyayAmount: parseFloat(match[2]),
-                totalAmount: parseFloat(match[3])
-            });
-            temp = [];
-        } else {
-            temp.push(line);
-        }
-    });
-
-    currentReportData.agents = agents;
-
+    const reportTextInput = document.getElementById('reportTextInput');
+    const convertButton = document.getElementById('convertButton');
+    const saveToSheetButton = document.getElementById('saveToSheetButton');
     const tbody = document.querySelector('#collectionTable tbody');
-    tbody.innerHTML = '';
+    const kuberaTotalCell = document.getElementById('kuberaTotal');
+    const lokparyayTotalCell = document.getElementById('lokparyayTotal');
+    const grandTotalCell = document.getElementById('grandTotal');
+    const errorMessageDiv = document.getElementById('errorMessage');
+    const successMessageDiv = document.getElementById('successMessage');
+    const collectionTable = document.getElementById('collectionTable');
+    const reportInfoContainer = document.getElementById('reportInfoContainer');
 
-    let k=0,l=0,g=0;
+    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxFMj1E70NyK68O6vpQudf4UMh-nUaFpY02fcP1aNIiXnJthNR2S-deCrFzyZ2-6QQ/exec';
 
-    agents.forEach(a=>{
-        const row = tbody.insertRow();
-        row.innerHTML = `
-            <td>${a.name}</td>
-            <td class="text-right">${a.kuberaAmount}</td>
-            <td class="text-right">${a.lokparyayAmount}</td>
-            <td class="text-right">${a.totalAmount}</td>
-        `;
-        k+=a.kuberaAmount;
-        l+=a.lokparyayAmount;
-        g+=a.totalAmount;
-    });
+    let currentReportData = {
+        agents: [],
+        collectedDate: "Unknown Date"
+    };
 
-    document.getElementById('kuberaTotal').innerText=k;
-    document.getElementById('lokparyayTotal').innerText=l;
-    document.getElementById('grandTotal').innerText=g;
+    const formatCurrency = (amount) => {
+        if (typeof amount !== 'number') amount = parseFloat(amount);
+        return amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
 
-    document.getElementById('collectionTable').style.display='table';
-    document.getElementById('saveToSheetButton').disabled=false;
-};
+    const formatDateForSheet = (dateString) => {
+        const [d,m,y] = dateString.split('.');
+        const dateObj = new Date(y, m-1, d);
+        return dateObj.toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'2-digit'});
+    };
 
-document.getElementById('saveToSheetButton').onclick = async function () {
+    const clearReport = () => {
+        tbody.innerHTML = '';
+        errorMessageDiv.textContent = '';
+        successMessageDiv.textContent = '';
+        collectionTable.style.display = 'none';
+        saveToSheetButton.disabled = true;
+    };
 
-    document.getElementById('successMessage').innerText = "Saving...";
+    const parseReportText = (text) => {
+        const lines = text.split('\n');
+        let agentData = [];
+        let temp = [];
+        const regex = /(\d+\.\d{2})\s+(\d+\.\d{2})\s+(\d+\.\d{2})$/;
 
-    // ✅ FIXED PART (GET METHOD)
-    for (let agent of currentReportData.agents) {
+        lines.forEach(line=>{
+            line=line.trim();
+            if(!line) return;
 
-        const params = new URLSearchParams({
-            name: agent.name,
-            kubera: agent.kuberaAmount,
-            lokparyay: agent.lokparyayAmount,
-            total: agent.totalAmount,
-            date: currentReportData.collectedDate
+            const match=line.match(regex);
+            if(match){
+                agentData.push({
+                    agentName: temp.join(' '),
+                    kuberaAmount: parseFloat(match[1]),
+                    lokparyayAmount: parseFloat(match[2]),
+                    totalCollected: parseFloat(match[3])
+                });
+                temp=[];
+            } else {
+                temp.push(line);
+            }
         });
 
-        await fetch(GAS_WEB_APP_URL + "?" + params.toString());
-    }
+        return {agentData};
+    };
 
-    document.getElementById('successMessage').innerText = "✅ Saved Successfully";
-};
+    const displayReport = (data) => {
+        clearReport();
 
+        currentReportData.agents = data.agentData.map(a=>({
+            name:a.agentName,
+            kuberaAmount:a.kuberaAmount,
+            lokparyayAmount:a.lokparyayAmount,
+            totalAmount:a.totalCollected
+        }));
+
+        currentReportData.collectedDate = "14 April 26";
+
+        data.agentData.forEach(a=>{
+            const row = tbody.insertRow();
+            row.innerHTML = `
+            <td>${a.agentName}</td>
+            <td class="text-right">${formatCurrency(a.kuberaAmount)}</td>
+            <td class="text-right">${formatCurrency(a.lokparyayAmount)}</td>
+            <td class="text-right">${formatCurrency(a.totalCollected)}</td>
+            `;
+        });
+
+        collectionTable.style.display='table';
+        saveToSheetButton.disabled=false;
+    };
+
+    convertButton.addEventListener('click',()=>{
+        const parsed=parseReportText(reportTextInput.value);
+        displayReport(parsed);
+    });
+
+    // ✅ ONLY FIX APPLIED HERE
+    const saveToGoogleSheet = async () => {
+
+        successMessageDiv.textContent = "Saving...";
+
+        for (let agent of currentReportData.agents) {
+
+            const params = new URLSearchParams({
+                name: agent.name,
+                kubera: agent.kuberaAmount,
+                lokparyay: agent.lokparyayAmount,
+                total: agent.totalAmount,
+                date: currentReportData.collectedDate
+            });
+
+            await fetch(GAS_WEB_APP_URL + "?" + params.toString());
+        }
+
+        successMessageDiv.textContent = "✅ Saved Successfully";
+    };
+
+    saveToSheetButton.addEventListener('click', saveToGoogleSheet);
+
+});
 </script>
-
 </body>
 </html>

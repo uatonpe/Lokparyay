@@ -392,17 +392,48 @@ CHANDANSHIVE
                 }
 
                 try {
-                    const response = await fetch(GAS_WEB_APP_URL, {
-                        method: 'POST',
-                        mode: 'cors', // Required for cross-origin requests
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            agentsData: currentReportData.agents,
-                            collectedDate: currentReportData.collectedDate
-                        })
-                    });
+                    const saveToGoogleSheet = async () => {
+    errorMessageDiv.textContent = '';
+    successMessageDiv.textContent = '';
+    saveToSheetButton.disabled = true;
+
+    if (!GAS_WEB_APP_URL) {
+        errorMessageDiv.textContent = "ERROR: Missing Google Apps Script URL";
+        saveToSheetButton.disabled = false;
+        return;
+    }
+
+    if (currentReportData.agents.length === 0) {
+        errorMessageDiv.textContent = "No data to save. Please parse a report first.";
+        saveToSheetButton.disabled = false;
+        return;
+    }
+
+    try {
+
+        // 🔥 LOOP EACH AGENT (GET METHOD - NO CORS ISSUE)
+        for (let agent of currentReportData.agents) {
+
+            const params = new URLSearchParams({
+                name: agent.name,
+                kubera: agent.kuberaAmount,
+                lokparyay: agent.lokparyayAmount,
+                total: agent.totalAmount,
+                date: currentReportData.collectedDate
+            });
+
+            await fetch(GAS_WEB_APP_URL + "?" + params.toString());
+        }
+
+        successMessageDiv.textContent = `✅ Successfully saved ${currentReportData.agents.length} rows`;
+
+    } catch (error) {
+        errorMessageDiv.textContent = `Error: ${error.message}`;
+        console.error("Fetch error:", error);
+    } finally {
+        saveToSheetButton.disabled = false;
+    }
+};
 
                     const result = await response.json();
 

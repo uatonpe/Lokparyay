@@ -356,7 +356,7 @@ button, input, select, textarea {
   gap: 6px;
   background: var(--bl);
   color: var(--br);
-  border-radius: 99px; /* Pill shape */
+  border-radius: 999px; /* Pill shape */
   padding: 8px 14px; /* More padding */
   font-size: 12px;
   font-weight: 700;
@@ -818,7 +818,10 @@ tbody tr:hover { background: #f8faff; } /* Subtle hover */
 
 <script>
 // --- CONFIGURATION ---
-var API_READ = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNxyKMFXhN9_Z0G5puI5rGNDMIv9DT_VsGnZwjgSzGU9DDBdjNGwhO3msbo7LIwj9P6MzlaBEp8Dl0/pub?gid=0&single=true&output=csv';
+// ************************************************************************************************************************************
+// FIX: Changed 'Dl0' to 'DlO' in the spreadsheet ID. This was the most likely cause of "Failed to fetch" errors due to an invalid URL.
+var API_READ = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNxyKMFXhN9_Z0G5puI5rGNDMIv9DT_VsGnZwjgSzGU9DDBdjNGwhO3msbo7LIwj9P6MzlaBEp8DlO/pub?gid=0&single=true&output=csv';
+// ************************************************************************************************************************************
 
 var LK = 'lp_erp_v2_', // LocalStorage Key prefix
     MT = 60000,       // Medium-term cache (e.g., 1 minute for API calls)

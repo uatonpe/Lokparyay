@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Collection Report Summary from Text Input</title>
+    <title>Agent Collection Summary from Text Input</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -43,7 +43,7 @@
             font-family: monospace;
             font-size: 0.9em;
             background-color: #fcfcfc;
-            height: 300px; /* Default height */
+            height: 250px; /* Default height */
             padding: 10px;
         }
 
@@ -70,27 +70,10 @@
             color: #555;
         }
 
-        .scheme-section {
-            margin-top: 30px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            padding: 15px;
-            background-color: #fcfcfc;
-        }
-
-        .scheme-section h2 {
-            text-align: center;
-            color: #333;
-            margin-top: 0;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 20px;
         }
 
         th, td {
@@ -140,94 +123,96 @@
             margin-top: 15px;
             font-weight: bold;
         }
-        #resultsContainer {
-            display: none; /* Hide until data is loaded */
-            margin-top: 20px;
+        #collectionTable {
+            display: none; /* Hide table until data is loaded */
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Daily Collection Report Summary from Text Input</h1>
+        <h1>Agent Collection Summary from Text Input</h1>
         <div class="input-section">
-            <label for="reportTextInput">Paste your full daily collection report text below:</label><br>
+            <label for="reportTextInput">Paste your summary report text below:</label><br>
             <textarea id="reportTextInput" placeholder="Paste text like:
-A12
-Lokparyay District Co.Op.Credit Society Ltd Hasegaon
-...
-19.03.2026
- 10001 1 SHENDAGE 1 19.03.2026 200.00
-BALAJI
+Kubera
+Dhansanchay
+LOKPARYAY
+KUBER RD
+Total
+SHENDAGE BALAJI
 CHANDAR
-/
-..." rows="15"></textarea><br>
-            <button id="convertButton">Convert to Summary</button>
+49500.00 0.00 49500.00
+NIKITA SUNIL
+CHANDANSHIVE
+0.00 3500.00 3500.00
+... (The document total line must start with 'एकूण' or 'एककण' and end with three amounts, e.g., 'एकूण 12345.00 67890.00 80235.00')" rows="10"></textarea><br>
+            <button id="convertButton">Convert to Table</button>
             <button id="saveToSheetButton" disabled>Save to Google Sheet</button>
         </div>
         <div class="error-message" id="errorMessage"></div>
         <div class="success-message" id="successMessage"></div>
 
-
-        <div class="report-info" id="overallReportInfo">
-            <!-- Overall report info (dates, page numbers, etc.) will be populated here -->
+        <div class="report-info" id="reportInfoContainer">
+            <!-- This div will be used to extract the collected date for the Google Sheet -->
+            Transaction Date: 09.03.2026 To 12.04.2026 | Report Date: 14.04.2026
         </div>
 
-        <div id="resultsContainer">
-            <!-- Scheme-wise tables will be inserted here by JavaScript -->
-
-            <div class="scheme-section">
-                <h2>Overall Grand Totals</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Total for Kubera Dhansanchay Yojana</th>
-                            <th>Total for LOKPARYAY KUBER RD Saving Scheme</th>
-                            <th>Grand Total Across All Schemes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td id="overallKuberaTotal" class="text-right"></td>
-                            <td id="overallLokparyayTotal" class="text-right"></td>
-                            <td id="overallGrandTotal" class="text-right"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <table id="collectionTable">
+            <thead>
+                <tr>
+                    <th>Agent Name</th>
+                    <th class="text-right">Kubera Dhansanchay Yojana Amount</th>
+                    <th class="text-right">LOKPARYAY KUBER RD Saving Scheme Amount</th>
+                    <th class="text-right">Total Amount Collected</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data rows will be inserted here by JavaScript -->
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td><strong>Total (as per document)</strong></td>
+                    <td id="kuberaTotal" class="text-right"></td>
+                    <td id="lokparyayTotal" class="text-right"></td>
+                    <td id="grandTotal" class="text-right"></td>
+                </tr>
+            </tfoot>
+        </table>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const reportTextInput = document.getElementById('reportTextInput');
             const convertButton = document.getElementById('convertButton');
-            const saveToSheetButton = document.getElementById('saveToSheetButton');
+            const saveToSheetButton = document.getElementById('saveToSheetButton'); // New button reference
+            const tbody = document.querySelector('#collectionTable tbody');
+            const kuberaTotalCell = document.getElementById('kuberaTotal');
+            const lokparyayTotalCell = document.getElementById('lokparyayTotal');
+            const grandTotalCell = document.getElementById('grandTotal');
             const errorMessageDiv = document.getElementById('errorMessage');
-            const successMessageDiv = document.getElementById('successMessage');
-            const resultsContainer = document.getElementById('resultsContainer');
-            const overallReportInfoDiv = document.getElementById('overallReportInfo');
-            const overallKuberaTotalCell = document.getElementById('overallKuberaTotal');
-            const overallLokparyayTotalCell = document.getElementById('overallLokparyayTotal');
-            const overallGrandTotalCell = document.getElementById('overallGrandTotal');
+            const successMessageDiv = document.getElementById('successMessage'); // New success message div
+            const collectionTable = document.getElementById('collectionTable');
+            const reportInfoContainer = document.getElementById('reportInfoContainer'); // To extract date
 
             // --- IMPORTANT: Paste your deployed Google Apps Script Web App URL here ---
             const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw2Qu9OR4aUw2oj-LUeoZMlxMluqfFcwT2BzpZxouk22hSIGMlQJJOYVSG4GNQy6H0/exec'; // e.g., 'https://script.google.com/macros/s/AKfycbw.../exec'
 
             // Store parsed data globally for access by the save button
             let currentReportData = {
-                agents: {}, // Object to store agent-wise combined totals: { agentName: { kubera: X, lokparyay: Y, total: Z } }
-                collectedDate: "Unknown Date" // Date derived from the report for saving
+                agents: [], // Array of agent objects for saving
+                collectedDate: "Unknown Date" // Date extracted from the report info
             };
 
-            // Function to format currency
+            // Function to format currency (removed currency symbol)
             const formatCurrency = (amount) => {
                 if (typeof amount !== 'number') {
                     amount = parseFloat(amount);
                 }
-                return amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
+                // Format as a decimal number with two fixed decimal places
+                return amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             };
 
-            // Function to format date from DD.MM.YYYY to DD Month YY (e.g., 31.03.2026 -> 31 March 26)
+            // Function to format date from DD.MM.YYYY to DD Month YY (e.g., 12.04.2026 -> 12 April 26)
             const formatDateForSheet = (dateString_DD_MM_YYYY) => {
                 if (!dateString_DD_MM_YYYY || !/^\d{2}\.\d{2}\.\d{4}$/.test(dateString_DD_MM_YYYY)) {
                     return "Invalid Date";
@@ -238,328 +223,154 @@ CHANDAR
                 return dateObj.toLocaleDateString('en-IN', options);
             };
 
-            // Function to clear previous results and messages
-            const clearResults = () => {
+            // Function to clear table, messages, and reset save button
+            const clearReport = () => {
+                tbody.innerHTML = '';
+                kuberaTotalCell.textContent = '';
+                lokparyayTotalCell.textContent = '';
+                grandTotalCell.textContent = '';
                 errorMessageDiv.textContent = '';
-                successMessageDiv.textContent = '';
-                resultsContainer.style.display = 'none';
-                overallReportInfoDiv.innerHTML = '';
-
-                // Remove all dynamically generated scheme sections
-                const schemeSections = resultsContainer.querySelectorAll('.scheme-section:not(:last-child)');
-                schemeSections.forEach(section => section.remove());
-
-                overallKuberaTotalCell.textContent = '';
-                overallLokparyayTotalCell.textContent = '';
-                overallGrandTotalCell.textContent = '';
-
-                saveToSheetButton.disabled = true; // Disable save button until new data is parsed
-                currentReportData = { agents: {}, collectedDate: "Unknown Date" }; // Clear stored data
+                successMessageDiv.textContent = ''; // Clear success message
+                collectionTable.style.display = 'none';
+                saveToSheetButton.disabled = true; // Disable save button
+                currentReportData = { agents: [], collectedDate: "Unknown Date" }; // Reset stored data
             };
 
             // Function to parse the text content
             const parseReportText = (text) => {
                 const lines = text.split('\n');
-                const transactions = [];
-                let currentGLHead = "UNKNOWN_SCHEME";
-                let currentAgentNameBuffer = []; // To accumulate parts of a multi-line agent name
-                let pendingTransaction = null; // To hold a transaction initiated by a data line, waiting for full name
-                let overallFooterTotals = { kubera: 0, lokparyay: 0, grand: 0 };
-                let reportDateRange = "";
+                const agentData = []; // For displaying
+                let footerTotals = { kubera: 0, lokparyay: 0, grand: 0 };
+                let currentAgentNameParts = []; // To accumulate lines for multi-line agent names
 
-                // Regex patterns
-                const glHeadRegex = /(Kubera Dhansanchay Yojana|LOKPARYAY KUBER RD Saving Scheme)\s+GL Head\s*:/i;
-                const transactionDateRangeRegex = /Transaction Date : (\d{2}\.\d{2}\.\d{4})\s*(To\s*(\d{2}\.\d{2}\.\d{4}))?/; // Updated to handle 'To' or single date
-                // Regex for a transaction data line
-                // It looks for A/C No., Agent No., Agent Name (partial), Agent Br.No., Collection Date, Collection Amt.
-                // The (.*?) captures the initial part of the agent name on that line.
-                const dataLineRegex = /^\s*(\d+)\s+(\d+)\s+(.*?)\s+(\d+)\s+(\d{2}\.\d{2}\.\d{4})\s+(\d+\.\d{2})$/;
-                // Regex for the final total line, capturing the three amounts
-                const overallTotalRegex = /(एकूण|एककण)\s+(\d+\.\d{2})\s+(\d+\.\d{2})\s+(\d+\.\d{2})$/;
+                // Regex to find three amounts at the end of a line, with optional text before them.
+                const dataLineRegex = /^(.*?)(\d+\.\d{2})\s+(\d+\.\d{2})\s+(\d+\.\d{2})$/;
 
-                const ignoreLines = [
-                    "A12",
-                    "Lokparyay District Co.Op.Credit Society Ltd Hasegaon",
-                    "A/p Hasegaon Dis-Dharashiv Taluka-Kalamb Pin Code-413531 City -",
-                    "Hasegaon Kej, Taluka - Kalamb, District - Dharashiv Pin - 413531",
-                    "Daily Collection",
-                    "Trans. Date A/C No. Agent Name(Agent No.) Agent Collection Date Collection Amt.",
-                    "Br.No.",
-                    "Page No.", // and subsequent page numbers
-                    "Report By :",
-                    "Print Date :"
-                ].map(s => s.toLowerCase());
+                // Regex for the total line "एकूण" (or "एककण")
+                const totalLineRegex = /(एकूण|एककण)\s+(\d+\.\d{2})\s+(\d+\.\d{2})\s+(\d+\.\d{2})$/;
+
+                // Explicit list of known header lines to ignore at the beginning
+                const headerLinesToIgnore = [
+                    "Kubera", "Dhansanchay", "LOKPARYAY", "KUBER RD", "Total"
+                ].map(h => h.toLowerCase()); // Convert to lower case for case-insensitive matching
 
                 for (let i = 0; i < lines.length; i++) {
                     const line = lines[i].trim();
 
-                    if (!line) continue;
+                    if (!line) continue; // Skip empty lines
 
-                    // Try to extract overall report date range
-                    if (!reportDateRange) {
-                        const dateRangeMatch = line.match(transactionDateRangeRegex);
-                        if (dateRangeMatch) {
-                            const startDate = dateRangeMatch[1];
-                            const endDate = dateRangeMatch[3] || startDate; // Use endDate if present, otherwise startDate
-                            reportDateRange = `Transaction Date: ${startDate} To ${endDate}`;
-                            continue;
-                        }
-                    }
-
-                    // Check for GL Head
-                    const glHeadMatch = line.match(glHeadRegex);
-                    if (glHeadMatch) {
-                        // If there was a pending transaction, process it before changing GL Head
-                        if (pendingTransaction) {
-                            pendingTransaction.agentName = (pendingTransaction.agentName + ' ' + currentAgentNameBuffer.join(' ')).trim();
-                            transactions.push(pendingTransaction);
-                            pendingTransaction = null;
-                            currentAgentNameBuffer = [];
-                        }
-                        currentGLHead = glHeadMatch[1].trim();
+                    // Skip explicit header lines if they appear at the very beginning
+                    // or before any actual agent data has been collected.
+                    if (agentData.length === 0 && headerLinesToIgnore.includes(line.toLowerCase())) {
                         continue;
                     }
 
-                    // Check for overall footer total (this appears at the very end of the report)
-                    const overallTotalMatch = line.match(overallTotalRegex);
-                    if (overallTotalMatch) {
-                        // If there was a pending transaction, process it before parsing footer
-                        if (pendingTransaction) {
-                            pendingTransaction.agentName = (pendingTransaction.agentName + ' ' + currentAgentNameBuffer.join(' ')).trim();
-                            transactions.push(pendingTransaction);
-                            pendingTransaction = null;
-                            currentAgentNameBuffer = [];
+                    const totalMatch = line.match(totalLineRegex);
+                    if (totalMatch) {
+                        // If there were pending name parts before the total line, process them
+                        if (currentAgentNameParts.length > 0) {
+                            console.warn("Unprocessed agent name parts found before total line:", currentAgentNameParts.join(' '));
+                            currentAgentNameParts = []; // Clear them as they're likely not a full agent
                         }
-                        overallFooterTotals = {
-                            kubera: parseFloat(overallTotalMatch[2]),
-                            lokparyay: parseFloat(overallTotalMatch[3]),
-                            grand: parseFloat(overallTotalMatch[4])
+                        footerTotals = {
+                            kubera: parseFloat(totalMatch[2]),
+                            lokparyay: parseFloat(totalMatch[3]),
+                            grand: parseFloat(totalMatch[4])
                         };
-                        continue;
+                        continue; // Move to the next line after processing totals
                     }
 
-                    // Ignore known header/footer lines and page numbers
-                    if (ignoreLines.some(ignored => line.toLowerCase().includes(ignored))) {
-                        continue;
-                    }
-                    if (line.match(/^(\d{2}\.\d{2}\.\d{4})$/) && !line.includes(' ')) { // Ignore standalone Trans. Date (e.g., "19.03.2026")
-                         continue;
-                    }
-
-
-                    // Check for a transaction data line (start of a new agent's entry)
-                    const transactionMatch = line.match(dataLineRegex);
-                    if (transactionMatch) {
-                        // If there was a pending transaction, means previous non-data lines were part of its name
-                        if (pendingTransaction) {
-                            pendingTransaction.agentName = (pendingTransaction.agentName + ' ' + currentAgentNameBuffer.join(' ')).trim();
-                            transactions.push(pendingTransaction);
+                    const dataMatch = line.match(dataLineRegex);
+                    if (dataMatch) {
+                        // This line contains the amounts for an agent.
+                        // Any text before the amounts on THIS line is also part of the agent name.
+                        const namePartOnThisLine = dataMatch[1].trim();
+                        if (namePartOnThisLine) {
+                            currentAgentNameParts.push(namePartOnThisLine);
                         }
-                        currentAgentNameBuffer = []; // Reset buffer for the *new* agent's name parts
+                        const fullAgentName = currentAgentNameParts.join(' ').trim();
 
-                        const acNo = transactionMatch[1];
-                        const agentNo = transactionMatch[2];
-                        const namePartOnLine = transactionMatch[3].trim(); // "SHENDAGE"
-                        const agentBrNo = transactionMatch[4];
-                        const collectionDate = transactionMatch[5];
-                        const collectionAmt = parseFloat(transactionMatch[6]);
-
-                        pendingTransaction = {
-                            glHead: currentGLHead,
-                            acNo: acNo,
-                            agentNo: agentNo,
-                            agentBrNo: agentBrNo,
-                            agentName: namePartOnLine, // Start with the name part found on this line
-                            collectionDate: collectionDate,
-                            collectionAmt: collectionAmt
-                        };
-                    } else if (pendingTransaction) {
-                        // This line doesn't match a data line, but we have a pending transaction.
-                        // It's likely a continuation of the multi-line agent name.
-                        // Append only if it's not the "/" separator or empty.
-                        if (line !== '/' && line !== '') {
-                            currentAgentNameBuffer.push(line);
+                        if (fullAgentName) {
+                            agentData.push({
+                                agentName: fullAgentName,
+                                kuberaAmount: parseFloat(dataMatch[2]),
+                                lokparyayAmount: parseFloat(dataMatch[3]),
+                                totalCollected: parseFloat(dataMatch[4])
+                            });
+                        } else {
+                            console.warn("Skipping data line due to empty agent name after combining:", line);
                         }
+                        currentAgentNameParts = []; // Reset for the next agent
+                    } else {
+                        // This line does not contain the amounts, so it must be part of an agent's name.
+                        currentAgentNameParts.push(line);
                     }
                 }
-                // After loop, push any remaining pending transaction
-                if (pendingTransaction) {
-                    pendingTransaction.agentName = (pendingTransaction.agentName + ' ' + currentAgentNameBuffer.join(' ')).trim();
-                    transactions.push(pendingTransaction);
+
+                if (agentData.length === 0 || footerTotals.grand === 0) {
+                    throw new Error("No valid agent data or totals found in the text area. Please ensure the 'एकूण' line (or 'एककण') with three amounts is present at the end and the data format is correct.");
                 }
 
-                if (transactions.length === 0) {
-                    throw new Error("No valid transactions found in the text. Please check the pasted format.");
-                }
-
-                return { transactions, overallFooterTotals, reportDateRange };
+                return { agentData, footerTotals };
             };
 
-            // Function to display the parsed and aggregated data
+            // Function to display the parsed data and prepare for saving
             const displayReport = (data) => {
-                clearResults(); // Clear previous output
-                const { transactions, overallFooterTotals, reportDateRange } = data;
+                clearReport(); // Clear any previous report
+                const { agentData, footerTotals } = data;
 
-                // --- Extract Collected Date for Sheet ---
-                let sheetCollectedDate = "Unknown Date";
-                if (reportDateRange) {
-                    const dateParts = reportDateRange.match(/(\d{2}\.\d{2}\.\d{4})$/); // Get the last date in the range (the "To" date)
-                    if (dateParts && dateParts[1]) {
-                        sheetCollectedDate = formatDateForSheet(dateParts[1]); // Format to "DD Month YY"
-                    }
-                } else if (transactions.length > 0) {
-                     // Fallback: use the latest collection date from transactions
-                    const latestDate = transactions.reduce((maxDate, t) => {
-                        const [d, m, y] = t.collectionDate.split('.');
-                        const currentDate = new Date(y, m - 1, d);
-                        return currentDate > maxDate ? currentDate : maxDate;
-                    }, new Date(0)); // Start with epoch
-                    
-                    if (latestDate.getTime() !== new Date(0).getTime()) {
-                        sheetCollectedDate = formatDateForSheet(
-                            `${String(latestDate.getDate()).padStart(2, '0')}.${String(latestDate.getMonth() + 1).padStart(2, '0')}.${latestDate.getFullYear()}`
-                        );
-                    }
-                }
-                currentReportData.collectedDate = sheetCollectedDate; // Store for saving
-
-                // Aggregate data by GL Head and Agent Name for display
-                const aggregatedByScheme = {};
-                // Aggregate data for saving to sheet (combining scheme totals per agent)
-                const aggregatedForSheet = {}; // { agentName: { kubera: 0, lokparyay: 0, total: 0 } }
-
-                let calculatedOverallKuberaTotal = 0;
-                let calculatedOverallLokparyayTotal = 0;
-
-                transactions.forEach(t => {
-                    // For display
-                    if (!aggregatedByScheme[t.glHead]) {
-                        aggregatedByScheme[t.glHead] = {};
-                    }
-                    if (!aggregatedByScheme[t.glHead][t.agentName]) {
-                        aggregatedByScheme[t.glHead][t.agentName] = {
-                            totalAmount: 0,
-                            customerCount: new Set() // Using Set to count unique A/C Nos as customers
-                        };
-                    }
-                    aggregatedByScheme[t.glHead][t.agentName].totalAmount += t.collectionAmt;
-                    aggregatedByScheme[t.glHead][t.agentName].customerCount.add(t.acNo);
-
-                    // For calculated overall totals (used if footer totals are missing)
-                    if (t.glHead.includes("Kubera Dhansanchay Yojana")) {
-                        calculatedOverallKuberaTotal += t.collectionAmt;
-                    } else if (t.glHead.includes("LOKPARYAY KUBER RD Saving Scheme")) {
-                        calculatedOverallLokparyayTotal += t.collectionAmt;
-                    }
-
-                    // For saving to Google Sheet (agent-wise combined totals)
-                    if (!aggregatedForSheet[t.agentName]) {
-                        aggregatedForSheet[t.agentName] = { kuberaAmount: 0, lokparyayAmount: 0, totalAmount: 0 };
-                    }
-                    if (t.glHead.includes("Kubera Dhansanchay Yojana")) {
-                        aggregatedForSheet[t.agentName].kuberaAmount += t.collectionAmt;
-                    } else if (t.glHead.includes("LOKPARYAY KUBER RD Saving Scheme")) {
-                        aggregatedForSheet[t.agentName].lokparyayAmount += t.collectionAmt;
-                    }
-                    aggregatedForSheet[t.agentName].totalAmount += t.collectionAmt;
-                });
-
-                // Convert aggregatedForSheet object into an array for easier sending
-                currentReportData.agents = Object.keys(aggregatedForSheet).map(agentName => ({
-                    name: agentName,
-                    kuberaAmount: aggregatedForSheet[agentName].kuberaAmount,
-                    lokparyayAmount: aggregatedForSheet[agentName].lokparyayAmount,
-                    totalAmount: aggregatedForSheet[agentName].totalAmount
+                // --- Prepare data for saving to Google Sheet ---
+                currentReportData.agents = agentData.map(agent => ({
+                    name: agent.agentName,
+                    kuberaAmount: agent.kuberaAmount,
+                    lokparyayAmount: agent.lokparyayAmount,
+                    totalAmount: agent.totalCollected
                 }));
 
+                // Extract and format collected date from the hardcoded report info
+                const reportInfoText = reportInfoContainer.textContent;
+                let extractedDate_DD_MM_YYYY = "Unknown Date";
 
-                // Display overall report info
-                let datesInfo = 'Transaction Date: Not Found';
-                if (reportDateRange) {
-                    datesInfo = reportDateRange;
-                } else if (transactions.length > 0) {
-                    // Try to infer from first/last transaction if range not found directly
-                    const sortedTransactions = [...transactions].sort((a,b) => {
-                        const [dA, mA, yA] = a.collectionDate.split('.');
-                        const [dB, mB, yB] = b.collectionDate.split('.');
-                        return new Date(yA, mA - 1, dA) - new Date(yB, mB - 1, dB);
-                    });
-                    if (sortedTransactions.length > 0) {
-                        datesInfo = `Inferred Date Range: ${sortedTransactions[0].collectionDate} To ${sortedTransactions[sortedTransactions.length - 1].collectionDate}`;
+                // Try to get the "To" date
+                const dateToMatch = reportInfoText.match(/To\s+(\d{2}\.\d{2}\.\d{4})/);
+                if (dateToMatch && dateToMatch[1]) {
+                    extractedDate_DD_MM_YYYY = dateToMatch[1];
+                } else {
+                    // Fallback: try to get the first date after "Transaction Date:"
+                    const transactionDateMatch = reportInfoText.match(/Transaction Date:\s*(\d{2}\.\d{2}\.\d{4})/);
+                    if (transactionDateMatch && transactionDateMatch[1]) {
+                        extractedDate_DD_MM_YYYY = transactionDateMatch[1];
                     }
                 }
-                overallReportInfoDiv.innerHTML = `
-                    <p>${datesInfo} | Report By : vstodkar | Print Date : 14.04.2026</p>
-                `;
+                currentReportData.collectedDate = formatDateForSheet(extractedDate_DD_MM_YYYY);
 
 
-                // Generate tables for each scheme
-                const overallGrandSum = calculatedOverallKuberaTotal + calculatedOverallLokparyayTotal; // Calculate from parsed data
+                // --- Display data in the HTML table ---
+                agentData.forEach(agent => {
+                    const row = tbody.insertRow();
+                    const agentNameCell = row.insertCell();
+                    agentNameCell.textContent = agent.agentName;
 
-                for (const schemeName in aggregatedByScheme) {
-                    const schemeData = aggregatedByScheme[schemeName];
-                    const schemeSection = document.createElement('div');
-                    schemeSection.className = 'scheme-section';
+                    const kuberaAmountCell = row.insertCell();
+                    kuberaAmountCell.textContent = formatCurrency(agent.kuberaAmount);
+                    kuberaAmountCell.classList.add('text-right');
 
-                    const schemeHeading = document.createElement('h2');
-                    schemeHeading.textContent = `${schemeName} - Agent Wise Summary`;
-                    schemeSection.appendChild(schemeHeading);
+                    const lokparyayAmountCell = row.insertCell();
+                    lokparyayAmountCell.textContent = formatCurrency(agent.lokparyayAmount);
+                    lokparyayAmountCell.classList.add('text-right');
 
-                    const table = document.createElement('table');
-                    const thead = document.createElement('thead');
-                    const tbody = document.createElement('tbody');
-                    const tfoot = document.createElement('tfoot');
+                    const totalCollectedCell = row.insertCell();
+                    totalCollectedCell.textContent = formatCurrency(agent.totalCollected);
+                    totalCollectedCell.classList.add('text-right');
+                });
 
-                    thead.innerHTML = `
-                        <tr>
-                            <th>Agent Name</th>
-                            <th>No. of Customers</th>
-                            <th class="text-right">Total Collection Amount</th>
-                        </tr>
-                    `;
-                    table.appendChild(thead);
+                // Populate the totals in the footer
+                kuberaTotalCell.textContent = formatCurrency(footerTotals.kubera);
+                lokparyayTotalCell.textContent = formatCurrency(footerTotals.lokparyay);
+                grandTotalCell.textContent = formatCurrency(footerTotals.grand);
 
-                    let schemeTotal = 0;
-                    // Sort agents alphabetically by name for consistent display
-                    const sortedAgentNames = Object.keys(schemeData).sort();
-                    sortedAgentNames.forEach(agentName => {
-                        const agentSummary = schemeData[agentName];
-                        const row = tbody.insertRow();
-
-                        const nameCell = row.insertCell();
-                        nameCell.textContent = agentName;
-
-                        const customerCountCell = row.insertCell();
-                        customerCountCell.textContent = agentSummary.customerCount.size;
-
-                        const amountCell = row.insertCell();
-                        amountCell.textContent = formatCurrency(agentSummary.totalAmount);
-                        amountCell.classList.add('text-right');
-                        schemeTotal += agentSummary.totalAmount;
-                    });
-                    table.appendChild(tbody);
-
-                    tfoot.innerHTML = `
-                        <tr>
-                            <td colspan="2"><strong>Total for ${schemeName}</strong></td>
-                            <td class="text-right"><strong>${formatCurrency(schemeTotal)}</strong></td>
-                        </tr>
-                    `;
-                    table.appendChild(tfoot);
-
-                    schemeSection.appendChild(table);
-                    // Insert scheme section before the overall grand totals section
-                    resultsContainer.insertBefore(schemeSection, resultsContainer.lastElementChild);
-                }
-
-                // Populate overall grand totals (from document's footer, if available, otherwise calculated)
-                overallKuberaTotalCell.textContent = formatCurrency(overallFooterTotals.kubera || calculatedOverallKuberaTotal);
-                overallLokparyayTotalCell.textContent = formatCurrency(overallFooterTotals.lokparyay || calculatedOverallLokparyayTotal);
-                overallGrandTotalCell.textContent = formatCurrency(overallFooterTotals.grand || overallGrandSum);
-
-
-                resultsContainer.style.display = 'block'; // Show the results container
-                saveToSheetButton.disabled = false; // Enable save button
+                collectionTable.style.display = 'table'; // Show the table
+                saveToSheetButton.disabled = false; // Enable save button after successful display
             };
 
             // Function to send data to Google Sheet
@@ -568,7 +379,7 @@ CHANDAR
                 successMessageDiv.textContent = '';
                 saveToSheetButton.disabled = true; // Disable to prevent multiple clicks
 
-                if (GAS_WEB_APP_URL === 'YOUR_DEPLOYED_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                if (GAS_WEB_APP_URL === 'YOUR_DEPLOYED_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' || !GAS_WEB_APP_URL) {
                     errorMessageDiv.textContent = "ERROR: Please update 'GAS_WEB_APP_URL' in the script with your deployed Apps Script URL.";
                     saveToSheetButton.disabled = false;
                     return;
@@ -604,7 +415,7 @@ CHANDAR
                     errorMessageDiv.textContent = `Error sending data to Google Sheet: ${error.message}. Check browser console for details.`;
                     console.error("Fetch error:", error);
                 } finally {
-                    // Re-enable button if parsing was successful, otherwise it might stay disabled
+                    // Re-enable button only if data was available to be sent
                     if (currentReportData.agents.length > 0) {
                          saveToSheetButton.disabled = false;
                     }
@@ -613,7 +424,7 @@ CHANDAR
 
             // Event listener for the Convert button
             convertButton.addEventListener('click', function() {
-                clearResults(); // Clear previous output
+                clearReport(); // Clear previous output
                 const textContent = reportTextInput.value.trim();
 
                 if (!textContent) {

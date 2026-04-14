@@ -17,7 +17,8 @@ body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--
 button,input,select,textarea{font-family:inherit}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:#c7d2ee;border-radius:99px}
-.hdr{background:linear-gradient(120deg,#0c1a3a 0%,#1a3a8a 55%,#2563eb 100%);position:sticky;top:0;z-index:200;box-shadow:0 2px 20px rgba(0,0,0,.35)}
+/* Header: Adjusted gradient for a slightly more professional look */
+.hdr{background:linear-gradient(120deg,#0a1630 0%,#152f75 55%,#1c53c0 100%);position:sticky;top:0;z-index:200;box-shadow:0 2px 20px rgba(0,0,0,.35)}
 .hdr-in{max-width:1500px;margin:0 auto;padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:62px;gap:10px}
 .logo{width:44px;height:44px;border-radius:11px;overflow:hidden;flex-shrink:0;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.2)}
 .logo img{width:40px;height:40px;object-fit:contain}
@@ -35,10 +36,13 @@ button,input,select,textarea{font-family:inherit}
 .vs{display:flex;flex-direction:column;gap:14px}
 .gone{display:none!important}
 .gk{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:12px}
+/* G1 class for single item in a row */
+.g1{display:grid;grid-template-columns:1fr;gap:14px;}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+/* g3 class removed as charts are removed */
+/* g4 for summary grid at bottom */
 .g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.ga{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
+/* ga class removed as entry form is removed */
 .card{background:var(--w);border:1.5px solid var(--b);border-radius:18px;padding:18px;box-shadow:var(--sh)}
 .chd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:11px;border-bottom:1.5px solid var(--b);flex-wrap:wrap;gap:8px}
 .ctit{font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px}
@@ -58,11 +62,9 @@ button,input,select,textarea{font-family:inherit}
 .kb{background:linear-gradient(135deg,#1d4ed8,#3b82f6);box-shadow:0 8px 26px rgba(29,78,216,.38)}
 .kv{background:linear-gradient(135deg,#7c3aed,#a855f7);box-shadow:0 8px 26px rgba(124,58,237,.38)}
 .kt{background:linear-gradient(135deg,#0891b2,#22d3ee);box-shadow:0 8px 26px rgba(8,145,178,.38)}
-.kr{background:linear-gradient(135deg,#dc2626,#f87171);box-shadow:0 8px 26px rgba(220,38,38,.32)}
-.ks{background:linear-gradient(135deg,#334155,#64748b);box-shadow:0 8px 26px rgba(51,65,85,.32)}
-.ka{background:linear-gradient(135deg,#d97706,#fbbf24);box-shadow:0 8px 26px rgba(217,119,6,.38)}
+/* Removed kr, ks, ka, kx as their associated KPIs are removed */
+/* ko kept for bank balance */
 .ko{background:linear-gradient(135deg,#ea580c,#fb923c);box-shadow:0 8px 26px rgba(234,88,12,.35)}
-.kx{background:linear-gradient(135deg,#be185d,#f472b6);box-shadow:0 8px 26px rgba(190,24,93,.35)}
 /* Range bar */
 .rbbar{background:var(--w);border:1.5px solid var(--b);border-radius:18px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;box-shadow:var(--sh)}
 .rbbar label{font-size:10px;font-weight:800;color:var(--mu);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
@@ -121,19 +123,16 @@ tbody tr:hover{background:#f5f8ff}
 @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
 /* Charts */
 .ch{position:relative;height:210px}.ch2{position:relative;height:260px}
-/* Entry form */
-.ecol{background:#fff;border:1.5px solid var(--b);border-radius:15px;padding:14px}
-.erow{background:#fff;border:1.5px solid var(--b);border-radius:12px;padding:12px;margin-bottom:8px}
-.ss{position:sticky;bottom:10px;z-index:40;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border:1.5px solid var(--b);border-radius:14px;padding:12px}
+/* Entry form related styles removed */
 /* Print modal */
 .pov{position:fixed;inset:0;background:rgba(12,26,58,.58);z-index:9100;display:none;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(5px)}
 .pov.on{display:flex}
 .pbox{background:#fff;border-radius:22px;width:100%;max-width:700px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.3);animation:su .18s ease}
 /* Responsive */
-@media(max-width:1024px){.g3{grid-template-columns:1fr 1fr}}
+@media(max-width:1024px){/* g3 was here, now not needed as it's removed */}
 @media(max-width:640px){
   .nav{display:none}.hb{display:flex}
-  .g2,.g3{grid-template-columns:1fr}
+  .g1,.g2{grid-template-columns:1fr} /* g1 added for responsiveness */
   .gk{grid-template-columns:1fr 1fr}
   .kpi-val{font-size:18px}
   .sh{padding:10px}.card{padding:13px}.bname{font-size:13px}
@@ -192,13 +191,13 @@ tbody tr:hover{background:#f5f8ff}
     </div>
     <nav class="nav">
       <button id="navD" class="nb act" onclick="goTab('d')">📊 डॅशबोर्ड</button>
-      <button id="navE" class="nb" onclick="goTab('e');onED()">➕ नवीन नोंद</button>
+      <!-- "नवीन नोंद" button removed -->
     </nav>
     <button class="hb" onclick="toggleMob()"><span></span><span></span><span></span></button>
   </div>
   <div id="mobMenu" class="mn">
     <button class="nb" onclick="goTab('d');closeMob()">📊 डॅशबोर्ड</button>
-    <button class="nb" onclick="goTab('e');onED();closeMob()">➕ नवीन नोंद</button>
+    <!-- "नवीन नोंद" mobile button removed -->
   </div>
 </header>
 
@@ -223,15 +222,19 @@ tbody tr:hover{background:#f5f8ff}
 
   <div class="gk" id="kpiGrid"></div>
 
-  <div class="g3" id="cr1">
+  <!-- Charts: Re-structured after removing two charts -->
+  <div class="g1" id="cr1"> <!-- Changed from g3 to g1 as only one chart remains here -->
     <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#eff6ff">📊</span>उत्पादन — रक्कम</div></div><div class="ch"><canvas id="cPie"></canvas></div></div>
-    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#f0fdf4">📦</span>उत्पादन — खाती</div></div><div class="ch"><canvas id="cBar"></canvas></div></div>
-    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#fff7ed">💸</span>खर्चाचे वर्गीकरण</div></div><div class="ch"><canvas id="cExp"></canvas></div></div>
+    <!-- "उत्पादन — खाती" (cBar) and "खर्चाचे वर्गीकरण" (cExp) charts removed -->
+  </div>
+
+  <div class="g1"> <!-- New row for Daily Collection Trend -->
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#eff6ff">📈</span>दैनंदिन जमा ट्रेंड</div></div><div class="ch2"><canvas id="cDailyTrend"></canvas></div></div>
   </div>
 
   <div class="g2">
     <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#eff6ff">🏆</span>एजंट निहाय रक्कम (Top 10)</div></div><div class="ch2"><canvas id="cAgA"></canvas></div></div>
-    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#f0fdf4">👥</span>एजंट निहाय खाती (Top 10)</div></div><div class="ch2"><canvas id="cAgC"></canvas></div></div>
+    <div class="card"><div class="chd"><div class="ctit"><span class="cic" style="background:#f0fdf4">🪙</span>एजंट निहाय PIGMY (Top 10)</div></div><div class="ch2"><canvas id="cAgC"></canvas></div></div> <!-- Repurposed cAgC -->
   </div>
 
   <div class="g2">
@@ -244,8 +247,7 @@ tbody tr:hover{background:#f5f8ff}
             <option value="ALL">सर्व प्रकार</option>
             <option value="PIGMY">PIGMY</option>
             <option value="RD">RD</option>
-            <!-- FD option is included for consistency with entry form, but will show 0 from CSV -->
-            <option value="FD">FD</option> 
+            <option value="FD">FD</option>
           </select>
         </div>
       </div>
@@ -267,89 +269,17 @@ tbody tr:hover{background:#f5f8ff}
   </div>
 
   <div class="card">
-    <div class="chd"><div class="ctit"><span class="cic" style="background:#f0fdf4">📈</span>कालावधी सारांश</div><span id="sb"></span></div>
+    <div class="chd"><div class="ctit"><span class="cic" style="background:#f0fdf4">📈</span>कालावधी सारांश</div></div> <!-- Removed sb span -->
     <div id="sg" class="g4"></div>
   </div>
 </div>
 
-<!-- ENTRY -->
-<div id="secEntry" class="sh gone vs">
-  <div class="card vs" style="border-top:5px solid #059669">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:20px;font-weight:900">नवीन जमा नोंद</div>
-        <div style="font-size:12px;color:var(--mu);margin-top:3px">PIGMY / RD / FD जमा आणि खर्च नोंदवा</div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="setET()">📅 आजची तारीख</button>
-        <button class="btn btn-pale btn-sm" onclick="rsf()">🗑 रीसेट</button>
-      </div>
-    </div>
-    <div class="ga">
-      <div><label class="lbl">दिनांक</label><input id="eDate" type="date" class="inp" onchange="onED()"/></div>
-      <div><label class="lbl">Opening शिल्लक (₹)</label><input id="eOp" type="number" class="inp" placeholder="0" oninput="rc()"/></div>
-      <div><label class="lbl">System शिल्लक (₹)</label><input id="eSy" type="number" class="inp inpro" readonly/></div>
-      <div><label class="lbl">प्रत्यक्ष बँक शिल्लक (₹)</label><input id="eAc" type="number" class="inp" placeholder="0" oninput="rc()"/></div>
-    </div>
-    <div class="g3">
-      <div class="ecol" style="border-top:4px solid #059669">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <b style="color:#065f46;font-size:13px">🐷 PIGMY संकलन</b>
-          <button class="btn btn-green btn-sm" onclick="ar('P')">+ जोडा</button>
-        </div>
-        <div id="rP" class="vs"></div>
-      </div>
-      <div class="ecol" style="border-top:4px solid #1d4ed8">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <b style="color:#1e3a8a;font-size:13px">📈 RD संकलन</b>
-          <button class="btn btn-blue btn-sm" onclick="ar('R')">+ जोडा</button>
-        </div>
-        <div id="rR" class="vs"></div>
-      </div>
-      <div class="ecol" style="border-top:4px solid #7c3aed">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <b style="color:#4c1d95;font-size:13px">🏦 FD संकलन</b>
-          <button class="btn btn-violet btn-sm" onclick="ar('F')">+ जोडा</button>
-        </div>
-        <div id="rF" class="vs"></div>
-      </div>
-    </div>
-    <div class="ecol" style="border-top:4px solid #dc2626">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <b style="color:#991b1b;font-size:13px">🧾 खर्च तपशील</b>
-        <button class="btn btn-red btn-sm" onclick="ae()">+ जोडा</button>
-      </div>
-      <div id="rE" class="vs"></div>
-    </div>
-    <div class="ga">
-      <div><label class="lbl">एकूण जमा</label><input id="eTc" type="number" class="inp inpro" readonly/></div>
-      <div><label class="lbl">एकूण खर्च</label><input id="eTe" type="number" class="inp inpro" readonly/></div>
-      <div><label class="lbl">फरक</label><input id="eDf" type="number" class="inp inpro" readonly/></div>
-      <div><label class="lbl">जुळणी स्थिती</label><div id="eMt" class="inp inpro" style="display:flex;align-items:center;min-height:42px">N/A</div></div>
-    </div>
-    <div class="g2">
-      <div><label class="lbl">जुळणी नसल्यास कारण</label><textarea id="eMi" class="inp" rows="3" placeholder="फरक असल्यास कारण लिहा..."></textarea></div>
-      <div class="card" style="background:#f8faff;border:none;padding:14px;font-size:12px;color:var(--mu);line-height:2">
-        <b style="color:#1d4ed8;display:block;margin-bottom:6px">💡 त्वरित तपासणी</b>
-        Opening + जमा − खर्च = System शिल्लक<br/>
-        प्रत्यक्ष ≠ System → कारण नोंदवा<br/>
-        सेव्ह केल्यावर पुढील Opening आपोआप
-      </div>
-    </div>
-    <div class="ss">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-        <button class="btn btn-green" onclick="sub()">💾 सेव्ह करा</button>
-        <button class="btn btn-ghost" onclick="prv()">👁 Preview</button>
-        <button class="btn btn-pale" onclick="goTab('d');loadData(true)">← डॅशबोर्ड</button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- "नवीन नोंद" section removed entirely -->
 
 <script>
 // --- CONFIGURATION ---
 var API_READ = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNxyKMFXhN9_Z0G5puI5rGNDMIv9DT_VsGnZwjgSzGU9DDBdjNGwhO3msbo7LIwj9P6MzlaBEp8DlO/pub?gid=0&single=true&output=csv';
-var API_WRITE = 'https://script.google.com/macros/s/AKfycbzVUEN3WqOevswOOD5Ag7M59rB1VcYX9_NGqGtUq8vFiuFdfXG0tRc-Rfz0C8Tbq8E/exec'; // Your Google Apps Script URL for submissions
+// API_WRITE removed as "नवीन नोंद" feature is removed.
 
 var LK = 'lp_erp_v2_', // LocalStorage Key prefix
     MT = 60000,       // Medium-term cache (e.g., 1 minute for API calls)
@@ -372,7 +302,6 @@ function nd(v) {
     if (!v) return '';
     const s = String(v).trim();
 
-    // Try parsing "DD Month YY" (e.g., "31 March 26")
     const monthMap = {
         'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'may': '05', 'jun': '06',
         'jul': '07', 'aug': '08', 'sep': '09', 'oct': '10', 'nov': '11', 'dec': '12'
@@ -383,34 +312,29 @@ function nd(v) {
         let day = z(parseInt(match[1], 10));
         let month = monthMap[match[2].substring(0, 3)];
         let year = parseInt(match[3], 10);
-        if (year < 100) year += (year < 70 ? 2000 : 1900); // Assume 20xx for < 70, 19xx for >= 70
+        if (year < 100) year += (year < 70 ? 2000 : 1900);
         if (day && month && year) {
             return `${year}-${month}-${day}`;
         }
     }
 
-    // Handle Google Sheets date serial number (unlikely in CSV directly, but kept)
     if (typeof v === 'number' && Math.abs(v) > 1000 && Math.abs(v) < 100000) {
         var e = new Date(Date.UTC(1899, 11, 30)); e.setUTCDate(e.getUTCDate() + Math.round(v));
         return e.getUTCFullYear() + '-' + z(e.getUTCMonth() + 1) + '-' + z(e.getUTCDate());
     }
-    // Handle YYYY-MM-DDTHH:MM:SS (ISO)
     if (/^\d{4}-\d{2}-\d{2}T/.test(s)) { var d = new Date(s); return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
-    // Handle YYYY-MM-DD
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-    // Handle DD/MM/YYYY
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) { var p = s.split('/'); return p[2] + '-' + p[1] + '-' + p[0]; }
     
-    // Fallback: try parsing as generic date, then slice if invalid
     var d2 = new Date(s);
-    if (isNaN(d2.getTime())) return s.slice(0, 10); // Return first 10 chars if completely unparseable
+    if (isNaN(d2.getTime())) return s.slice(0, 10);
     return d2.getFullYear() + '-' + z(d2.getMonth() + 1) + '-' + z(d2.getDate());
 }
 
 
 // --- GLOBAL STATE & CACHING ---
 var S={
-  ag:[],        // Agent names for dropdowns
+  ag:[],        // Agent names (populated but not used in this dashboard-only version)
   data:null,    // Aggregated data for dashboard
   fullRawData:null, // Full parsed CSV data (array of objects)
   ch:{},        // Chart.js instances
@@ -434,41 +358,33 @@ function clr(){S.mem.clear();try{Object.keys(localStorage).filter(function(k){re
  */
 function parseCSV(csvText) {
     const lines = csvText.trim().split('\n');
-    if (lines.length <= 1) return []; // Only header or empty
+    if (lines.length <= 1) return [];
 
-    // Regex to split by comma only if it's not inside double quotes.
-    // It looks for a comma followed by an even number of quotes until the end of the line.
     const splitRegex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
-
-    // Process headers: trim and remove surrounding quotes
     const headers = lines[0].split(splitRegex).map(h => h.trim().replace(/^"|"$/g, ''));
-
     const data = [];
 
     for (let i = 1; i < lines.length; i++) {
         const line = lines[i];
-        if (!line.trim()) continue; // Skip empty lines
+        if (!line.trim()) continue;
 
         const values = line.split(splitRegex).map(v => v.trim());
 
-        // Handle cases where a line might have fewer or more columns than headers
         if (values.length < headers.length) {
             console.warn('Malformed CSV row (fewer columns than headers), padding:', line);
             while (values.length < headers.length) {
-                values.push(''); // Pad with empty strings
+                values.push('');
             }
         } else if (values.length > headers.length) {
             console.warn('Malformed CSV row (more columns than headers), truncating:', line);
-            values.splice(headers.length); // Truncate excess columns
+            values.splice(headers.length);
         }
 
         const row = {};
         headers.forEach((header, index) => {
             let value = values[index] || '';
-            // Remove surrounding quotes from the value if present
             if (value.startsWith('"') && value.endsWith('"')) {
                 value = value.substring(1, value.length - 1);
-                // Handle escaped double quotes (e.g., "" becomes ") if they were present inside quotes
                 value = value.replace(/""/g, '"');
             }
             row[header] = value;
@@ -487,16 +403,14 @@ function parseCSV(csvText) {
  * @returns {Promise<any>} The fetched and parsed data.
  */
 async function apf(url, force, isCSV = false) {
-    const ck = url.replace(API_READ, '').replace(API_WRITE, ''); // Use base URL for cache key
+    const ck = url; // Use full URL for cache key
     const now = Date.now();
 
-    // Check in-memory cache
     const m = S.mem.get(ck);
     if (!force && m && now - m.ts < MT) {
         return m.d;
     }
 
-    // Check localStorage cache (only for CSV for long-term)
     if (isCSV && !force) {
         const ls = lsG(ck);
         if (ls) {
@@ -524,14 +438,14 @@ async function apf(url, force, isCSV = false) {
     }
 
     S.mem.set(ck, { ts: now, d: data });
-    if (isCSV) { // Only store large CSV in localStorage
+    if (isCSV) {
         lsS(ck, data);
     }
     return data;
 }
 
-
-function goTab(t){G('secDash').classList.toggle('gone',t!=='d');G('secEntry').classList.toggle('gone',t!=='e');G('navD').classList.toggle('act',t==='d');G('navE').classList.toggle('act',t==='e');}
+// goTab now only handles dashboard
+function goTab(t){G('secDash').classList.toggle('gone',t!=='d');G('navD').classList.toggle('act',t==='d');}
 function toggleMob(){G('mobMenu').classList.toggle('op');}
 function closeMob(){G('mobMenu').classList.remove('op');}
 
@@ -548,17 +462,15 @@ async function loadData(force){
   G('rb').innerHTML='⏳ माहिती गोळा करत आहे...';
 
   try {
-    // 1. Fetch full CSV data (only once or when forced/expired cache)
     if (!S.fullRawData || force) {
       G('rb').innerHTML='⏳ पूर्ण डेटा डाउनलोड करत आहे...';
       S.fullRawData = await apf(API_READ, force, true);
     }
 
-    // 2. Aggregate data for the selected date range
     G('rb').innerHTML='⏳ डेटा विश्लेषण करत आहे...';
     S.data = aggregateDataForRange(S.fullRawData, fromDateStr, toDateStr);
     
-    // 3. Populate agent names for entry form (if not already done)
+    // Populate agent names (though not used in dashboard-only version, kept for future potential)
     if (S.ag.length === 0) {
         const uniqueAgents = new Set();
         S.fullRawData.forEach(row => {
@@ -567,7 +479,6 @@ async function loadData(force){
             }
         });
         S.ag = Array.from(uniqueAgents).sort();
-        popSel(); // Update agent dropdowns on entry form
     }
 
     rall(fromDateStr, toDateStr); // Render dashboard
@@ -588,116 +499,89 @@ async function loadData(force){
 function aggregateDataForRange(fullData, fromDateStr, toDateStr) {
     const fromDate = new Date(fromDateStr);
     const toDate = new Date(toDateStr);
-    toDate.setHours(23, 59, 59, 999); // Include the entire 'toDate' day
+    toDate.setHours(23, 59, 59, 999);
 
     let collections = [];
-    let expenses = []; // Not available in current CSV, will remain empty
     let agentWiseMap = {};
     let productWiseMap = {};
+    let dailyCollectionMap = {}; // For daily trend chart
 
-    // Default values for missing summary data (as they are not in the provided CSV)
-    let currentOpeningBalance = 0;
-    let currentSystemBalance = 0;
-    let currentActualBankBalance = 0;
-    let currentDifference = 0;
-    let currentMatchStatus = 'N/A';
-    let currentMismatchReason = '';
+    // Bank balance simulation - Hardcoded to 0 as no 'Bank' sheet or specific value is provided
+    // To implement "MGB Bank 32000" from a "Bank" sheet, a separate API_READ for that sheet would be needed.
+    let currentBankBalance = 0; 
 
     fullData.forEach(row => {
         const rowDateStr = nd(row['Date']);
-        if (!rowDateStr) return; // Skip rows without a valid date
+        if (!rowDateStr) return;
         const rowDate = new Date(rowDateStr);
         
-        // Process only rows within the selected date range for collections
         if (rowDate >= fromDate && rowDate <= toDate) {
             const agent = String(row['Agent Name'] || '-').trim();
-            let totalRowCollection = 0; // Sum of PIGMY + RD for this row
+            let totalRowCollection = 0;
 
-            // --- PIGMY Collections ---
             const pigmyAmount = num(row['Kubera Dhansanchay Yojana Amount']);
             if (pigmyAmount > 0) {
                 const type = 'PIGMY';
-                collections.push({
-                    date: rowDateStr, type, agent,
-                    accountNo: '-', // Not available in CSV
-                    customer: '-',  // Not available in CSV
-                    amount: pigmyAmount, count: 0 // Count not available in CSV
-                });
+                collections.push({ date: rowDateStr, type, agent, amount: pigmyAmount });
                 if (!productWiseMap[type]) productWiseMap[type] = { type, amount: 0, count: 0 };
                 productWiseMap[type].amount += pigmyAmount;
-                // Count remains 0 as per CSV limitations
                 totalRowCollection += pigmyAmount;
             }
 
-            // --- RD Collections ---
             const rdAmount = num(row['LOKPARYAY KUBER RD Saving Scheme Amount']);
             if (rdAmount > 0) {
                 const type = 'RD';
-                collections.push({
-                    date: rowDateStr, type, agent,
-                    accountNo: '-', // Not available in CSV
-                    customer: '-',  // Not available in CSV
-                    amount: rdAmount, count: 0 // Count not available in CSV
-                });
+                collections.push({ date: rowDateStr, type, agent, amount: rdAmount });
                 if (!productWiseMap[type]) productWiseMap[type] = { type, amount: 0, count: 0 };
                 productWiseMap[type].amount += rdAmount;
-                // Count remains 0 as per CSV limitations
                 totalRowCollection += rdAmount;
             }
 
-            // Update agent-wise totals
             if (totalRowCollection > 0) {
                 if (!agentWiseMap[agent]) {
                     agentWiseMap[agent] = { agent, totalAmount: 0, totalCount: 0, PIGMY: 0, RD: 0, FD: 0 };
                 }
                 agentWiseMap[agent].totalAmount += totalRowCollection;
-                // Total count will also be 0 as individual collection counts are 0
                 
-                // Add to specific product types for agent summary
                 if (pigmyAmount > 0) agentWiseMap[agent]['PIGMY'] += pigmyAmount;
                 if (rdAmount > 0) agentWiseMap[agent]['RD'] += rdAmount;
+
+                // For daily trend chart
+                if (!dailyCollectionMap[rowDateStr]) dailyCollectionMap[rowDateStr] = 0;
+                dailyCollectionMap[rowDateStr] += totalRowCollection;
             }
         }
     });
 
     const totalCollection = collections.reduce((sum, r) => sum + r.amount, 0);
-    const totalExpense = 0; // No expense data in current CSV
+
+    // Sort daily collections by date
+    const dailyCollections = Object.keys(dailyCollectionMap)
+        .sort((a, b) => new Date(a) - new Date(b))
+        .map(date => ({ date, amount: dailyCollectionMap[date] }));
 
     return {
         totals: {
             pigmyAmount: productWiseMap['PIGMY'] ? productWiseMap['PIGMY'].amount : 0,
-            pigmyCount: 0, // Not available in CSV
             rdAmount: productWiseMap['RD'] ? productWiseMap['RD'].amount : 0,
-            rdCount: 0,    // Not available in CSV
-            fdAmount: 0,   // Not available in CSV
-            fdCount: 0,    // Not available in CSV
+            fdAmount: 0, // Not available in current CSV
             totalCollection,
-            totalExpense,
-            openingBalance: currentOpeningBalance,
-            systemBalance: currentSystemBalance,
-            actualBankBalance: currentActualBankBalance,
-            difference: currentDifference,
-            matchStatus: currentMatchStatus,
-            mismatchReason: currentMismatchReason
+            bankBalance: currentBankBalance // Value is 0, as explained above
         },
         rows: collections,
-        expenses: expenses, // Will be empty
         productWise: Object.values(productWiseMap),
-        agentWise: Object.values(agentWiseMap).sort((a, b) => b.totalAmount - a.totalAmount)
+        agentWise: Object.values(agentWiseMap).sort((a, b) => b.totalAmount - a.totalAmount),
+        dailyCollections: dailyCollections
     };
 }
 
-
+// KP: Key Performance Indicators - Updated after removing 'expense' and 'balance' fields
 var KP=[
-  {k:'pigmyAmount', s:'pigmyCount', l:'PIGMY जमा',            c:'kg',m:'pigmy',i:'🐷'},
-  {k:'rdAmount',    s:'rdCount',    l:'RD जमा',               c:'kb',m:'rd',   i:'📈'},
-  {k:'fdAmount',    s:'fdCount',    l:'FD जमा',               c:'kv',m:'fd',   i:'🏦'},
-  {k:'totalCollection',s:null,      l:'एकूण जमा रक्कम',       c:'kt',m:'all',  i:'💰'},
-  {k:'totalExpense',s:null,         l:'एकूण खर्च',            c:'kr',m:'exp',  i:'🧾'},
-  {k:'openingBalance',s:null,       l:'Opening शिल्लक',        c:'ks',m:'sum',  i:'🏁'},
-  {k:'systemBalance',s:null,        l:'System शिल्लक',         c:'ka',m:'sum',  i:'🖥️'},
-  {k:'actualBankBalance',s:null,    l:'प्रत्यक्ष बँक शिल्लक', c:'ko',m:'sum',  i:'🏧'},
-  {k:'difference',  s:null,         l:'फरक (जुळणी)',           c:'kx',m:'sum',  i:'⚖️'},
+  {k:'pigmyAmount', s:null, l:'PIGMY जमा', c:'kg',m:'pigmy',i:'🪙'}, // Changed icon
+  {k:'rdAmount',    s:null, l:'RD जमा',    c:'kb',m:'rd',   i:'📈'},
+  {k:'fdAmount',    s:null, l:'FD जमा',    c:'kv',m:'fd',   i:'🏦'},
+  {k:'totalCollection',s:null,l:'एकूण जमा रक्कम',c:'kt',m:'all',i:'💰'},
+  {k:'bankBalance', s:null, l:'बँक शिल्लक', c:'ko',m:'sum',  i:'🏧'}, // Renamed
 ];
 
 function rall(from,to){
@@ -714,22 +598,17 @@ function rall(from,to){
       +'<div class="kpi-lbl">'+k.l+'</div>'
       +sb+'<div class="kpi-tag">तपशील ↗</div></button>';
   }).join('');
-  var ms=t.matchStatus||'N/A';
-  G('sb').innerHTML=ms==='YES'?'<span class="pill pp">✓ जुळणी झाली</span>':ms==='NO'?'<span class="pill pr">⚠ जुळणी नाही</span>':'<span class="pill pa">N/A</span>';
   
-  // Adapt summary fields to available data
+  // Removed match status line: G('sb').innerHTML=...
+
+  // Summary fields for the bottom card, updated
   var sf=[
     ['कालावधी',rl],
     ['PIGMY रक्कम',rupee(t.pigmyAmount)],
     ['RD रक्कम',rupee(t.rdAmount)],
-    ['FD रक्कम',rupee(t.fdAmount)], // Will be 0
+    ['FD रक्कम',rupee(t.fdAmount)],
     ['एकूण जमा',rupee(t.totalCollection)],
-    ['एकूण खर्च',rupee(t.totalExpense)], // Will be 0
-    ['Opening शिल्लक',rupee(t.openingBalance)], // Will be 0
-    ['System शिल्लक',rupee(t.systemBalance)],   // Will be 0
-    ['प्रत्यक्ष शिल्लक',rupee(t.actualBankBalance)], // Will be 0
-    ['फरक',rupee(t.difference)], // Will be 0
-    ['जुळणी नाही कारण',t.mismatchReason||'-'] // Will be empty
+    ['बँक शिल्लक',rupee(t.bankBalance)]
   ];
   G('sg').innerHTML=sf.map(function(x){return'<div style="background:#f5f8ff;border:1px solid var(--b);border-radius:12px;padding:12px"><div style="font-size:10px;font-weight:800;color:var(--mu);text-transform:uppercase">'+esc(x[0])+'</div><div style="font-size:13px;font-weight:800;margin-top:4px">'+esc(String(x[1]))+'</div></div>';}).join('');
   rc2(); ra(); rcharts();
@@ -740,7 +619,6 @@ function rc2(){
   var rows=(S.data&&S.data.rows||[]).filter(function(r){
     if(tp!=='ALL'&&r.type!==tp)return false;
     if(!q)return true;
-    // Search only available fields
     return[r.agent,r.type].some(function(v){return String(v||'').toLowerCase().indexOf(q)>=0;});
   });
   var html=rows.map(function(r){
@@ -764,36 +642,58 @@ function co(x){return Object.assign({responsive:true,maintainAspectRatio:false,p
 
 function rcharts(){
   if(typeof Chart==='undefined'){setTimeout(function(){S.data&&rcharts();},800);return;}
-  var pw=(S.data&&S.data.productWise)||[],aw=((S.data&&S.data.agentWise)||[]).slice(0,10),ex=(S.data&&S.data.expenses)||[];
-  var eM={};ex.forEach(function(x){var k=x.type||'इतर';eM[k]=(eM[k]||0)+num(x.amount);});
+  var pw=(S.data&&S.data.productWise)||[],
+      aw=((S.data&&S.data.agentWise)||[]).slice(0,10),
+      dc=(S.data&&S.data.dailyCollections)||[]; // Daily collections for trend chart
 
   // Product Wise Amount Pie Chart
   mc('cPie',{type:'pie',data:{labels:pw.map(function(x){return x.type;}),datasets:[{data:pw.map(function(x){return x.amount;}),backgroundColor:CL.slice(0,pw.length),borderWidth:3,borderColor:'#fff',hoverOffset:8}]},options:Object.assign(co(),{plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:11,padding:9,font:{size:11}}}}})});
   
-  // Product Wise Accounts Bar Chart (will show 0 for counts)
-  mc('cBar',{type:'bar',data:{labels:pw.map(function(x){return x.type;}),datasets:[{data:pw.map(function(x){return x.count;}),backgroundColor:CL.slice(0,pw.length),borderRadius:9,borderSkipped:false}]},options:co({scales:{x:{grid:{display:false}},y:{grid:{color:'#f1f5fb'}}}})});
-  
-  // Expense Classification Doughnut Chart (will be empty/default if no expense data)
-  var eL=Object.keys(eM),eV=Object.values(eM);
-  mc('cExp',{type:'doughnut',data:{labels:eL.length?eL:['खर्च नाही'],datasets:[{data:eV.length?eV:[1],backgroundColor:eL.length?CL:['#e2e8f0'],borderWidth:3,borderColor:'#fff'}]},options:Object.assign(co({cutout:'60%'}),{plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:11,padding:8,font:{size:11}}}}})});
-  
   // Agent Wise Amount Bar Chart
   mc('cAgA',{type:'bar',data:{labels:aw.map(function(x){return x.agent;}),datasets:[{data:aw.map(function(x){return x.totalAmount;}),backgroundColor:'rgba(29,78,216,.75)',borderRadius:7,borderSkipped:false}]},options:co({indexAxis:'y',scales:{x:{grid:{color:'#f1f5fb'},ticks:{callback:function(v){return rupee(v);}}},y:{grid:{display:false},ticks:{font:{size:11}}}}})});
   
-  // Agent Wise Accounts Bar Chart (will show 0 for counts)
-  mc('cAgC',{type:'bar',data:{labels:aw.map(function(x){return x.agent;}),datasets:[{data:aw.map(function(x){return x.totalCount;}),backgroundColor:'rgba(5,150,105,.72)',borderRadius:7,borderSkipped:false}]},options:co({indexAxis:'y',scales:{x:{grid:{color:'#f1f5fb'}},y:{grid:{display:false},ticks:{font:{size:11}}}}})});
+  // Repurposed cAgC: Agent Wise PIGMY Collection
+  mc('cAgC',{type:'bar',data:{labels:aw.map(function(x){return x.agent;}),datasets:[{data:aw.map(function(x){return x.PIGMY;}),backgroundColor:'rgba(5,150,105,.72)',borderRadius:7,borderSkipped:false}]},options:co({indexAxis:'y',scales:{x:{grid:{color:'#f1f5fb'},ticks:{callback:function(v){return rupee(v);}}},y:{grid:{display:false},ticks:{font:{size:11}}}}})});
+
+  // New: Daily Collection Trend Line Chart
+  mc('cDailyTrend', {
+      type: 'line',
+      data: {
+          labels: dc.map(x => x.date),
+          datasets: [{
+              label: 'एकूण जमा',
+              data: dc.map(x => x.amount),
+              borderColor: '#1d4ed8',
+              backgroundColor: 'rgba(29,78,216,.1)',
+              fill: true,
+              tension: 0.3,
+              pointRadius: 3,
+              pointBackgroundColor: '#1d4ed8'
+          }]
+      },
+      options: co({
+          scales: {
+              x: { grid: { display: false } },
+              y: { grid: { color: '#f1f5fb' }, ticks: { callback: function(v){return rupee(v);}} }
+          },
+          plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: function(c){ return c.dataset.label + ': ' + rupee(c.raw); } } }
+          }
+      })
+  });
 }
 
 function omo(kind,title){
-  var d=S.data||{totals:{},expenses:[],agentWise:[],rows:[]},t=d.totals;
+  var d=S.data||{totals:{},agentWise:[],rows:[]},t=d.totals;
   var from=G('fromDate').value||td(),to=G('toDate').value||td();
   G('mtt').textContent=title||'तपशील'; G('mts').textContent=(from===to?from:from+' ते '+to);
   var html='';
   if(['pigmy','rd','fd','all'].indexOf(kind)>=0){
     var tf={pigmy:'PIGMY',rd:'RD',fd:'FD',all:'ALL'}[kind];
     var fil=tf==='ALL'?d.rows:d.rows.filter(function(r){return r.type===tf;});
-    var tot=fil.reduce(function(a,b){return a+b.amount;},0),totC=0; // Count will be 0
-    html='<div class="mst"><div class="ms"><div class="sl">नोंदी</div><div class="sv">'+fil.length+'</div></div><div class="ms"><div class="sl">एकूण खाती</div><div class="sv">'+totC+'</div></div><div class="ms"><div class="sl">एकूण रक्कम</div><div class="sv" style="color:#1d4ed8">'+rupee(tot)+'</div></div></div>'
+    var tot=fil.reduce(function(a,b){return a+b.amount;},0);
+    html='<div class="mst"><div class="ms"><div class="sl">नोंदी</div><div class="sv">'+fil.length+'</div></div><div class="ms"><div class="sl">खाती</div><div class="sv">0</div></div><div class="ms"><div class="sl">एकूण रक्कम</div><div class="sv" style="color:#1d4ed8">'+rupee(tot)+'</div></div></div>'
       +'<div class="tw"><table><thead><tr><th>तारीख</th><th>प्रकार</th><th>एजंट नाव</th><th>खाते क्र.</th><th class="ttr">खाती</th><th class="ttr">रक्कम</th></tr></thead><tbody>'
       +fil.map(function(r){var pc=r.type==='PIGMY'?'pp':r.type==='RD'?'pbb':'pa';return'<tr><td>'+esc(r.date)+'</td><td><span class="pill '+pc+'">'+esc(r.type)+'</span></td><td class="ttb">'+esc(r.agent||'-')+'</td><td>-</td><td class="ttr">0</td><td class="ttr ttb">'+rupee(r.amount)+'</td></tr>';}).join('')
       +'</tbody></table></div>';
@@ -802,15 +702,10 @@ function omo(kind,title){
       +'<div class="tw"><table><thead><tr><th>एजंट नाव</th><th class="ttr">खाती</th><th class="ttr">एकूण रक्कम</th><th class="ttr">PIGMY</th><th class="ttr">RD</th><th class="ttr">FD</th></tr></thead><tbody>'
       +d.agentWise.map(function(x){return'<tr><td class="ttb">'+esc(x.agent)+'</td><td class="ttr">0</td><td class="ttr ttb" style="color:#1d4ed8">'+rupee(x.totalAmount)+'</td><td class="ttr" style="color:#059669">'+rupee(x.PIGMY)+'</td><td class="ttr">'+rupee(x.RD)+'</td><td class="ttr">'+rupee(x.FD)+'</td></tr>';}).join('')
       +'</tbody></table></div>';
-  }else if(kind==='exp'){
-    html='<div class="mst"><div class="ms"><div class="sl">नोंदी</div><div class="sv">'+d.expenses.length+'</div></div><div class="ms"><div class="sl">एकूण खर्च</div><div class="sv" style="color:#dc2626">'+rupee(t.totalExpense)+'</div></div></div>'
-      +'<div class="tw"><table><thead><tr><th>तारीख</th><th>खर्च प्रकार</th><th class="ttr">रक्कम</th><th>तपशील</th></tr></thead><tbody>'
-      +d.expenses.map(function(x){return'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.type||'-')+'</td><td class="ttr ttb" style="color:#dc2626">'+rupee(x.amount)+'</td><td>'+esc(x.note||'-')+'</td></tr>';}).join('')
-      +'</tbody></table></div>';
-  }else{ // 'sum' kind for overall summary
-    html='<div class="mst"><div class="ms"><div class="sl">एकूण जमा</div><div class="sv" style="color:#1d4ed8">'+rupee(t.totalCollection)+'</div></div><div class="ms"><div class="sl">फरक</div><div class="sv">'+rupee(t.difference)+'</div></div></div>'
+  }else if(kind==='sum'){ // 'sum' kind for overall summary (simplified)
+    html='<div class="mst"><div class="ms"><div class="sl">एकूण जमा</div><div class="sv" style="color:#1d4ed8">'+rupee(t.totalCollection)+'</div></div><div class="ms"><div class="sl">बँक शिल्लक</div><div class="sv">'+rupee(t.bankBalance)+'</div></div></div>'
       +'<div class="tw"><table><thead><tr><th>क्षेत्र</th><th>मूल्य</th></tr></thead><tbody>'
-      +[['Opening शिल्लक',rupee(t.openingBalance)],['एकूण जमा',rupee(t.totalCollection)],['एकूण खर्च',rupee(t.totalExpense)],['System शिल्लक',rupee(t.systemBalance)],['प्रत्यक्ष शिल्लक',rupee(t.actualBankBalance)],['फरक',rupee(t.difference)],['जुळणी',t.matchStatus||'N/A'],['जुळणी नाही कारण',t.mismatchReason||'-']].map(function(r){return'<tr><td class="ttb">'+r[0]+'</td><td>'+esc(String(r[1]))+'</td></tr>';}).join('')
+      +[['PIGMY रक्कम',rupee(t.pigmyAmount)],['RD रक्कम',rupee(t.rdAmount)],['FD रक्कम',rupee(t.fdAmount)],['एकूण जमा',rupee(t.totalCollection)],['बँक शिल्लक',rupee(t.bankBalance)]].map(function(r){return'<tr><td class="ttb">'+r[0]+'</td><td>'+esc(String(r[1]))+'</td></tr>';}).join('')
       +'</tbody></table></div>';
   }
   G('mbd').innerHTML=html; G('ov').classList.add('on');
@@ -824,7 +719,15 @@ function openPrint(){
   var is1=(from===to),rl=is1?from:from+' ते '+to;
   var now=new Date(),timeStr=now.getHours()+':'+z(now.getMinutes());
   var aRows=d.agentWise.map(function(x){return'<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:7px 10px;font-weight:700">'+esc(x.agent)+'</td><td style="padding:7px 10px;text-align:right">0</td><td style="padding:7px 10px;text-align:right;font-weight:900;color:#1d4ed8">'+rupee(x.totalAmount)+'</td><td style="padding:7px 10px;text-align:right;color:#059669">'+rupee(x.PIGMY)+'</td><td style="padding:7px 10px;text-align:right">'+rupee(x.RD)+'</td><td style="padding:7px 10px;text-align:right">'+rupee(x.FD)+'</td></tr>';}).join('');
-  var sf=[['PIGMY संकलन',rupee(t.pigmyAmount),'खाती: 0'],['RD संकलन',rupee(t.rdAmount),'खाती: 0'],['FD संकलन',rupee(t.fdAmount),'खाती: 0'],['एकूण जमा',rupee(t.totalCollection),''],['एकूण खर्च',rupee(t.totalExpense),''],['Opening शिल्लक',rupee(t.openingBalance),''],['System शिल्लक',rupee(t.systemBalance),''],['प्रत्यक्ष शिल्लक',rupee(t.actualBankBalance),''],['फरक',rupee(t.difference),t.matchStatus==='YES'?'✓ जुळणी झाली':'⚠ जुळणी नाही']];
+  
+  // Print summary fields, updated
+  var sf=[
+    ['PIGMY संकलन',rupee(t.pigmyAmount),'खाती: 0'],
+    ['RD संकलन',rupee(t.rdAmount),'खाती: 0'],
+    ['FD संकलन',rupee(t.fdAmount),'खाती: 0'],
+    ['एकूण जमा',rupee(t.totalCollection),''],
+    ['बँक शिल्लक',rupee(t.bankBalance),'']
+  ];
   var html='<div style="font-family:system-ui,sans-serif;color:#1a2744">'
     +'<div style="text-align:center;border-bottom:3px solid #1d4ed8;padding-bottom:16px;margin-bottom:20px">'
     +'<img src="https://anikfin.com/ANIKDATA/Logo.png" style="width:54px;height:54px;object-fit:contain;margin-bottom:8px" onerror="this.style.display=\'none\'"/>'
@@ -837,7 +740,6 @@ function openPrint(){
     +sf.map(function(r,i){return'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-radius:9px;background:'+(i%2===0?'#f5f8ff':'#fff')+';margin-bottom:4px"><div style="font-weight:700;color:#64748b">'+r[0]+(r[2]?'<span style="font-size:11px;margin-left:8px;color:#94a3b8">'+r[2]+'</span>':'')+'</div><div style="font-weight:900;font-size:15px">'+esc(r[1])+'</div></div>';}).join('')
     +'</div>'
     +(d.agentWise.length?'<div><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;border-bottom:1px solid #e2e8f0;padding-bottom:6px">एजंट निहाय सारांश</div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#f5f8ff"><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">एजंट नाव</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">खाती</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">एकूण</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">PIGMY</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">RD</th><th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase">FD</th></tr></thead><tbody>'+aRows+'</tbody></table></div>':'')
-    +(t.mismatchReason?'<div style="background:#fff3dc;border:1.5px solid #fbbf24;border-radius:10px;padding:12px;font-size:13px;margin-top:12px"><b style="color:#92400e">⚠ जुळणी नाही कारण:</b> '+esc(t.mismatchReason)+'</div>':'')
     +'<div style="text-align:center;margin-top:20px;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px">लोकपर्याय पतसंस्था ERP — '+td()+'</div>'
     +'</div>';
   G('printContent').innerHTML=html; G('pov').classList.add('on');
@@ -853,102 +755,16 @@ function doPrint(){
 /* Debug */
 function showDbg(){var r=S.fullRawData;if(!r){alert('डेटा अद्याप नाही');return;}var i={totalRows:r.length,firstRow:r[0]||'empty',fromDate:G('fromDate').value,toDate:G('toDate').value,currentDataRows:S.data&&S.data.rows&&S.data.rows.length||0};console.log('[DEBUG]',i, S.data);alert(JSON.stringify(i,null,2));}
 
-/* Entry form — DOM-based, NO onclick in innerHTML */
-function makeRow(){
-  var div=document.createElement('div'); div.className='erow';
-  div.innerHTML='<div style="display:grid;grid-template-columns:1fr 88px 100px 34px;gap:8px;align-items:end">'
-    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">एजंट</div><select class="inp agS" style="padding:8px 10px;font-size:13px"><option value="">निवडा</option></select></div>'
-    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">खाती</div><input type="number" class="inp aCn" value="0" min="0" style="padding:8px 10px" oninput="rc()"/></div>'
-    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">रक्कम</div><input type="number" class="inp aAm" value="0" min="0" style="padding:8px 10px" oninput="rc()"/></div>'
-    +'<button class="btn btn-pale btn-ico" style="color:#dc2626;height:34px;font-size:15px">✕</button>'
-    +'</div>';
-  div.querySelector('button').addEventListener('click',function(){div.remove();rc();});
-  return div;
-}
-function makeExp(){
-  var div=document.createElement('div'); div.className='erow';
-  div.innerHTML='<div style="display:grid;grid-template-columns:1fr 110px 34px;gap:8px;align-items:end">'
-    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">खर्च प्रकार</div><input type="text" class="inp eTyp" placeholder="Travel / Cement..." style="padding:8px 10px;font-size:13px"/></div>'
-    +'<div><div style="font-size:9px;font-weight:800;color:var(--mu);margin-bottom:3px;text-transform:uppercase">रक्कम</div><input type="number" class="inp eAm" value="0" min="0" style="padding:8px 10px" oninput="rc()"/></div>'
-    +'<button class="btn btn-pale btn-ico" style="color:#dc2626;height:34px;font-size:15px">✕</button>'
-    +'</div>';
-  div.querySelector('button').addEventListener('click',function(){div.remove();rc();});
-  return div;
-}
+// Entry form related functions removed
 
-function ar(tp){G('r'+tp).appendChild(makeRow());popSel();}
-function ae(){G('rE').appendChild(makeExp());}
-
-function popSel(){
-  var o='<option value="">निवडा</option>'+S.ag.map(function(a){return'<option value="'+esc(a)+'">'+esc(a)+'</option>';}).join('');
-  document.querySelectorAll('.agS').forEach(function(s){var v=s.value;s.innerHTML=o;if(v)s.value=v;});
-}
-
-// Opening balance for the entry form will be 0 as it's not in the CSV
-async function onED(){
-  var date = G('eDate').value;
-  if (!date || !S.fullRawData) {
-      G('eOp').value = 0; // Default to 0 if no data or date
-      rc();
-      return;
-  }
-  // The CSV doesn't contain an 'Opening Balance' column.
-  // So, for now, the opening balance for the entry form will always be 0.
-  // If you need actual opening balances, your Google Sheet or API_WRITE script
-  // would need to manage and provide this data explicitly.
-  G('eOp').value = 0; 
-  rc(); // Recalculate totals
-}
-
-
-function rc(){
-  var op=num(G('eOp').value),ac=num(G('eAc').value),tC=0,tE=0;
-  document.querySelectorAll('.aAm').forEach(function(r){tC+=num(r.value);});
-  document.querySelectorAll('.eAm').forEach(function(r){tE+=num(r.value);});
-  var sys=op+tC-tE,diff=ac-sys,ok=Math.abs(diff)<0.01;
-  G('eTc').value=tC; G('eTe').value=tE; G('eSy').value=sys; G('eDf').value=diff;
-  G('eMt').innerHTML=ok?'<span class="pill pp">✓ जुळणी झाली</span>':'<span class="pill pr">⚠ जुळणी नाही</span>';
-}
-
-function cCl(tp){var m={P:'PIGMY',R:'RD',F:'FD'};return Array.from(document.querySelectorAll('#r'+tp+' .erow')).map(function(r){return{type:m[tp],agent:r.querySelector('.agS').value.trim(),amount:num(r.querySelector('.aAm').value),accountCount:Math.max(0,Math.floor(num(r.querySelector('.aCn').value)))};}).filter(function(r){return r.agent||r.amount>0||r.accountCount>0;});}
-function cEx(){return Array.from(document.querySelectorAll('#rE .erow')).map(function(r){return{type:r.querySelector('.eTyp').value.trim(),amount:num(r.querySelector('.eAm').value),note:''};}).filter(function(r){return r.type||r.amount>0;});}
-function bP(){return{type:'daily_entry',date:G('eDate').value,collections:cCl('P').concat(cCl('R')).concat(cCl('F')),expenses:cEx(),bank:{openingBalance:num(G('eOp').value),actualBankBalance:num(G('eAc').value),mismatchReason:G('eMi').value.trim()}};}
-function prv(){var p=bP();var w=window.open('','_blank','width=600,height=500');w.document.write('<pre style="font-size:13px;padding:20px;white-space:pre-wrap">'+esc(JSON.stringify(p,null,2))+'</pre>');}
-
-async function sub(){
-  var p=bP();
-  if(!p.date){toast('दिनांक आवश्यक आहे','er');return;}
-  if(!p.collections.length&&!p.expenses.length&&!num(p.bank.actualBankBalance)){toast('किमान काही डेटा भरा','er');return;}
-  if(Math.abs(num(G('eDf').value))>=0.01&&!p.bank.mismatchReason){toast('फरक असल्यास कारण नोंदवा','er');return;}
-  G('ldr').classList.add('on');
-  try{
-    // Submit data to your Google Apps Script for writing
-    var res=await fetch(API_WRITE,{method:'POST',body:JSON.stringify(p)});
-    var txt=await res.text(); var d;
-    try{d=JSON.parse(txt);}catch(e){throw new Error('Invalid: '+txt.slice(0,80));}
-    if(d.status!=='success') throw new Error(d.message||'Save failed');
-    
-    // If submission is successful, clear relevant caches to force reload dashboard data
-    clr(); // Clear all caches
-    toast('✅ यशस्वीरित्या सेव्ह झाले!','ok',3000);
-    rsf(false); await onED();
-    G('fromDate').value=p.date; G('toDate').value=p.date;
-    await loadData(true); // Force reload dashboard from CSV to include new entry
-    goTab('d');
-  }catch(e){toast('❌ '+(e.message.includes('Save failed') ? 'सेव्ह करण्यात त्रुटी: ' : '')+e.message,'er',5000);}
-  finally{hideLdr();}
-}
-
-function setET(){G('eDate').value=td();onED();}
-function rsf(rd){G('rP').innerHTML='';G('rR').innerHTML='';G('rF').innerHTML='';G('rE').innerHTML='';ar('P');ar('R');ar('F');ae();if(rd!==false)G('eDate').value=td();G('eAc').value='';G('eMi').value='';rc();}
-
-function applyGrid(){var w=window.innerWidth,r=G('cr1');if(r)r.style.gridTemplateColumns=w<640?'1fr':w<1024?'1fr 1fr':'1fr 1fr 1fr';}
-window.addEventListener('resize',applyGrid);
+// applyGrid function removed, relying on CSS media queries for responsiveness
+// window.addEventListener('resize',applyGrid);
 
 function init(){
   setTimeout(hideLdr,12000); // Hide loader if initial load takes too long (fallback)
-  var t=td(); G('fromDate').value=t; G('toDate').value=t; G('eDate').value=t;
-  rsf(false); applyGrid();
+  var t=td(); G('fromDate').value=t; G('toDate').value=t;
+  // rsf(false); // Removed, as entry form is gone
+  // applyGrid(); // Removed
   G('srchBox').addEventListener('input',dbn(rc2,180));
   G('tFilt').addEventListener('change',rc2);
   G('fromDate').addEventListener('change',function(){loadData(true);});
@@ -960,10 +776,9 @@ function init(){
   loadData(false)
     .then(() => {
         if (typeof Chart === 'undefined') {
-            // If Chart.js isn't loaded yet, try again after a delay
             setTimeout(() => S.data && rcharts(), 1000);
         }
-        onED(); // Update opening balance for today (will be 0 from CSV)
+        // onED(); // Removed as entry form is gone
     })
     .catch(e => {
         console.error('Initial load failed:', e);

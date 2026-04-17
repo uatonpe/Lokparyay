@@ -888,7 +888,11 @@ tbody tr:hover { background: #f8faff; }
 
 <script>
 // --- CONFIGURATION ---
-var API_READ = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNxyKMFXhN9_Z0G5puI5rGNDMIv9DT_VsGnZwjgSzGU9DDBdjNGwhO3msbo7LIwj9P6MzlaBEp8DlO/pub?gid=0&single=true&output=csv'; // Corrected 'Dl0' to 'DlO'
+<!-- START NEW/MODIFIED CODE -->
+// !! इथे तुमच्या बँक बॅलन्स शीटची नवीन CSV URL टाका !!
+var API_READ_BANK_BALANCE = 'तुमची_बँक_शिल्लक_CSV_URL_येथे_टाका'; // उदा: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRnxyKMFXhN9_Z0G5puI5rGNDMIv9DT_VsGnZwjgSzGU9DDBdjNGwhO3msbo7LIwj9P6MzlaBEp8DlO/pub?gid=123456789&single=true&output=csv';
+<!-- END NEW/MODIFIED CODE -->
+var API_READ = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNxyKMFXhN9_Z0G5puI5rGNDMIv9DT_VsGnZwjgSzGU9DDBdjNGwhO3msbo7LIwj9P6MzlaBEp8DlO/pub?gid=0&single=true&output=csv'; // तुमची सध्याची मुख्य डेटा URL
 var LK = 'lp_erp_v2_', // LocalStorage Key prefix
     MT = 60000,       // Medium-term cache (e.g., 1 minute for API calls)
     LT = 300000;      // Long-term cache (e.g., 5 minutes for full CSV data)
@@ -945,6 +949,9 @@ var S={
   ag:[],        // Agent names (populated but not used in this dashboard-only version)
   data:null,    // Aggregated data for dashboard
   fullRawData:null, // Full parsed CSV data (array of objects)
+  <!-- START NEW/MODIFIED CODE -->
+  bankRawData:null, // नवीन: बँक शिल्लक डेटासाठी
+  <!-- END NEW/MODIFIED CODE -->
   ch:{},        // Chart.js instances
   mem:new Map() // In-memory cache for API calls
 };
@@ -1070,16 +1077,44 @@ async function loadData(force){
   const toDateStr = G('toDate').value || td();
   G('rb').innerHTML='⏳ माहिती गोळा करत आहे...';
 
+  <!-- START NEW/MODIFIED CODE -->
+  let latestBankBalance = 0; // ही ओळ तशीच ठेवा
+  <!-- END NEW/MODIFIED CODE -->
+
   try {
+    // १. मुख्य कलेक्शन डेटा आणा
     if (!S.fullRawData || force) {
       G('rb').innerHTML='⏳ पूर्ण डेटा डाउनलोड करत आहे...';
       S.fullRawData = await apf(API_READ, force, true);
     }
 
+    <!-- START NEW/MODIFIED CODE -->
+    // २. बँक शिल्लक डेटा आणा
+    if (API_READ_BANK_BALANCE && (!S.bankRawData || force)) { // API_READ_BANK_BALANCE अस्तित्वात आहे का ते तपासा
+      G('rb').innerHTML='⏳ बँक शिल्लक मिळवत आहे...';
+      S.bankRawData = await apf(API_READ_BANK_BALANCE, force, true);
+    }
+
+    // बँक शिल्लक डेटा प्रोसेस करा
+    if (S.bankRawData && S.bankRawData.length > 0) {
+        // तुमच्या नवीन शीटमध्ये 'Value' नावाचा कॉलम असेल असे गृहीत धरून
+        const balanceValue = S.bankRawData[0]['Value'];
+        if (balanceValue) {
+            latestBankBalance = num(balanceValue); // हार्डकोड केलेला '0' आता शीटमधून आलेल्या मूल्याने बदलेल
+        } else {
+            console.warn("Could not find 'Value' column in bank balance data. Check 'Current_Bank_Balance' sheet headers.");
+        }
+    }
+    <!-- END NEW/MODIFIED CODE -->
+
+    // ३. सर्व डेटा एकत्र करा
     G('rb').innerHTML='⏳ डेटा विश्लेषण करत आहे...';
-    S.data = aggregateDataForRange(S.fullRawData, fromDateStr, toDateStr);
+    // latestBankBalance हे aggregation फंक्शनला पाठवा
+    <!-- START MODIFIED CODE -->
+    S.data = aggregateDataForRange(S.fullRawData, fromDateStr, toDateStr, latestBankBalance);
+    <!-- END MODIFIED CODE -->
     
-    // Populate agent names (though not used in dashboard-only version, kept for future potential)
+    // एजंटची नावे पॉप्युलेट करा
     if (S.ag.length === 0) {
         const uniqueAgents = new Set();
         S.fullRawData.forEach(row => {
@@ -1090,7 +1125,7 @@ async function loadData(force){
         S.ag = Array.from(uniqueAgents).sort();
     }
 
-    rall(fromDateStr, toDateStr); // Render dashboard
+    rall(fromDateStr, toDateStr); // डॅशबोर्ड रेन्डर करा
   } catch(e){
     console.error('Error loading data:', e);
     toast('❌ डेटा लोड करताना त्रुटी: '+e.message,'er',5000);
@@ -1103,9 +1138,12 @@ async function loadData(force){
  * @param {Array<Object>} fullData - The entire parsed CSV data.
  * @param {string} fromDateStr - Start date for aggregation (YYYY-MM-DD).
  * @param {string} toDateStr - End date for aggregation (YYYY-MM-DD).
+ * @param {number} currentBankBalance - The latest bank balance fetched separately.
  * @returns {Object} Aggregated dashboard data.
  */
-function aggregateDataForRange(fullData, fromDateStr, toDateStr) {
+<!-- START MODIFIED CODE -->
+function aggregateDataForRange(fullData, fromDateStr, toDateStr, currentBankBalance = 0) { // currentBankBalance पॅरामीटर स्वीकारते
+<!-- END MODIFIED CODE -->
     const fromDate = new Date(fromDateStr);
     const toDate = new Date(toDateStr);
     toDate.setHours(23, 59, 59, 999);
@@ -1114,8 +1152,6 @@ function aggregateDataForRange(fullData, fromDateStr, toDateStr) {
     let agentWiseMap = {};
     let productWiseMap = {};
     let dailyCollectionMap = {}; // For daily trend chart
-
-    let currentBankBalance = 0; // Hardcoded to 0 as no 'Bank' sheet or specific value is provided
 
     fullData.forEach(row => {
         const rowDateStr = nd(row['Date']);
@@ -1130,7 +1166,7 @@ function aggregateDataForRange(fullData, fromDateStr, toDateStr) {
             if (pigmyAmount > 0) {
                 const type = 'PIGMY';
                 collections.push({ date: rowDateStr, type, agent, amount: pigmyAmount });
-                if (!productWiseMap[type]) productWiseMap[type] = { type, amount: 0 }; // Removed count
+                if (!productWiseMap[type]) productWiseMap[type] = { type, amount: 0 };
                 productWiseMap[type].amount += pigmyAmount;
                 totalRowCollection += pigmyAmount;
             }
@@ -1139,7 +1175,7 @@ function aggregateDataForRange(fullData, fromDateStr, toDateStr) {
             if (rdAmount > 0) {
                 const type = 'RD';
                 collections.push({ date: rowDateStr, type, agent, amount: rdAmount });
-                if (!productWiseMap[type]) productWiseMap[type] = { type, amount: 0 }; // Removed count
+                if (!productWiseMap[type]) productWiseMap[type] = { type, amount: 0 };
                 productWiseMap[type].amount += rdAmount;
                 totalRowCollection += rdAmount;
             }
@@ -1157,7 +1193,7 @@ function aggregateDataForRange(fullData, fromDateStr, toDateStr) {
 
             if (totalRowCollection > 0) {
                 if (!agentWiseMap[agent]) {
-                    agentWiseMap[agent] = { agent, totalAmount: 0, PIGMY: 0, RD: 0, FD: 0 }; // Removed totalCount
+                    agentWiseMap[agent] = { agent, totalAmount: 0, PIGMY: 0, RD: 0, FD: 0 };
                 }
                 agentWiseMap[agent].totalAmount += totalRowCollection;
                 
@@ -1185,7 +1221,9 @@ function aggregateDataForRange(fullData, fromDateStr, toDateStr) {
             rdAmount: productWiseMap['RD'] ? productWiseMap['RD'].amount : 0,
             fdAmount: productWiseMap['FD'] ? productWiseMap['FD'].amount : 0, 
             totalCollection,
-            bankBalance: currentBankBalance 
+            <!-- START MODIFIED CODE -->
+            bankBalance: currentBankBalance // आता ही रक्कम पॅरामीटरमधून (नवीन शीटमधून) येते
+            <!-- END MODIFIED CODE -->
         },
         rows: collections,
         productWise: Object.values(productWiseMap),

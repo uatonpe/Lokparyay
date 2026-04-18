@@ -39,11 +39,11 @@
   --b: #e2e8f0;  /* Border color - subtle grey (slate-200) */
   --b2: #cbd5e1; /* Slightly darker border/separator (slate-300) */
 
-  /* Shadows */
-  --sh-xs: 0 1px 2px rgba(0,0,0,0.04);
-  --sh-sm: 0 2px 5px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-  --sh-md: 0 6px 18px rgba(0,0,0,0.12), 0 3px 6px rgba(0,0,0,0.06);
-  --sh-lg: 0 14px 40px rgba(0,0,0,0.18), 0 5px 10px rgba(0,0,0,0.08);
+  /* Shadows (Slightly refined for a softer, more modern lift) */
+  --sh-xs: 0 1px 2px rgba(0,0,0,0.04); /* Lighter */
+  --sh-sm: 0 2px 5px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.03); /* Lighter */
+  --sh-md: 0 6px 16px rgba(0,0,0,0.1), 0 3px 6px rgba(0,0,0,0.05); /* Lighter */
+  --sh-lg: 0 12px 30px rgba(0,0,0,0.15), 0 5px 10px rgba(0,0,0,0.07); /* Lighter */
 
   /* Border Radii */
   --radius-sm: 8px;
@@ -71,17 +71,21 @@ button, input, select, textarea {
   font-size: 1em; /* Inherit font size from parent */
 }
 
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px; /* Wider for easier targeting */
+  height: 8px;
 }
 ::-webkit-scrollbar-thumb {
   background: var(--b2);
   border-radius: 99px;
+  border: 2px solid var(--bg); /* Padding from track */
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--b); /* Lighter track */
 }
+/* Firefox compatibility (basic) */
+html { scrollbar-width: thin; scrollbar-color: var(--b2) var(--b); }
 
 
 /* Header: Sleeker, deeper gradient with lighter text */
@@ -888,10 +892,16 @@ tbody tr:hover { background: #f8faff; }
 
 <script>
 // --- CONFIGURATION ---
-<!-- START NEW/MODIFIED CODE -->
 // !! इथे तुमच्या बँक बॅलन्स शीटची नवीन CSV URL टाका !!
-var API_READ_BANK_BALANCE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNxyKMFXhN9_Z0G5puI5rGNDMIv9DT_VsGnZwjgSzGU9DDBdjNGwhO3msbo7LIwj9P6MzlaBEp8DlO/pub?gid=1198017845&single=true&output=csv'; // उदा: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRnxyKMFXhN9_Z0G5puI5rGNDMIv9DT_VsGnZwjgSzGU9DDBdjNGwhO3msbo7LIwj9P6MzlaBEp8DlO/pub?gid=123456789&single=true&output=csv';
-<!-- END NEW/MODIFIED CODE --->
+// तुमच्या 'Current_Bank_Balance' नावाच्या Google Sheet चा pub?gid=XXX&single=true&output=csv हा URL वापरा.
+// सुनिश्चित करा की या शीटमध्ये 'Value' किंवा 'Balance' असे शीर्षक असलेला कॉलम आहे ज्यात शिल्लक रक्कम आहे.
+var API_READ_BANK_BALANCE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNxyKMFXhN9_Z0G5puI5rGNDMIv9DT_VsGnZwjgSzGU9DDBdjNGwhO3msbo7LIwj9P6MzlaBEp8DlO/pub?gid=1198017845&single=true&output=csv'; 
+
+// !! इथे तुमच्या नवीन FD खात्यांच्या रकमेच्या शीटचा CSV URL टाका !!
+// तुमच्या 'FD' नावाच्या Google Sheet चा pub?gid=XXX&single=true&output=csv हा URL वापरा.
+// सुनिश्चित करा की या शीटमध्ये 'FD Amount' असे शीर्षक असलेला कॉलम आहे ज्यात FD रक्कम आहे.
+var API_READ_FD_TOTALS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNxyKMFXhN9_Z0G5puI5rGNDMIv9DT_VsGnZwjgSzGU9DDBdjNGwhO3msbo7LIwj9P6MzlaBEp8DlO/pub?gid=208494840&single=true&output=csv'; 
+
 var API_READ = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNxyKMFXhN9_Z0G5puI5rGNDMIv9DT_VsGnZwjgSzGU9DDBdjNGwhO3msbo7LIwj9P6MzlaBEp8DlO/pub?gid=0&single=true&output=csv'; // तुमची सध्याची मुख्य डेटा URL
 var LK = 'lp_erp_v2_', // LocalStorage Key prefix
     MT = 60000,       // Medium-term cache (e.g., 1 minute for API calls)
@@ -901,7 +911,13 @@ var LK = 'lp_erp_v2_', // LocalStorage Key prefix
 function G(i) { return document.getElementById(i); }
 function td() { var d = new Date(); return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate()); }
 function z(n) { return String(n).padStart(2,'0'); }
-function num(v) { if(v==null||v==='')return 0; var n=Number(String(v).replace(/,/g,'')); return isFinite(n)?n:0; }
+function num(v) { 
+  if(v==null||v==='') return 0; 
+  var s = String(v).replace(/,/g,'').trim();
+  // Try to parse as float, if not possible, return 0
+  var n = parseFloat(s); 
+  return isFinite(n) ? n : 0;
+}
 function rupee(v) { return '₹'+num(v).toLocaleString('en-IN'); }
 function esc(s) {
   return String(s==null?'':s)
@@ -918,29 +934,45 @@ function nd(v) {
         'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'may': '05', 'jun': '06',
         'jul': '07', 'aug': '08', 'sep': '09', 'oct': '10', 'nov': '11', 'dec': '12'
     };
-    const monthRegex = /(\d{1,2})\s*([a-zA-Z]+)\s*(\d{2})/;
-    const match = s.toLowerCase().match(monthRegex);
+
+    // 1. Handle "DD Month YY" or "DD Month YYYY" format, like "31 March 26" or "31 March 2026"
+    // This regex is more robust to handle optional spaces and varying year lengths
+    const ddMonthYYRegex = /(\d{1,2})\s*([a-zA-Z]+)\s*(\d{2,4})$/i; 
+    let match = s.match(ddMonthYYRegex);
     if (match) {
         let day = z(parseInt(match[1], 10));
-        let month = monthMap[match[2].substring(0, 3)];
+        let monthKey = match[2].toLowerCase().substring(0, 3);
+        let month = monthMap[monthKey];
         let year = parseInt(match[3], 10);
-        if (year < 100) year += (year < 70 ? 2000 : 1900);
+        if (match[3].length === 2) { // If year is two digits, assume 20xx for < 70, 19xx for >= 70
+            year = (year < 70 ? 2000 : 1900) + year;
+        }
+        
         if (day && month && year) {
             return `${year}-${month}-${day}`;
         }
     }
 
+    // 2. Handle Excel-style numeric dates (e.g., 44286 for March 31, 2021)
     if (typeof v === 'number' && Math.abs(v) > 1000 && Math.abs(v) < 100000) {
         var e = new Date(Date.UTC(1899, 11, 30)); e.setUTCDate(e.getUTCDate() + Math.round(v));
         return e.getUTCFullYear() + '-' + z(e.getUTCMonth() + 1) + '-' + z(e.getUTCDate());
     }
+    // 3. Handle ISO date-time strings (e.g., "2026-03-31T00:00:00.000Z")
     if (/^\d{4}-\d{2}-\d{2}T/.test(s)) { var d = new Date(s); return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
+    // 4. Handle YYYY-MM-DD format (already clean)
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    // 5. Handle DD/MM/YYYY format
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) { var p = s.split('/'); return p[2] + '-' + p[1] + '-' + p[0]; }
     
+    // Fallback: Generic Date parsing
     var d2 = new Date(s);
-    if (isNaN(d2.getTime())) return s.slice(0, 10);
-    return d2.getFullYear() + '-' + z(d2.getMonth() + 1) + '-' + z(d2.getDate()); // Adjusted for consistent date format
+    if (isNaN(d2.getTime())) {
+        console.warn('Could not parse date (fallback failed):', s);
+        // If all parsing fails, return the first 10 characters if it looks like a date prefix
+        return s.slice(0, 10); 
+    }
+    return d2.getFullYear() + '-' + z(d2.getMonth() + 1) + '-' + z(d2.getDate());
 }
 
 
@@ -949,9 +981,8 @@ var S={
   ag:[],        // Agent names (populated but not used in this dashboard-only version)
   data:null,    // Aggregated data for dashboard
   fullRawData:null, // Full parsed CSV data (array of objects)
-  <!-- START NEW/MODIFIED CODE -->
-  bankRawData:null, // नवीन: बँक शिल्लक डेटासाठी
-  <!-- END NEW/MODIFIED CODE -->
+  bankRawData:null, // नवीन: बँक शिल्लक डेटासाठी (आता raw text असेल)
+  fdTotalsRawData:null, // New: Raw data for FD totals
   ch:{},        // Chart.js instances
   mem:new Map() // In-memory cache for API calls
 };
@@ -1015,11 +1046,12 @@ function parseCSV(csvText) {
  * Fetches data from a URL, caches it. For CSV, it parses the data.
  * @param {string} url - The URL to fetch.
  * @param {boolean} force - Whether to bypass cache.
- * @param {boolean} isCSV - True if URL points to a CSV, false for JSON.
- * @returns {Promise<any>} The fetched and parsed data.
+ * @param {Object} options - {isCSV: boolean, returnRawText: boolean}
+ * @returns {Promise<any>} The fetched and parsed data, or raw text if returnRawText is true.
  */
-async function apf(url, force, isCSV = false) {
-    const ck = url; // Use full URL for cache key
+async function apf(url, force, options = {}) {
+    const { isCSV = false, returnRawText = false } = options;
+    const ck = url + (returnRawText ? '_raw' : ''); // Use unique key for raw text cache
     const now = Date.now();
 
     const m = S.mem.get(ck);
@@ -1027,7 +1059,8 @@ async function apf(url, force, isCSV = false) {
         return m.d;
     }
 
-    if (isCSV && !force) {
+    // Long-term cache for CSV parsing only
+    if (isCSV && !returnRawText && !force) {
         const ls = lsG(ck);
         if (ls) {
             S.mem.set(ck, { ts: now, d: ls });
@@ -1040,25 +1073,28 @@ async function apf(url, force, isCSV = false) {
         throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
     }
 
+    const textData = await res.text();
+
     let data;
-    if (isCSV) {
-        const csvText = await res.text();
-        data = parseCSV(csvText);
-    } else {
-        const txt = await res.text();
+    if (returnRawText) {
+        data = textData; // Return raw text directly
+    } else if (isCSV) {
+        data = parseCSV(textData);
+    } else { // Assume JSON if not CSV and not raw text
         try {
-            data = JSON.parse(txt);
+            data = JSON.parse(textData);
         } catch (e) {
-            throw new Error('JSON Parse error: ' + txt.slice(0, 100));
+            throw new Error('JSON Parse error: ' + textData.slice(0, 100));
         }
     }
 
     S.mem.set(ck, { ts: now, d: data });
-    if (isCSV) {
+    if (isCSV && !returnRawText) { // Only save parsed CSV to local storage
         lsS(ck, data);
     }
     return data;
 }
+
 
 // goTab now only handles dashboard
 function goTab(t){G('secDash').classList.toggle('gone',t!=='d');G('navD').classList.toggle('act',t==='d');}
@@ -1077,44 +1113,85 @@ async function loadData(force){
   const toDateStr = G('toDate').value || td();
   G('rb').innerHTML='⏳ माहिती गोळा करत आहे...';
 
-  <!-- START NEW/MODIFIED CODE -->
-  let latestBankBalance = 0; // ही ओळ तशीच ठेवा
-  <!-- END NEW/MODIFIED CODE -->
+  let latestBankBalance = 0; 
+  let totalFDAccountsValue = 0; // Initialize total FD accounts value
 
   try {
-    // १. मुख्य कलेक्शन डेटा आणा
+    // 1. Fetch main collection data
     if (!S.fullRawData || force) {
       G('rb').innerHTML='⏳ पूर्ण डेटा डाउनलोड करत आहे...';
-      S.fullRawData = await apf(API_READ, force, true);
+      S.fullRawData = await apf(API_READ, force, { isCSV: true });
     }
 
-    <!-- START NEW/MODIFIED CODE -->
-    // २. बँक शिल्लक डेटा आणा
-    if (API_READ_BANK_BALANCE && (!S.bankRawData || force)) { // API_READ_BANK_BALANCE अस्तित्वात आहे का ते तपासा
+    // 2. Fetch bank balance data
+    if (API_READ_BANK_BALANCE && (!S.bankRawData || force)) { 
       G('rb').innerHTML='⏳ बँक शिल्लक मिळवत आहे...';
-      S.bankRawData = await apf(API_READ_BANK_BALANCE, force, true);
+      S.bankRawData = await apf(API_READ_BANK_BALANCE, force, { returnRawText: true });
     }
 
-    // बँक शिल्लक डेटा प्रोसेस करा
-    if (S.bankRawData && S.bankRawData.length > 0) {
-        // तुमच्या नवीन शीटमध्ये 'Value' नावाचा कॉलम असेल असे गृहीत धरून
-        const balanceValue = S.bankRawData[0]['Value'];
-        if (balanceValue) {
-            latestBankBalance = num(balanceValue); // हार्डकोड केलेला '0' आता शीटमधून आलेल्या मूल्याने बदलेल
+    // Process bank balance data
+    if (S.bankRawData) {
+        const rawText = S.bankRawData.trim();
+        let balanceFound = false;
+        
+        // Try parsing as a direct number (e.g., if sheet only has '733684.83' in A1)
+        let balanceCandidate = num(rawText);
+        if (balanceCandidate !== 0 || rawText === '0') {
+            latestBankBalance = balanceCandidate;
+            balanceFound = true;
+            // console.log("Bank balance found as single numeric value:", latestBankBalance);
         } else {
-            console.warn("Could not find 'Value' column in bank balance data. Check 'Current_Bank_Balance' sheet headers.");
+            // If not a single number, try parsing it as a very simple CSV line
+            const lines = rawText.split('\n');
+            if (lines.length > 0) {
+                const firstLine = lines[0];
+                const parts = firstLine.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(p => p.trim().replace(/^"|"$/g, ''));
+                
+                if (parts.length >= 2) { // Handles "Label,Value" (like "Current Balance,733684.83")
+                    balanceCandidate = num(parts[1]);
+                    if (balanceCandidate !== 0 || parts[1] === '0') {
+                        latestBankBalance = balanceCandidate;
+                        balanceFound = true;
+                        // console.log("Bank balance found from second CSV part:", latestBankBalance);
+                    }
+                } else if (parts.length === 1) { // Handles just "Value" in A1 after initial check
+                     balanceCandidate = num(parts[0]);
+                     if (balanceCandidate !== 0 || parts[0] === '0') {
+                        latestBankBalance = balanceCandidate;
+                        balanceFound = true;
+                        // console.log("Bank balance found from first CSV part (single cell):", latestBankBalance);
+                    }
+                }
+            }
+        }
+        
+        if (!balanceFound && (rawText !== '' && rawText !== '0')) { 
+             console.warn("Could not extract bank balance from raw text:", rawText);
+             // toast("बँक शिल्लक सापडली नाही. शीटची रचना तपासा.", "er"); // Removed for now to avoid multiple toasts
         }
     }
-    <!-- END NEW/MODIFIED CODE -->
 
-    // ३. सर्व डेटा एकत्र करा
+    // 3. Fetch FD totals data (from the new FD sheet)
+    if (API_READ_FD_TOTALS && (!S.fdTotalsRawData || force)) {
+        G('rb').innerHTML='⏳ FD डेटा मिळवत आहे...';
+        S.fdTotalsRawData = await apf(API_READ_FD_TOTALS, force, { isCSV: true });
+    }
+
+    // Process FD totals data
+    if (S.fdTotalsRawData && S.fdTotalsRawData.length > 0) {
+        totalFDAccountsValue = S.fdTotalsRawData.reduce((sum, row) => sum + num(row['FD Amount']), 0);
+        // console.log("Total FD Accounts Value:", totalFDAccountsValue);
+    } else if (API_READ_FD_TOTALS) {
+        console.warn("FD totals data is empty or could not be parsed. Check 'FD' sheet headers and data.");
+    }
+
+
+    // 4. Aggregate all data
     G('rb').innerHTML='⏳ डेटा विश्लेषण करत आहे...';
-    // latestBankBalance हे aggregation फंक्शनला पाठवा
-    <!-- START MODIFIED CODE -->
-    S.data = aggregateDataForRange(S.fullRawData, fromDateStr, toDateStr, latestBankBalance);
-    <!-- END MODIFIED CODE -->
+    // Pass both bank balance and total FD accounts value to aggregation function
+    S.data = aggregateDataForRange(S.fullRawData, fromDateStr, toDateStr, latestBankBalance, totalFDAccountsValue);
     
-    // एजंटची नावे पॉप्युलेट करा
+    // Populate agent names (existing logic)
     if (S.ag.length === 0) {
         const uniqueAgents = new Set();
         S.fullRawData.forEach(row => {
@@ -1125,7 +1202,7 @@ async function loadData(force){
         S.ag = Array.from(uniqueAgents).sort();
     }
 
-    rall(fromDateStr, toDateStr); // डॅशबोर्ड रेन्डर करा
+    rall(fromDateStr, toDateStr); // Render dashboard
   } catch(e){
     console.error('Error loading data:', e);
     toast('❌ डेटा लोड करताना त्रुटी: '+e.message,'er',5000);
@@ -1139,11 +1216,10 @@ async function loadData(force){
  * @param {string} fromDateStr - Start date for aggregation (YYYY-MM-DD).
  * @param {string} toDateStr - End date for aggregation (YYYY-MM-DD).
  * @param {number} currentBankBalance - The latest bank balance fetched separately.
+ * @param {number} totalFDAccountsValue - The total value of all FD accounts fetched separately.
  * @returns {Object} Aggregated dashboard data.
  */
-<!-- START MODIFIED CODE -->
-function aggregateDataForRange(fullData, fromDateStr, toDateStr, currentBankBalance = 0) { // currentBankBalance पॅरामीटर स्वीकारते
-<!-- END MODIFIED CODE -->
+function aggregateDataForRange(fullData, fromDateStr, toDateStr, currentBankBalance = 0, totalFDAccountsValue = 0) { 
     const fromDate = new Date(fromDateStr);
     const toDate = new Date(toDateStr);
     toDate.setHours(23, 59, 59, 999);
@@ -1180,16 +1256,15 @@ function aggregateDataForRange(fullData, fromDateStr, toDateStr, currentBankBala
                 totalRowCollection += rdAmount;
             }
 
-            const fdAmount = 0; // Currently no FD column in the provided CSV structure.
-            // If an FD column like 'Fixed Deposit Amount' existed, you would add:
-            // const fdAmount = num(row['Fixed Deposit Amount']);
-            // if (fdAmount > 0) {
-            //     const type = 'FD';
-            //     collections.push({ date: rowDateStr, type, agent, amount: fdAmount });
-            //     if (!productWiseMap[type]) productWiseMap[type] = { type, amount: 0 };
-            //     productWiseMap[type].amount += fdAmount;
-            //     totalRowCollection += fdAmount;
-            // }
+            // FD Amount for daily collection (from main sheet)
+            const fdAmountDaily = num(row['Fixed Deposit Amount']); // Assuming a column 'Fixed Deposit Amount' might exist in the main sheet later
+            if (fdAmountDaily > 0) {
+                const type = 'FD';
+                collections.push({ date: rowDateStr, type, agent, amount: fdAmountDaily });
+                if (!productWiseMap[type]) productWiseMap[type] = { type, amount: 0 };
+                productWiseMap[type].amount += fdAmountDaily;
+                totalRowCollection += fdAmountDaily;
+            }
 
             if (totalRowCollection > 0) {
                 if (!agentWiseMap[agent]) {
@@ -1199,7 +1274,7 @@ function aggregateDataForRange(fullData, fromDateStr, toDateStr, currentBankBala
                 
                 if (pigmyAmount > 0) agentWiseMap[agent]['PIGMY'] += pigmyAmount;
                 if (rdAmount > 0) agentWiseMap[agent]['RD'] += rdAmount;
-                // if (fdAmount > 0) agentWiseMap[agent]['FD'] += fdAmount; // Add if FD column is present
+                if (fdAmountDaily > 0) agentWiseMap[agent]['FD'] += fdAmountDaily; 
 
                 // For daily trend chart
                 if (!dailyCollectionMap[rowDateStr]) dailyCollectionMap[rowDateStr] = 0;
@@ -1219,11 +1294,10 @@ function aggregateDataForRange(fullData, fromDateStr, toDateStr, currentBankBala
         totals: {
             pigmyAmount: productWiseMap['PIGMY'] ? productWiseMap['PIGMY'].amount : 0,
             rdAmount: productWiseMap['RD'] ? productWiseMap['RD'].amount : 0,
-            fdAmount: productWiseMap['FD'] ? productWiseMap['FD'].amount : 0, 
+            fdAmount: productWiseMap['FD'] ? productWiseMap['FD'].amount : 0, // This is daily FD collection from main sheet
             totalCollection,
-            <!-- START MODIFIED CODE -->
-            bankBalance: currentBankBalance // आता ही रक्कम पॅरामीटरमधून (नवीन शीटमधून) येते
-            <!-- END MODIFIED CODE -->
+            bankBalance: currentBankBalance,
+            totalFDAccountsValue: totalFDAccountsValue // New: Total value of all FD accounts
         },
         rows: collections,
         productWise: Object.values(productWiseMap),
@@ -1232,13 +1306,13 @@ function aggregateDataForRange(fullData, fromDateStr, toDateStr, currentBankBala
     };
 }
 
-// KP: Key Performance Indicators
+// KP: Key Performance Indicators (reordered, FD collection removed)
 var KP=[
   {k:'pigmyAmount', s:null, l:'PIGMY जमा', c:'kg',m:'pigmy',i:'🪙'},
   {k:'rdAmount',    s:null, l:'RD जमा',    c:'kb',m:'rd',   i:'📈'},
-  {k:'fdAmount',    s:null, l:'FD जमा',    c:'kv',m:'fd',   i:'🏦'},
   {k:'totalCollection',s:null,l:'एकूण जमा रक्कम',c:'kt',m:'all',i:'💰'},
   {k:'bankBalance', s:null, l:'बँक शिल्लक', c:'ko',m:'sum',  i:'🏧'},
+  {k:'totalFDAccountsValue', s:null, l:'एकूण FD रक्कम', c:'kv', m:'fd_overall', i:'💸'}, // New KPI for total FD accounts value
 ];
 
 function rall(from,to){
@@ -1247,7 +1321,6 @@ function rall(from,to){
   G('rb').innerHTML='📅 '+esc(rl)+'&nbsp;|&nbsp;'+d.rows.length+' नोंदी';
   G('kpiGrid').innerHTML=KP.map(function(k){
     var v=rupee(t[k.k]||0);
-    // Removed 'खाती: 0' subtext as per user request
     return '<button class="kpi '+k.c+'" onclick="omo(\''+k.m+'\',\''+esc(k.l)+'\')">'
       +'<span class="kpi-ic">'+k.i+'</span>'
       +'<div class="kpi-val">'+v+'</div>'
@@ -1260,8 +1333,9 @@ function rall(from,to){
     ['कालावधी',rl],
     ['PIGMY रक्कम',rupee(t.pigmyAmount)],
     ['RD रक्कम',rupee(t.rdAmount)],
-    ['FD रक्कम',rupee(t.fdAmount)],
+    ['FD जमा (कालावधीत)',rupee(t.fdAmount)], // This is daily FD collection from main sheet, kept for clarity
     ['एकूण जमा',rupee(t.totalCollection)],
+    ['एकूण FD रक्कम',rupee(t.totalFDAccountsValue)], // New summary field for total FD
     ['बँक शिल्लक',rupee(t.bankBalance)]
   ];
   G('sg').innerHTML=sf.map(function(x){return'<div style="background:#f8faff;border:1px solid var(--b);border-radius:var(--radius-md);padding:0.875rem"><div style="font-size:0.6875rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px">'+esc(x[0])+'</div><div style="font-size:0.9375rem;font-weight:700;margin-top:0.375rem">'+esc(String(x[1]))+'</div></div>';}).join('');
@@ -1276,7 +1350,7 @@ function rc2(){
     return[r.agent,r.type].some(function(v){return String(v||'').toLowerCase().indexOf(q)>=0;});
   });
   var html=rows.map(function(r){
-    var pc=r.type==='PIGMY'?'pp':r.type==='RD'?'pbb':'pa';
+    var pc=r.type==='PIGMY'?'pp':r.type==='RD'?'pbb':r.type==='FD'?'pa':''; // Added FD type
     // Removed 'खाते क्र.' and 'खाती' columns
     return'<tr><td>'+esc(r.date)+'</td><td><span class="pill '+pc+'">'+esc(r.type)+'</span></td><td class="ttb">'+esc(r.agent||'-')+'</td><td class="ttr ttb">'+rupee(r.amount)+'</td></tr>';
   }).join('');
@@ -1377,28 +1451,34 @@ function omo(kind,title){
   var from=G('fromDate').value||td(),to=G('toDate').value||td();
   G('mtt').textContent=title||'तपशील'; G('mts').textContent=(from===to?from:from+' ते '+to);
   var html='';
-  if(['pigmy','rd','fd','all'].indexOf(kind)>=0){
-    var tf={pigmy:'PIGMY',rd:'RD',fd:'FD',all:'ALL'}[kind];
+  if(['pigmy','rd','all'].indexOf(kind)>=0){ 
+    var tf={pigmy:'PIGMY',rd:'RD',all:'ALL'}[kind];
     var fil=tf==='ALL'?d.rows:d.rows.filter(function(r){return r.type===tf;});
     var tot=fil.reduce(function(a,b){return a+b.amount;},0);
-    // Removed 'खाती' from modal summary
     html='<div class="mst"><div class="ms"><div class="sl">नोंदी</div><div class="sv">'+fil.length+'</div></div><div class="ms"><div class="sl">एकूण रक्कम</div><div class="sv" style="color:var(--br)">'+rupee(tot)+'</div></div></div>'
       +'<div class="tw"><table><thead><tr><th>तारीख</th><th>प्रकार</th><th>एजंट नाव</th><th class="ttr">रक्कम</th></tr></thead><tbody>'
-      +fil.map(function(r){var pc=r.type==='PIGMY'?'pp':r.type==='RD'?'pbb':'pa';
-      // Removed 'खाते क्र.' and 'खाती' columns
+      +fil.map(function(r){var pc=r.type==='PIGMY'?'pp':r.type==='RD'?'pbb':r.type==='FD'?'pa':'';
       return'<tr><td>'+esc(r.date)+'</td><td><span class="pill '+pc+'">'+esc(r.type)+'</span></td><td class="ttb">'+esc(r.agent||'-')+'</td><td class="ttr ttb">'+rupee(r.amount)+'</td></tr>';}).join('')
       +'</tbody></table></div>';
-  }else if(kind==='agent'){
+  } else if(kind==='agent'){
     html='<div class="mst"><div class="ms"><div class="sl">एजंट</div><div class="sv">'+d.agentWise.length+'</div></div><div class="ms"><div class="sl">एकूण संकलन</div><div class="sv" style="color:var(--br)">'+rupee(t.totalCollection)+'</div></div></div>'
       +'<div class="tw"><table><thead><tr><th>एजंट नाव</th><th class="ttr">एकूण रक्कम</th><th class="ttr">PIGMY</th><th class="ttr">RD</th><th class="ttr">FD</th></tr></thead><tbody>'
       +d.agentWise.map(function(x){
-      // Removed 'खाती' column
       return'<tr><td class="ttb">'+esc(x.agent)+'</td><td class="ttr ttb" style="color:var(--br)">'+rupee(x.totalAmount)+'</td><td class="ttr" style="color:var(--gn)">'+rupee(x.PIGMY)+'</td><td class="ttr">'+rupee(x.RD)+'</td><td class="ttr">'+rupee(x.FD)+'</td></tr>';}).join('')
       +'</tbody></table></div>';
-  }else if(kind==='sum'){ 
-    html='<div class="mst"><div class="ms"><div class="sl">एकूण जमा</div><div class="sv" style="color:var(--br)">'+rupee(t.totalCollection)+'</div></div><div class="ms"><div class="sl">बँक शिल्लक</div><div class="sv">'+rupee(t.bankBalance)+'</div></div></div>'
+  } else if(kind==='sum'){ 
+    html='<div class="mst"><div class="ms"><div class="sl">एकूण जमा</div><div class="sv" style="color:var(--br)">'+rupee(t.totalCollection)+'</div></div><div class="ms"><div class="sl">बँक शिल्लक</div><div class="sv">'+rupee(t.bankBalance)+'</div></div><div class="ms"><div class="sl">एकूण FD रक्कम</div><div class="sv" style="color:var(--kv)">'+rupee(t.totalFDAccountsValue)+'</div></div></div>'
       +'<div class="tw"><table><thead><tr><th>क्षेत्र</th><th>मूल्य</th></tr></thead><tbody>'
-      +[['PIGMY रक्कम',rupee(t.pigmyAmount)],['RD रक्कम',rupee(t.rdAmount)],['FD रक्कम',rupee(t.fdAmount)],['एकूण जमा',rupee(t.totalCollection)],['बँक शिल्लक',rupee(t.bankBalance)]].map(function(r){return'<tr><td class="ttb">'+r[0]+'</td><td>'+esc(String(r[1]))+'</td></tr>';}).join('')
+      +[['PIGMY रक्कम',rupee(t.pigmyAmount)],['RD रक्कम',rupee(t.rdAmount)],['एकूण जमा',rupee(t.totalCollection)],['एकूण FD रक्कम',rupee(t.totalFDAccountsValue)],['बँक शिल्लक',rupee(t.bankBalance)]].map(function(r){return'<tr><td class="ttb">'+r[0]+'</td><td>'+esc(String(r[1]))+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+  } else if(kind==='fd_overall'){ // New: Total FD Accounts Value modal
+    var fdRows = S.fdTotalsRawData || [];
+    var totalAmount = fdRows.reduce((sum, row) => sum + num(row['FD Amount']), 0);
+
+    html='<div class="mst"><div class="ms"><div class="sl">एकूण खाती</div><div class="sv">'+fdRows.length+'</div></div><div class="ms"><div class="sl">एकूण FD रक्कम</div><div class="sv" style="color:var(--br)">'+rupee(totalAmount)+'</div></div></div>'
+      +'<div class="tw"><table><thead><tr><th>ग्राहक नाव</th><th class="ttr">FD रक्कम</th></tr></thead><tbody>'
+      +fdRows.map(function(r){
+      return'<tr><td class="ttb">'+esc(r['Client Name']||'-')+'</td><td class="ttr ttb">'+rupee(r['FD Amount'])+'</td></tr>';}).join('')
       +'</tbody></table></div>';
   }
   G('mbd').innerHTML=html; G('ov').classList.add('on');
@@ -1415,12 +1495,13 @@ function openPrint(){
     // Removed 'खाती' column
     return'<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:0.5rem 0.75rem;font-weight:700">'+esc(x.agent)+'</td><td style="padding:0.5rem 0.75rem;text-align:right;font-weight:900;color:#2563eb">'+rupee(x.totalAmount)+'</td><td style="padding:0.5rem 0.75rem;text-align:right;color:#10b981">'+rupee(x.PIGMY)+'</td><td style="padding:0.5rem 0.75rem;text-align:right">'+rupee(x.RD)+'</td><td style="padding:0.5rem 0.75rem;text-align:right">'+rupee(x.FD)+'</td></tr>';}).join('');
   
-  // Print summary fields, updated (Removed 'खाती: 0' subtext)
+  // Print summary fields, updated
   var sf=[
     ['PIGMY संकलन',rupee(t.pigmyAmount)],
     ['RD संकलन',rupee(t.rdAmount)],
-    ['FD संकलन',rupee(t.fdAmount)],
+    // ['FD जमा (कालावधीत)',rupee(t.fdAmount)], // Removed from print summary too, as per request
     ['एकूण जमा',rupee(t.totalCollection)],
+    ['एकूण FD रक्कम',rupee(t.totalFDAccountsValue)], // New summary field for total FD
     ['बँक शिल्लक',rupee(t.bankBalance)]
   ];
   var html='<div style="font-family:Inter, system-ui, sans-serif;color:#1e293b">'
@@ -1448,7 +1529,7 @@ function doPrint(){
 }
 
 /* Debug */
-function showDbg(){var r=S.fullRawData;if(!r){alert('डेटा अद्याप नाही');return;}var i={totalRows:r.length,firstRow:r[0]||'empty',fromDate:G('fromDate').value,toDate:G('toDate').value,currentDataRows:S.data&&S.data.rows&&S.data.rows.length||0};console.log('[DEBUG]',i, S.data);alert(JSON.stringify(i,null,2));}
+function showDbg(){var r=S.fullRawData;if(!r){alert('डेटा अद्याp नाही');return;}var i={totalRows:r.length,firstRow:r[0]||'empty',fromDate:G('fromDate').value,toDate:G('toDate').value,currentDataRows:S.data&&S.data.rows&&S.data.rows.length||0,bankRawData:S.bankRawData, fdTotalsRawData:S.fdTotalsRawData};console.log('[DEBUG]',i, S.data);alert(JSON.stringify(i,null,2));}
 
 function init(){
   setTimeout(hideLdr,12000); // Hide loader if initial load takes too long (fallback)

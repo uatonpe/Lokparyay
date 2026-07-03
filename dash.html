@@ -793,6 +793,75 @@ function betweenDates(from,to){
   const a=new Date(from+'T00:00:00'), b=new Date(to+'T00:00:00');
   return Math.max(1,Math.round((b-a)/86400000)+1)
 }
+
+function monthLabel(key){
+  if(!key || !/^\d{4}-\d{2}$/.test(key)) return key || '—';
+  const [y,m]=key.split('-').map(Number);
+  return new Date(y,m-1,1).toLocaleString('en-IN',{month:'short',year:'2-digit'});
+}
+function summarizeEntries(rows=[],from='',to=''){
+  const totals={pigmy:0,rd:0,fd:0,total:0,bank:0,fdTotal:0,agents:0,avgDay:0,rows:rows.length};
+  const ag={}, pr={PIGMY:0,RD:0,FD:0};
+  for(const e of rows){
+    const amt=Number(e.amount)||0;
+    totals.total+=amt;
+    if(e.type==='PIGMY')totals.pigmy+=amt;
+    if(e.type==='RD')totals.rd+=amt;
+    if(e.type==='FD')totals.fd+=amt;
+    pr[e.type]=(pr[e.type]||0)+amt;
+    const agent=e.agent||'-';
+    if(!ag[agent])ag[agent]={agent,total:0,PIGMY:0,RD:0,FD:0,count:0};
+    ag[agent].total+=amt;
+    if(ag[agent][e.type]==null)ag[agent][e.type]=0;
+    ag[agent][e.type]+=amt;
+    ag[agent].count++;
+  }
+  const agentWise=Object.values(ag).sort((a,b)=>b.total-a.total);
+  const productWise=Object.keys(pr).map(k=>({type:k,amount:pr[k]})).filter(x=>x.amount>0);
+  totals.agents=agentWise.length;
+  let days=1;
+  if(from && to){
+    try{days=betweenDates(from,to)}catch(e){days=1}
+  }else if(rows.length){
+    const dates=rows.map(e=>e.date).filter(Boolean).sort();
+    if(dates.length){try{days=betweenDates(dates[0],dates[dates.length-1])}catch(e){days=1}}
+  }
+  totals.avgDay=totals.total/(days||1);
+  return {totals,agentWise,productWise,rows};
+}
+function buildMonthly(){
+  const monthMap={};
+  for(const e of S.entries){
+    if(!e.date) continue;
+    const k=e.date.slice(0,7);
+    if(!/^\d{4}-\d{2}$/.test(k)) continue;
+    if(!monthMap[k]) monthMap[k]={key:k,label:monthLabel(k),amount:0,pigmy:0,rd:0,fd:0,rows:0,agents:new Set()};
+    const m=monthMap[k], amt=Number(e.amount)||0;
+    m.amount+=amt; m.rows++; m.agents.add(e.agent||'-');
+    if(e.type==='PIGMY')m.pigmy+=amt;
+    if(e.type==='RD')m.rd+=amt;
+    if(e.type==='FD')m.fd+=amt;
+  }
+  const all=Object.values(monthMap).sort((a,b)=>a.key.localeCompare(b.key)).map(m=>({
+    key:m.key,label:m.label,amount:m.amount,pigmy:m.pigmy,rd:m.rd,fd:m.fd,rows:m.rows,agents:m.agents.size
+  }));
+  S.allMonths=all;
+
+  // Monthly trend नेहमी शेवटचे 12 calendar months दाखवतो; डेटा नसेल तर zero value ठेवतो.
+  const lastKey=all.length?all[all.length-1].key:ym(new Date());
+  const [ly,lm]=lastKey.split('-').map(Number);
+  const trend=[];
+  for(let i=11;i>=0;i--){
+    const d=new Date(ly,lm-1-i,1);
+    const k=ym(d);
+    const found=monthMap[k];
+    trend.push(found?{
+      key:k,label:monthLabel(k),amount:found.amount,pigmy:found.pigmy,rd:found.rd,fd:found.fd,rows:found.rows,agents:found.agents.size
+    }:{key:k,label:monthLabel(k),amount:0,pigmy:0,rd:0,fd:0,rows:0,agents:0});
+  }
+  S.monthly=trend;
+}
+
 function aggregate(){
   const from=$('fromDate').value||todayISO(), to=$('toDate').value||todayISO();
   const range=S.entries.filter(e=>inRange(e,from,to));
